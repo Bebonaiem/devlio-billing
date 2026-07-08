@@ -205,29 +205,29 @@ sed -i "s/APP_NAME=.*/APP_NAME=DevlioBilling/" .env
 sed -i "s/APP_ENV=.*/APP_ENV=production/" .env
 sed -i "s/APP_DEBUG=.*/APP_DEBUG=false/" .env
 sed -i "s|APP_URL=.*|APP_URL=$APP_URL|" .env
-sed -i "s/DB_DATABASE=.*/DB_DATABASE=$DB_NAME/" .env
-sed -i "s/DB_USERNAME=.*/DB_USERNAME=$DB_USER/" .env
-sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" .env
+sed -i "s|DB_DATABASE=.*|DB_DATABASE=$DB_NAME|" .env
+sed -i "s|DB_USERNAME=.*|DB_USERNAME=$DB_USER|" .env
+sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|" .env
 
 if [ -n "$PTERODACTYL_URL" ]; then
     sed -i "s|PTERODACTYL_PANEL_URL=.*|PTERODACTYL_PANEL_URL=$PTERODACTYL_URL|" .env
-    sed -i "s/PTERODACTYL_API_KEY=.*/PTERODACTYL_API_KEY=$PTERODACTYL_KEY/" .env
+    sed -i "s|PTERODACTYL_API_KEY=.*|PTERODACTYL_API_KEY=$PTERODACTYL_KEY|" .env
 fi
 if [ -n "$STRIPE_PK" ]; then
-    sed -i "s/STRIPE_PUBLIC_KEY=.*/STRIPE_PUBLIC_KEY=$STRIPE_PK/" .env
-    sed -i "s/STRIPE_SECRET_KEY=.*/STRIPE_SECRET_KEY=$STRIPE_SK/" .env
-    sed -i "s/STRIPE_WEBHOOK_SECRET=.*/STRIPE_WEBHOOK_SECRET=$STRIPE_WH/" .env
+    sed -i "s|STRIPE_PUBLIC_KEY=.*|STRIPE_PUBLIC_KEY=$STRIPE_PK|" .env
+    sed -i "s|STRIPE_SECRET_KEY=.*|STRIPE_SECRET_KEY=$STRIPE_SK|" .env
+    sed -i "s|STRIPE_WEBHOOK_SECRET=.*|STRIPE_WEBHOOK_SECRET=$STRIPE_WH|" .env
 fi
 if [ -n "$PAYPAL_CID" ]; then
-    sed -i "s/PAYPAL_CLIENT_ID=.*/PAYPAL_CLIENT_ID=$PAYPAL_CID/" .env
-    sed -i "s/PAYPAL_SECRET=.*/PAYPAL_SECRET=$PAYPAL_SEC/" .env
-    sed -i "s/PAYPAL_WEBHOOK_ID=.*/PAYPAL_WEBHOOK_ID=$PAYPAL_WH/" .env
-    sed -i "s/PAYPAL_MODE=.*/PAYPAL_MODE=$PAYPAL_MODE/" .env
+    sed -i "s|PAYPAL_CLIENT_ID=.*|PAYPAL_CLIENT_ID=$PAYPAL_CID|" .env
+    sed -i "s|PAYPAL_SECRET=.*|PAYPAL_SECRET=$PAYPAL_SEC|" .env
+    sed -i "s|PAYPAL_WEBHOOK_ID=.*|PAYPAL_WEBHOOK_ID=$PAYPAL_WH|" .env
+    sed -i "s|PAYPAL_MODE=.*|PAYPAL_MODE=$PAYPAL_MODE|" .env
 fi
 if [ -n "$DISCORD_TOKEN" ]; then
-    sed -i "s/DISCORD_BOT_TOKEN=.*/DISCORD_BOT_TOKEN=$DISCORD_TOKEN/" .env
-    sed -i "s/DISCORD_GUILD_ID=.*/DISCORD_GUILD_ID=$DISCORD_GUILD/" .env
-    sed -i "s/DISCORD_NOTIFICATION_CHANNEL=.*/DISCORD_NOTIFICATION_CHANNEL=$DISCORD_CHANNEL/" .env
+    sed -i "s|DISCORD_BOT_TOKEN=.*|DISCORD_BOT_TOKEN=$DISCORD_TOKEN|" .env
+    sed -i "s|DISCORD_GUILD_ID=.*|DISCORD_GUILD_ID=$DISCORD_GUILD|" .env
+    sed -i "s|DISCORD_NOTIFICATION_CHANNEL=.*|DISCORD_NOTIFICATION_CHANNEL=$DISCORD_CHANNEL|" .env
 fi
 
 composer install --no-interaction --optimize-autoloader --no-dev
