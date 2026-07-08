@@ -234,8 +234,8 @@ if [ -n "$DISCORD_TOKEN" ]; then
     sed -i "s/DISCORD_NOTIFICATION_CHANNEL=.*/DISCORD_NOTIFICATION_CHANNEL=$DISCORD_CHANNEL/" .env
 fi
 
-php artisan key:generate --force
 composer install --no-interaction --optimize-autoloader --no-dev
+php artisan key:generate --force
 php artisan migrate --force
 php artisan db:seed --class=DatabaseSeeder --force
 php artisan storage:link
