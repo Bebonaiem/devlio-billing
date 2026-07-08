@@ -65,6 +65,66 @@ class AuthController extends Controller
         return redirect(route('dashboard.index'));
     }
 
+    public function showForgotForm()
+    {
+        return view('auth.passwords.email');
+    }
+
+    public function sendResetLink(Request $request): RedirectResponse
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return back()->withErrors(['email' => 'No account found with this email.']);
+        }
+
+        $token = \Illuminate\Support\Str::random(60);
+        \Illuminate\Support\Facades\DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            ['email' => $request->email, 'token' => bcrypt($token), 'created_at' => now()]
+        );
+
+        $link = url('/password/reset/' . $token);
+
+        \Illuminate\Support\Facades\Mail::raw("Click here to reset your password: $link", function ($message) use ($request) {
+            $message->to($request->email)->subject('Password Reset');
+        });
+
+        return back()->with('status', 'Password reset link sent to your email.');
+    }
+
+    public function showResetForm($token)
+    {
+        return view('auth.passwords.reset', compact('token'));
+    }
+
+    public function resetPassword(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|confirmed|min:8',
+            'token' => 'required',
+        ]);
+
+        $record = \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+            ->where('email', $request->email)->first();
+
+        if (!$record || !\Illuminate\Support\Facades\Hash::check($request->token, $record->token)) {
+            return back()->withErrors(['email' => 'Invalid token.']);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if ($user) {
+            $user->update(['password' => bcrypt($request->password)]);
+        }
+
+        \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+            ->where('email', $request->email)->delete();
+
+        return redirect()->route('login')->with('success', 'Password reset successfully.');
+    }
+
     public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
