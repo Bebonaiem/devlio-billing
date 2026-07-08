@@ -83,6 +83,9 @@ return new class extends Migration
             $table->unsignedBigInteger('role_id')->after('tfa_secret')->nullable();
             $table->foreign('role_id')->references('id')->on('roles')->nullOnDelete();
             $table->boolean('email_verified')->default(false)->after('email_verified_at');
+            $table->string('affiliate_code', 20)->nullable()->unique()->after('email_verified');
+            $table->unsignedBigInteger('referred_by')->nullable()->after('affiliate_code');
+            $table->foreign('referred_by')->references('id')->on('users')->nullOnDelete();
         });
 
         // =====================================================
