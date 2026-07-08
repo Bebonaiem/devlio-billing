@@ -60,7 +60,8 @@ while [ -z "$ADMIN_EMAIL" ]; do
     if [ -z "$ADMIN_EMAIL" ]; then echo -e "${RED}Email is required.${NC}"; fi
 done
 while [ -z "$ADMIN_PASSWORD" ]; do
-    read -p "Password: " ADMIN_PASSWORD
+    read -s -p "Password: " ADMIN_PASSWORD
+    echo ""
     if [ -z "$ADMIN_PASSWORD" ]; then echo -e "${RED}Password is required.${NC}"; fi
 done
 echo ""
