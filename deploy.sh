@@ -11,7 +11,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}  GameBilling - Ubuntu Auto Installer    ${NC}"
+echo -e "${GREEN}  Devlio Billing - Ubuntu Auto Installer   ${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 
@@ -37,8 +37,8 @@ echo -e "${GREEN}Installing on Ubuntu $VERSION_ID${NC}"
 
 # Configuration
 DOMAIN=""
-DB_NAME="gamebilling"
-DB_USER="gamebilling"
+DB_NAME="devlio_billing"
+DB_USER="devlio_billing"
 DB_PASSWORD=$(openssl rand -base64 32)
 APP_URL="http://localhost"
 
@@ -108,18 +108,18 @@ mysql -e "FLUSH PRIVILEGES;"
 # Clone the application
 echo -e "${YELLOW}Setting up application...${NC}"
 cd /var/www
-if [ -d /var/www/gamebilling ]; then
+if [ -d /var/www/devlio-billing ]; then
     echo "Directory exists, pulling updates..."
-    cd /var/www/gamebilling
+    cd /var/www/devlio-billing
     git pull
 else
-    git clone https://github.com/yourusername/gamebilling.git
-    cd /var/www/gamebilling
+    git clone https://github.com/Bebonaiem/devlio-billing.git
+    cd /var/www/devlio-billing
 fi
 
 # Create .env file
 cp .env.example .env
-sed -i "s/APP_NAME=.*/APP_NAME=GameBilling/" .env
+sed -i "s/APP_NAME=.*/APP_NAME=DevlioBilling/" .env
 sed -i "s/APP_ENV=.*/APP_ENV=production/" .env
 sed -i "s/APP_DEBUG=.*/APP_DEBUG=false/" .env
 sed -i "s|APP_URL=.*|APP_URL=$APP_URL|" .env
@@ -159,18 +159,18 @@ php artisan event:cache
 
 # Set permissions
 echo -e "${YELLOW}Setting permissions...${NC}"
-chown -R www-data:www-data /var/www/gamebilling
-chmod -R 755 /var/www/gamebilling/storage
-chmod -R 755 /var/www/gamebilling/bootstrap/cache
+chown -R www-data:www-data /var/www/devlio-billing
+chmod -R 755 /var/www/devlio-billing/storage
+chmod -R 755 /var/www/devlio-billing/bootstrap/cache
 
 # Configure Nginx
 echo -e "${YELLOW}Configuring Nginx...${NC}"
 if [ -n "$DOMAIN" ]; then
-    cat > /etc/nginx/sites-available/gamebilling << 'EOF'
+    cat > /etc/nginx/sites-available/devlio-billing << 'EOF'
 server {
     listen 80;
     server_name DOMAIN_PLACEHOLDER;
-    root /var/www/gamebilling/public;
+    root /var/www/devlio-billing/public;
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
@@ -199,8 +199,8 @@ server {
     }
 }
 EOF
-    sed -i "s/DOMAIN_PLACEHOLDER/$DOMAIN/" /etc/nginx/sites-available/gamebilling
-    ln -sf /etc/nginx/sites-available/gamebilling /etc/nginx/sites-enabled/
+    sed -i "s/DOMAIN_PLACEHOLDER/$DOMAIN/" /etc/nginx/sites-available/devlio-billing
+    ln -sf /etc/nginx/sites-available/devlio-billing /etc/nginx/sites-enabled/
     rm -f /etc/nginx/sites-enabled/default
     systemctl reload nginx
 
@@ -208,11 +208,11 @@ EOF
     echo -e "${YELLOW}Setting up SSL with Certbot...${NC}"
     certbot --nginx -d "$DOMAIN" --non-interactive --agree-tos --email admin@"$DOMAIN" || true
 else
-    cat > /etc/nginx/sites-available/gamebilling << 'EOF'
+    cat > /etc/nginx/sites-available/devlio-billing << 'EOF'
 server {
     listen 80;
     server_name _;
-    root /var/www/gamebilling/public;
+    root /var/www/devlio-billing/public;
 
     add_header X-Frame-Options "SAMEORIGIN";
     add_header X-Content-Type-Options "nosniff";
@@ -241,17 +241,17 @@ server {
     }
 }
 EOF
-    ln -sf /etc/nginx/sites-available/gamebilling /etc/nginx/sites-enabled/
+    ln -sf /etc/nginx/sites-available/devlio-billing /etc/nginx/sites-enabled/
     rm -f /etc/nginx/sites-enabled/default
     systemctl reload nginx
 fi
 
 # Configure Queue Worker
 echo -e "${YELLOW}Configuring queue worker...${NC}"
-cat > /etc/supervisor/conf.d/gamebilling-worker.conf << 'EOF'
-[program:gamebilling-worker]
+cat > /etc/supervisor/conf.d/devlio-billing-worker.conf << 'EOF'
+[program:devlio-billing-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/gamebilling/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+command=php /var/www/devlio-billing/artisan queue:work --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 stopasgroup=true
@@ -259,18 +259,18 @@ killasgroup=true
 user=www-data
 numprocs=2
 redirect_stderr=true
-stdout_logfile=/var/www/gamebilling/storage/logs/worker.log
+stdout_logfile=/var/www/devlio-billing/storage/logs/worker.log
 stopwaitsecs=3600
 EOF
 
 supervisorctl reread
 supervisorctl update
-supervisorctl start gamebilling-worker:*
+supervisorctl start devlio-billing-worker:*
 
 # Set up cron for scheduler
 echo -e "${YELLOW}Setting up cron...${NC}"
 crontab -l 2>/dev/null || true
-(crontab -l 2>/dev/null; echo "* * * * * cd /var/www/gamebilling && php artisan schedule:run >> /dev/null 2>&1") | crontab -
+(crontab -l 2>/dev/null; echo "* * * * * cd /var/www/devlio-billing && php artisan schedule:run >> /dev/null 2>&1") | crontab -
 
 # Create admin user
 echo ""
@@ -279,7 +279,7 @@ read -p "Admin Email: " ADMIN_EMAIL
 read -p "Admin Password: " ADMIN_PASSWORD
 read -p "Admin Name: " ADMIN_NAME
 
-cd /var/www/gamebilling
+cd /var/www/devlio-billing
 php artisan tinker --execute="
     \$user = \App\Models\User::create([
         'name' => '$ADMIN_NAME',
