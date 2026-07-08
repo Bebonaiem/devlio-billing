@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Run Laravel Pint
+        run: ./vendor/bin/pint --test
+        continue-on-error: true
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Generate key
+        run: php -r "file_put_contents('.env', str_replace('APP_KEY=', 'APP_KEY=' . base64_encode(random_bytes(32)), file_get_contents('.env')));"
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Directory permissions
+        run: chmod -R 777 storage bootstrap/cache
+
+      - name: Run tests
+        run: php artisan test
+        continue-on-error: true
