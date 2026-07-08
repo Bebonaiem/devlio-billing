@@ -36,6 +36,8 @@
         .sidebar-link:hover { background: rgba(255, 255, 255, 0.05); }
         .sidebar-link.active { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
     </style>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>[x-cloak] { display: none !important; }</style>
     @livewireStyles
 </head>
 <body class="bg-dark-950 text-white min-h-screen flex">
@@ -129,6 +131,9 @@
                     <h1 class="text-lg font-semibold font-display">@yield('title', 'Admin Dashboard')</h1>
                 </div>
                 <div class="flex items-center gap-3">
+                    <a href="{{ route('cart.index') }}" class="relative p-2 text-dark-400 hover:text-white rounded-lg hover:bg-white/5 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+                    </a>
                     <div class="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center text-xs font-bold">
                         {{ substr(auth()->user()->name ?? 'A', 0, 1) }}
                     </div>

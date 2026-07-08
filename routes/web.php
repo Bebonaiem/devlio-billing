@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ServerController as AdminServerController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StorefrontController;
@@ -29,8 +30,16 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/checkout/{plan}', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout/{plan}', [CheckoutController::class, 'process'])->name('checkout.process');
+    Route::prefix('cart')->name('cart.')->group(function () {
+        Route::get('/', [CartController::class, 'index'])->name('index');
+        Route::post('/add/{plan}', [CartController::class, 'add'])->name('add');
+        Route::patch('/update/{key}', [CartController::class, 'update'])->name('update');
+        Route::delete('/remove/{key}', [CartController::class, 'remove'])->name('remove');
+        Route::delete('/clear', [CartController::class, 'clear'])->name('clear');
+    });
+
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/{order}/success', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/{order}/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
 
@@ -42,6 +51,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/invoices/{invoice}', [DashboardController::class, 'invoiceDetail'])->name('invoice-detail');
         Route::get('/tickets', [DashboardController::class, 'tickets'])->name('tickets');
         Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
+        Route::patch('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
+        Route::patch('/profile/password', [DashboardController::class, 'updatePassword'])->name('profile.password');
         Route::get('/affiliate', [DashboardController::class, 'affiliate'])->name('affiliate');
     });
 

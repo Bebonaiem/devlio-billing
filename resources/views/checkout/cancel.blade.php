@@ -10,7 +10,7 @@
         <p class="text-dark-400 mb-8">Your payment was cancelled. No charges have been made.</p>
 
         <div class="flex flex-col sm:flex-row justify-center gap-3">
-            <a href="{{ route('checkout.index', $order->plan) }}" class="px-6 py-3 btn-primary text-white font-medium rounded-xl text-sm">Try Again</a>
+            <a href="{{ route('checkout.index') }}" class="px-6 py-3 btn-primary text-white font-medium rounded-xl text-sm">Try Again</a>
             <a href="{{ route('storefront') }}" class="px-6 py-3 bg-dark-700 hover:bg-dark-600 text-dark-300 font-medium rounded-xl text-sm transition">Continue Shopping</a>
         </div>
     </div>

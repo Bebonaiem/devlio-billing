@@ -88,6 +88,10 @@
                 <div class="hidden md:flex items-center gap-1">
                     <a href="{{ route('storefront') }}" class="px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">Products</a>
                     @auth
+                        <a href="{{ route('cart.index') }}" class="relative px-3 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all" x-data="{ cartCount: {{ count(session('cart', [])) }} }">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+                            <span x-show="cartCount > 0" x-cloak class="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary-500 text-[10px] font-bold text-white flex items-center justify-center" x-text="cartCount"></span>
+                        </a>
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" @click.outside="open = false" class="flex items-center gap-2 px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
                                 <div class="w-6 h-6 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white">
@@ -163,6 +167,10 @@
                 <a href="{{ route('storefront') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Products</a>
                 @auth
                     <div class="px-4 py-2.5 text-xs text-dark-500 uppercase tracking-wider">{{ auth()->user()->name }}</div>
+                    <a href="{{ route('cart.index') }}" class="flex items-center justify-between px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">
+                        <span>Cart</span>
+                        <span class="px-2 py-0.5 rounded-full bg-primary-500/20 text-primary-400 text-xs font-medium" x-data="{ n: {{ count(session('cart', [])) }} }" x-show="n > 0" x-text="n + ' items'"></span>
+                    </a>
                     <a href="{{ route('dashboard.index') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Dashboard</a>
                     <a href="{{ route('dashboard.servers') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Servers</a>
                     <a href="{{ route('dashboard.invoices') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Invoices</a>

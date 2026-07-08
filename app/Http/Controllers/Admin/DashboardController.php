@@ -9,6 +9,8 @@ use App\Models\Order;
 use App\Models\User;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -44,7 +46,22 @@ class DashboardController extends Controller
             ->take(10)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recentOrders', 'recentTransactions'));
+        $revenueByMonth = Transaction::where('status', 'completed')
+            ->where('amount', '>', 0)
+            ->where('created_at', '>=', now()->subMonths(12))
+            ->select(DB::raw('MONTH(created_at) as month'), DB::raw('YEAR(created_at) as year'), DB::raw('SUM(amount) as total'))
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        $revenueLabels = $revenueByMonth->map(function ($item) {
+            return Carbon::createFromDate($item->year, $item->month, 1)->format('M Y');
+        })->toArray();
+
+        $revenueData = $revenueByMonth->pluck('total')->toArray();
+
+        return view('admin.dashboard', compact('stats', 'recentOrders', 'recentTransactions', 'revenueLabels', 'revenueData'));
     }
 
     public function settings()

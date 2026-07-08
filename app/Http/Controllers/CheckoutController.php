@@ -22,39 +22,80 @@ class CheckoutController extends Controller
         $this->middleware('auth');
     }
 
-    public function index(Plan $plan)
+    public function index()
     {
-        if (!$plan->is_active) {
-            abort(404);
+        $cart = session()->get('cart', []);
+
+        if (empty($cart)) {
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        $plan->load('product');
-        return view('checkout.index', compact('plan'));
+        $items = [];
+        $total = 0;
+
+        foreach ($cart as $key => $item) {
+            $plan = Plan::with('product')->find($item['plan_id']);
+            if ($plan && $plan->is_active) {
+                $quantity = $item['quantity'] ?? 1;
+                $subtotal = $plan->price * $quantity;
+                $items[$key] = [
+                    'plan' => $plan,
+                    'quantity' => $quantity,
+                    'config' => $item['config'] ?? [],
+                    'subtotal' => $subtotal,
+                ];
+                $total += $subtotal;
+            }
+        }
+
+        return view('checkout.index', compact('items', 'total'));
     }
 
-    public function process(Request $request, Plan $plan)
+    public function process(Request $request)
     {
-        if (!$plan->is_active) {
-            return back()->with('error', 'This plan is no longer available.');
+        $cart = session()->get('cart', []);
+
+        if (empty($cart)) {
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
+        $validated = $request->validate([
+            'gateway' => 'required|in:stripe,paypal',
+        ]);
+
         $user = Auth::user();
-        $gateway = $request->input('gateway', 'stripe');
+        $gateway = $validated['gateway'];
+        $orders = [];
 
         DB::beginTransaction();
         try {
-            $order = Order::create([
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
-                'status' => 'pending',
-            ]);
+            foreach ($cart as $key => $item) {
+                $plan = Plan::with('product')->find($item['plan_id']);
+                if (!$plan || !$plan->is_active) {
+                    continue;
+                }
 
-            $invoice = $this->billing->createInitialInvoice($order);
+                $quantity = $item['quantity'] ?? 1;
+                for ($i = 0; $i < $quantity; $i++) {
+                    $order = Order::create([
+                        'user_id' => $user->id,
+                        'plan_id' => $plan->id,
+                        'status' => 'pending',
+                    ]);
+
+                    $invoice = $this->billing->createInitialInvoice($order);
+                    $orders[] = ['order' => $order, 'invoice' => $invoice];
+                }
+            }
 
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Failed to create order. Please try again.');
+            return back()->with('error', 'Failed to create orders. Please try again.');
+        }
+
+        if (empty($orders)) {
+            return back()->with('error', 'No valid items in cart.');
         }
 
         if ($gateway === 'stripe') {
@@ -63,17 +104,18 @@ class CheckoutController extends Controller
                 ->where('is_default', true)
                 ->first()?->gateway_customer_id;
 
-            $successUrl = route('checkout.success', ['order' => $order->id]);
-            $cancelUrl = route('checkout.cancel', ['order' => $order->id]);
+            $successUrl = route('checkout.success', ['order' => $orders[0]['order']->id]);
+            $cancelUrl = route('checkout.cancel', ['order' => $orders[0]['order']->id]);
 
             $session = $this->stripe->createCheckoutSession(
-                $invoice,
+                $orders[0]['invoice'],
                 $successUrl,
                 $cancelUrl,
                 $customerId
             );
 
             if ($session) {
+                session()->forget('cart');
                 return redirect($session->url);
             }
 
@@ -81,12 +123,13 @@ class CheckoutController extends Controller
         }
 
         if ($gateway === 'paypal') {
-            $returnUrl = route('checkout.success', ['order' => $order->id]);
-            $cancelUrl = route('checkout.cancel', ['order' => $order->id]);
+            $returnUrl = route('checkout.success', ['order' => $orders[0]['order']->id]);
+            $cancelUrl = route('checkout.cancel', ['order' => $orders[0]['order']->id]);
 
-            $orderId = $this->paypal->createOrder($invoice, $returnUrl, $cancelUrl);
+            $orderId = $this->paypal->createOrder($orders[0]['invoice'], $returnUrl, $cancelUrl);
 
             if ($orderId) {
+                session()->forget('cart');
                 return redirect('https://www.paypal.com/checkoutnow?token=' . $orderId);
             }
 
@@ -102,7 +145,6 @@ class CheckoutController extends Controller
             abort(403);
         }
 
-        // Provision the server after successful payment
         if ($order->status === 'pending') {
             ProvisionServer::dispatch($order);
         }
