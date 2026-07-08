@@ -371,9 +371,15 @@ crontab -l 2>/dev/null || true
 echo -e "${YELLOW}Creating user account...${NC}"
 cd /var/www/devlio-billing
 
+FIRST_NAME=$(echo "$ADMIN_NAME" | cut -d' ' -f1)
+LAST_NAME=$(echo "$ADMIN_NAME" | cut -d' ' -f2-)
+if [ -z "$LAST_NAME" ]; then LAST_NAME="$FIRST_NAME"; fi
+
 if [ "$ADMIN_ROLE" = "admin" ]; then
     php artisan tinker --execute="
         \$user = \App\Models\User::create([
+            'first_name' => '$FIRST_NAME',
+            'last_name' => '$LAST_NAME',
             'name' => '$ADMIN_NAME',
             'email' => '$ADMIN_EMAIL',
             'password' => bcrypt('$ADMIN_PASSWORD'),
@@ -384,6 +390,8 @@ if [ "$ADMIN_ROLE" = "admin" ]; then
 else
     php artisan tinker --execute="
         \$user = \App\Models\User::create([
+            'first_name' => '$FIRST_NAME',
+            'last_name' => '$LAST_NAME',
             'name' => '$ADMIN_NAME',
             'email' => '$ADMIN_EMAIL',
             'password' => bcrypt('$ADMIN_PASSWORD'),
