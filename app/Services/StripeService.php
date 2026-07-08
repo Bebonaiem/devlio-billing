@@ -15,7 +15,10 @@ class StripeService
 {
     public function __construct()
     {
-        Stripe::setApiKey(config('services.stripe.secret_key'));
+        $key = config('services.stripe.secret_key');
+        if ($key) {
+            Stripe::setApiKey($key);
+        }
     }
 
     public function createCheckoutSession(Invoice $invoice, string $successUrl, string $cancelUrl, ?string $customerId = null): ?Session

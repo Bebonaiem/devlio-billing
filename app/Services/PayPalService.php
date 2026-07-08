@@ -9,15 +9,15 @@ use Illuminate\Support\Facades\Log;
 
 class PayPalService
 {
-    private string $clientId;
-    private string $clientSecret;
-    private string $baseUrl;
+    private ?string $clientId = null;
+    private ?string $clientSecret = null;
+    private string $baseUrl = '';
     private ?string $accessToken = null;
 
     public function __construct()
     {
-        $this->clientId = config('services.paypal.client_id') ?? '';
-        $this->clientSecret = config('services.paypal.secret') ?? '';
+        $this->clientId = config('services.paypal.client_id');
+        $this->clientSecret = config('services.paypal.secret');
         $this->baseUrl = config('services.paypal.mode') === 'live'
             ? 'https://api-m.paypal.com'
             : 'https://api-m.sandbox.paypal.com';
@@ -29,7 +29,7 @@ class PayPalService
             return $this->accessToken;
         }
 
-        $response = Http::withBasicAuth($this->clientId, $this->clientSecret)
+        $response = Http::withBasicAuth($this->clientId ?? '', $this->clientSecret ?? '')
             ->asForm()
             ->post($this->baseUrl . '/v1/oauth2/token', [
                 'grant_type' => 'client_credentials',
