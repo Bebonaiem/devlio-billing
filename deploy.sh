@@ -32,9 +32,13 @@ echo -e "${YELLOW}Step 1: Server Host${NC}"
 echo -e "Enter your server's ${CYAN}IP address${NC} or ${CYAN}domain name${NC}."
 echo -e "Examples: https://devlio.store/  or  http://192.168.1.10"
 echo -e "If you enter a domain, SSL will be set up automatically."
-read -p "Host (IP or domain): " HOST
-
-HOST=$(echo "$HOST" | sed 's|/$||' | sed 's|^https\?://||')
+while [ -z "$HOST" ]; do
+    read -p "Host (IP or domain): " HOST
+    HOST=$(echo "$HOST" | sed 's|/$||' | sed 's|^https\?://||')
+    if [ -z "$HOST" ]; then
+        echo -e "${RED}This field is required. Please enter a host or domain.${NC}"
+    fi
+done
 APP_URL="http://$HOST"
 if [[ "$HOST" =~ \. ]]; then
     APP_URL="https://$HOST"
@@ -47,9 +51,18 @@ echo ""
 # ──────────────────────────────────────────────
 echo -e "${YELLOW}Step 2: Admin Account${NC}"
 echo -e "Create the first user for the platform."
-read -p "Name: " ADMIN_NAME
-read -p "Email: " ADMIN_EMAIL
-read -p "Password: " ADMIN_PASSWORD
+while [ -z "$ADMIN_NAME" ]; do
+    read -p "Name: " ADMIN_NAME
+    if [ -z "$ADMIN_NAME" ]; then echo -e "${RED}Name is required.${NC}"; fi
+done
+while [ -z "$ADMIN_EMAIL" ]; do
+    read -p "Email: " ADMIN_EMAIL
+    if [ -z "$ADMIN_EMAIL" ]; then echo -e "${RED}Email is required.${NC}"; fi
+done
+while [ -z "$ADMIN_PASSWORD" ]; do
+    read -p "Password: " ADMIN_PASSWORD
+    if [ -z "$ADMIN_PASSWORD" ]; then echo -e "${RED}Password is required.${NC}"; fi
+done
 echo ""
 echo -e "Should this user be an ${CYAN}admin${NC} (full access) or a regular ${CYAN}user${NC}?"
 select ADMIN_ROLE in "admin" "user"; do
