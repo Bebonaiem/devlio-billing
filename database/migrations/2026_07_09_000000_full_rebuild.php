@@ -260,6 +260,19 @@ return new class extends Migration
         });
 
         // =====================================================
+        // EXTENSIONS (plugin system) — must come before invoice_transactions
+        // =====================================================
+        Schema::create('extensions', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->boolean('enabled')->default(false);
+            $table->string('extension');
+            $table->enum('type', ['gateway', 'server', 'other'])->default('other');
+            $table->softDeletes();
+            $table->timestamps();
+        });
+
+        // =====================================================
         // INVOICE TRANSACTIONS (renamed from transactions)
         // =====================================================
         Schema::create('invoice_transactions', function (Blueprint $table) {
@@ -424,19 +437,6 @@ return new class extends Migration
             $table->foreignId('notification_template_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
             $table->unique(['user_id', 'notification_template_id']);
-        });
-
-        // =====================================================
-        // EXTENSIONS (plugin system)
-        // =====================================================
-        Schema::create('extensions', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->boolean('enabled')->default(false);
-            $table->string('extension');
-            $table->enum('type', ['gateway', 'server', 'other'])->default('other');
-            $table->softDeletes();
-            $table->timestamps();
         });
 
         // =====================================================
