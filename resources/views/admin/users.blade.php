@@ -1,39 +1,39 @@
 @extends('layouts.admin')
-
 @section('title', 'Users')
-
 @section('content')
-<div class="bg-white rounded-lg shadow overflow-hidden">
-    <table class="w-full">
-        <thead class="bg-gray-50">
-            <tr class="text-left">
-                <th class="px-6 py-3">ID</th>
-                <th class="px-6 py-3">Name</th>
-                <th class="px-6 py-3">Email</th>
-                <th class="px-6 py-3">Orders</th>
-                <th class="px-6 py-3">Invoices</th>
-                <th class="px-6 py-3">Credit</th>
-                <th class="px-6 py-3">Joined</th>
-                <th class="px-6 py-3"></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($users as $user)
-                <tr class="border-t">
-                    <td class="px-6 py-4">{{ $user->id }}</td>
-                    <td class="px-6 py-4 font-medium">{{ $user->name }}</td>
-                    <td class="px-6 py-4">{{ $user->email }}</td>
-                    <td class="px-6 py-4">{{ $user->orders_count }}</td>
-                    <td class="px-6 py-4">{{ $user->invoices_count }}</td>
-                    <td class="px-6 py-4">${{ number_format($user->credit_balance, 2) }}</td>
-                    <td class="px-6 py-4">{{ $user->created_at->format('M d, Y') }}</td>
-                    <td class="px-6 py-4">
-                        <a href="{{ route('admin.user-detail', $user) }}" class="text-blue-600 hover:underline">View</a>
-                    </td>
+<div class="glass rounded-2xl overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="border-b border-white/5">
+                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">ID</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Name</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Email</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Orders</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Invoices</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Credit</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Joined</th>
+                    <th class="text-right px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Actions</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach ($users as $user)
+                    <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+                        <td class="px-6 py-4 text-sm text-dark-400">{{ $user->id }}</td>
+                        <td class="px-6 py-4 font-medium text-white text-sm">{{ $user->name }}</td>
+                        <td class="px-6 py-4 text-sm text-dark-300">{{ $user->email }}</td>
+                        <td class="px-6 py-4 text-sm text-dark-300">{{ $user->orders_count }}</td>
+                        <td class="px-6 py-4 text-sm text-dark-300">{{ $user->invoices_count }}</td>
+                        <td class="px-6 py-4 text-sm gradient-text">${{ number_format($user->credit_balance, 2) }}</td>
+                        <td class="px-6 py-4 text-sm text-dark-400">{{ $user->created_at->format('M d, Y') }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{{ route('admin.user-detail', $user) }}" class="text-primary-400 hover:text-primary-300 text-sm transition">View</a>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 </div>
 <div class="mt-6">{{ $users->links() }}</div>
 @endsection

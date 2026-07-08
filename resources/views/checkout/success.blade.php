@@ -1,21 +1,25 @@
 @extends('layouts.app')
-
 @section('title', 'Order Successful')
-
 @section('content')
-<div class="max-w-2xl mx-auto px-4 py-12 text-center">
-    <div class="bg-white rounded-lg shadow-lg p-8">
-        <div class="text-green-500 text-6xl mb-4">&#10003;</div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-4">Payment Successful!</h1>
-        <p class="text-lg text-gray-600 mb-6">Your order has been placed. Your server will be provisioned shortly.</p>
-        <div class="bg-gray-50 rounded-lg p-4 mb-6 text-left">
-            <p><strong>Order ID:</strong> #{{ $order->id }}</p>
-            <p><strong>Product:</strong> {{ $order->plan->product->name }} - {{ $order->plan->name }}</p>
-            <p><strong>Status:</strong> <span class="text-yellow-600 font-semibold">Pending Setup</span></p>
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+    <div class="glass rounded-2xl p-8 sm:p-10">
+        <div class="w-20 h-20 mx-auto rounded-2xl bg-green-500/20 flex items-center justify-center mb-6">
+            <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
         </div>
-        <div class="flex justify-center gap-4">
-            <a href="{{ route('dashboard.servers') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">View My Servers</a>
-            <a href="{{ route('storefront') }}" class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition">Continue Shopping</a>
+        <h1 class="text-3xl font-display font-bold text-white mb-3">Payment Successful!</h1>
+        <p class="text-dark-400 mb-8">Your order has been placed. Your server will be provisioned shortly.</p>
+
+        <div class="glass rounded-xl p-5 mb-8 text-left">
+            <div class="space-y-2">
+                <div class="flex justify-between"><span class="text-dark-400 text-sm">Order ID</span><span class="text-white text-sm font-medium">#{{ $order->id }}</span></div>
+                <div class="flex justify-between"><span class="text-dark-400 text-sm">Product</span><span class="text-white text-sm">{{ $order->plan->product->name }} - {{ $order->plan->name }}</span></div>
+                <div class="flex justify-between"><span class="text-dark-400 text-sm">Status</span><span class="text-yellow-400 text-sm font-semibold">Pending Setup</span></div>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-3">
+            <a href="{{ route('dashboard.servers') }}" class="px-6 py-3 btn-primary text-white font-medium rounded-xl text-sm">View My Servers</a>
+            <a href="{{ route('storefront') }}" class="px-6 py-3 bg-dark-700 hover:bg-dark-600 text-dark-300 font-medium rounded-xl text-sm transition">Continue Shopping</a>
         </div>
     </div>
 </div>

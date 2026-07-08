@@ -1,49 +1,50 @@
 @extends('layouts.app')
-
 @section('title', 'Invoices')
-
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8">My Invoices</h1>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-2xl font-display font-bold text-white mb-8">My Invoices</h1>
 
     @if ($invoices->isEmpty())
-        <div class="bg-white rounded-lg shadow p-12 text-center">
-            <p class="text-xl text-gray-500">No invoices yet.</p>
+        <div class="glass rounded-2xl p-12 text-center">
+            <svg class="w-12 h-12 mx-auto text-dark-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <p class="text-dark-500">No invoices yet.</p>
         </div>
     @else
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr class="text-left">
-                        <th class="px-6 py-3">Invoice</th>
-                        <th class="px-6 py-3">Amount</th>
-                        <th class="px-6 py-3">Due Date</th>
-                        <th class="px-6 py-3">Status</th>
-                        <th class="px-6 py-3"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($invoices as $invoice)
-                        <tr class="border-t">
-                            <td class="px-6 py-4 font-medium">{{ $invoice->invoice_number }}</td>
-                            <td class="px-6 py-4">${{ number_format($invoice->total, 2) }}</td>
-                            <td class="px-6 py-4">{{ $invoice->due_date->format('M d, Y') }}</td>
-                            <td class="px-6 py-4">
-                                <span class="px-2 py-1 rounded text-sm
-                                    {{ $invoice->status === 'paid' ? 'bg-green-100 text-green-700' : '' }}
-                                    {{ $invoice->status === 'pending' ? 'bg-yellow-100 text-yellow-700' : '' }}
-                                    {{ $invoice->status === 'overdue' ? 'bg-red-100 text-red-700' : '' }}
-                                    {{ $invoice->status === 'cancelled' ? 'bg-gray-100 text-gray-500' : '' }}">
-                                    {{ ucfirst($invoice->status) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                <a href="{{ route('dashboard.invoice-detail', $invoice) }}" class="text-blue-600 hover:underline">View</a>
-                            </td>
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-white/5">
+                            <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Invoice</th>
+                            <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Amount</th>
+                            <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Due Date</th>
+                            <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Status</th>
+                            <th class="text-right px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider"></th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach ($invoices as $invoice)
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+                                <td class="px-6 py-4 font-medium text-white text-sm">{{ $invoice->invoice_number }}</td>
+                                <td class="px-6 py-4 text-sm text-white">${{ number_format($invoice->total, 2) }}</td>
+                                <td class="px-6 py-4 text-sm text-dark-400">{{ $invoice->due_date->format('M d, Y') }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium
+                                        {{ $invoice->status === 'paid' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : '' }}
+                                        {{ $invoice->status === 'pending' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : '' }}
+                                        {{ $invoice->status === 'overdue' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : '' }}
+                                        {{ $invoice->status === 'cancelled' ? 'bg-dark-500/10 text-dark-400 border border-dark-500/20' : '' }}">
+                                        {{ ucfirst($invoice->status) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="{{ route('dashboard.invoice-detail', $invoice) }}" class="text-primary-400 hover:text-primary-300 text-sm transition">View</a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div class="mt-6">{{ $invoices->links() }}</div>
     @endif

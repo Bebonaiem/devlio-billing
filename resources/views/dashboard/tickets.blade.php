@@ -1,44 +1,46 @@
 @extends('layouts.app')
-
 @section('title', 'My Tickets')
-
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8">Support Tickets</h1>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-2xl font-display font-bold text-white mb-8">Support Tickets</h1>
 
     @if ($tickets->isEmpty())
-        <div class="bg-white rounded-lg shadow p-12 text-center">
-            <p class="text-xl text-gray-500 mb-4">No tickets yet.</p>
-            <a href="{{ route('storefront') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">Contact Support</a>
+        <div class="glass rounded-2xl p-12 text-center">
+            <svg class="w-12 h-12 mx-auto text-dark-700 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            <p class="text-dark-500 mb-4">No tickets yet.</p>
+            <a href="{{ route('storefront') }}" class="inline-flex items-center gap-2 px-5 py-2.5 btn-primary text-white text-sm font-medium rounded-xl">Contact Support</a>
         </div>
     @else
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr class="text-left">
-                        <th class="px-6 py-3">Subject</th>
-                        <th class="px-6 py-3">Related Order</th>
-                        <th class="px-6 py-3">Priority</th>
-                        <th class="px-6 py-3">Status</th>
-                        <th class="px-6 py-3">Created</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($tickets as $ticket)
-                        <tr class="border-t">
-                            <td class="px-6 py-4 font-medium">{{ $ticket->subject }}</td>
-                            <td class="px-6 py-4">{{ $ticket->order_id ? '#' . $ticket->order_id : 'N/A' }}</td>
-                            <td class="px-6 py-4 capitalize">{{ $ticket->priority }}</td>
-                            <td class="px-6 py-4">
-                                <span class="px-2 py-1 rounded text-sm {{ $ticket->status === 'open' ? 'bg-blue-100 text-blue-700' : ($ticket->status === 'resolved' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700') }}">
-                                    {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">{{ $ticket->created_at->format('M d, Y') }}</td>
+        <div class="glass rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-white/5">
+                            <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Subject</th>
+                            <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Order</th>
+                            <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Priority</th>
+                            <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Status</th>
+                            <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Created</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach ($tickets as $ticket)
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
+                                <td class="px-6 py-4 font-medium text-white text-sm">{{ $ticket->subject }}</td>
+                                <td class="px-6 py-4 text-sm text-dark-400">{{ $ticket->order_id ? '#' . $ticket->order_id : 'N/A' }}</td>
+                                <td class="px-6 py-4 text-sm text-dark-300 capitalize">{{ $ticket->priority }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium
+                                        {{ $ticket->status === 'open' ? 'bg-primary-500/10 text-primary-400 border border-primary-500/20' : ($ticket->status === 'resolved' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20') }}">
+                                        {{ ucfirst(str_replace('_', ' ', $ticket->status)) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-dark-400">{{ $ticket->created_at->format('M d, Y') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div class="mt-6">{{ $tickets->links() }}</div>
     @endif

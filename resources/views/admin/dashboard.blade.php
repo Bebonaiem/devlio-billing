@@ -1,85 +1,93 @@
 @extends('layouts.admin')
-
 @section('title', 'Admin Dashboard')
-
 @section('content')
-<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow p-6 text-center">
-        <p class="text-3xl font-bold text-blue-600">{{ $stats['total_users'] }}</p>
-        <p class="text-gray-600">Total Users</p>
+<div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="glass rounded-xl p-5">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            </div>
+            <span class="text-dark-400 text-sm">Total Users</span>
+        </div>
+        <p class="text-3xl font-bold text-white">{{ $stats['total_users'] }}</p>
     </div>
-    <div class="bg-white rounded-lg shadow p-6 text-center">
-        <p class="text-3xl font-bold text-green-600">{{ $stats['active_orders'] }}</p>
-        <p class="text-gray-600">Active Orders</p>
+    <div class="glass rounded-xl p-5">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <span class="text-dark-400 text-sm">Active Orders</span>
+        </div>
+        <p class="text-3xl font-bold text-white">{{ $stats['active_orders'] }}</p>
     </div>
-    <div class="bg-white rounded-lg shadow p-6 text-center">
-        <p class="text-3xl font-bold text-yellow-600">{{ $stats['pending_invoices'] }}</p>
-        <p class="text-gray-600">Pending Invoices</p>
+    <div class="glass rounded-xl p-5">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <span class="text-dark-400 text-sm">Pending Invoices</span>
+        </div>
+        <p class="text-3xl font-bold text-white">{{ $stats['pending_invoices'] }}</p>
     </div>
-    <div class="bg-white rounded-lg shadow p-6 text-center">
-        <p class="text-3xl font-bold text-purple-600">${{ number_format($stats['monthly_revenue'], 2) }}</p>
-        <p class="text-gray-600">Revenue This Month</p>
+    <div class="glass rounded-xl p-5">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
+            </div>
+            <span class="text-dark-400 text-sm">Revenue</span>
+        </div>
+        <p class="text-3xl font-bold gradient-text">${{ number_format($stats['monthly_revenue'], 2) }}</p>
     </div>
 </div>
 
 <div class="grid lg:grid-cols-2 gap-6">
-    <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-bold mb-4">Recent Orders</h2>
+    <div class="glass rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-white/5">
+            <h2 class="text-lg font-display font-bold text-white">Recent Orders</h2>
+        </div>
         @if ($recentOrders->isEmpty())
-            <p class="text-gray-500">No orders yet.</p>
+            <div class="p-8 text-center"><p class="text-dark-500">No orders yet.</p></div>
         @else
-            <table class="w-full">
-                <thead>
-                    <tr class="border-b text-left">
-                        <th class="pb-2">ID</th>
-                        <th class="pb-2">User</th>
-                        <th class="pb-2">Product</th>
-                        <th class="pb-2">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($recentOrders as $order)
-                        <tr class="border-b">
-                            <td class="py-2">#{{ $order->id }}</td>
-                            <td class="py-2">{{ $order->user->name }}</td>
-                            <td class="py-2">{{ $order->plan->product->name ?? 'N/A' }}</td>
-                            <td class="py-2">
-                                <span class="px-2 py-1 rounded text-sm {{ $order->status === 'active' ? 'bg-green-100 text-green-700' : ($order->status === 'suspended' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700') }}">
-                                    {{ ucfirst($order->status) }}
-                                </span>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead><tr class="border-b border-white/5"><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">ID</th><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">User</th><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Product</th><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Status</th></tr></thead>
+                    <tbody>
+                        @foreach ($recentOrders as $order)
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                <td class="px-6 py-3 text-sm text-white">#{{ $order->id }}</td>
+                                <td class="px-6 py-3 text-sm text-dark-300">{{ $order->user->name }}</td>
+                                <td class="px-6 py-3 text-sm text-dark-300">{{ $order->plan->product->name ?? 'N/A' }}</td>
+                                <td class="px-6 py-3"><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium {{ $order->status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : ($order->status === 'suspended' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20') }}">{{ ucfirst($order->status) }}</span></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
     </div>
 
-    <div class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-bold mb-4">Recent Transactions</h2>
+    <div class="glass rounded-2xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-white/5">
+            <h2 class="text-lg font-display font-bold text-white">Recent Transactions</h2>
+        </div>
         @if ($recentTransactions->isEmpty())
-            <p class="text-gray-500">No transactions yet.</p>
+            <div class="p-8 text-center"><p class="text-dark-500">No transactions yet.</p></div>
         @else
-            <table class="w-full">
-                <thead>
-                    <tr class="border-b text-left">
-                        <th class="pb-2">User</th>
-                        <th class="pb-2">Gateway</th>
-                        <th class="pb-2">Amount</th>
-                        <th class="pb-2">Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($recentTransactions as $txn)
-                        <tr class="border-b">
-                            <td class="py-2">{{ $txn->user->name }}</td>
-                            <td class="py-2 capitalize">{{ $txn->gateway }}</td>
-                            <td class="py-2">${{ number_format($txn->amount, 2) }}</td>
-                            <td class="py-2">{{ $txn->created_at->format('M d') }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead><tr class="border-b border-white/5"><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">User</th><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Gateway</th><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Amount</th><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Date</th></tr></thead>
+                    <tbody>
+                        @foreach ($recentTransactions as $txn)
+                            <tr class="border-b border-white/5 hover:bg-white/[0.02]">
+                                <td class="px-6 py-3 text-sm text-dark-300">{{ $txn->user->name }}</td>
+                                <td class="px-6 py-3 text-sm text-dark-300 capitalize">{{ $txn->gateway }}</td>
+                                <td class="px-6 py-3 text-sm text-white">${{ number_format($txn->amount, 2) }}</td>
+                                <td class="px-6 py-3 text-sm text-dark-400">{{ $txn->created_at->format('M d') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         @endif
     </div>
 </div>
