@@ -62,6 +62,8 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>[x-cloak] { display: none !important; }</style>
     @livewireStyles
 </head>
 <body class="bg-dark-950 text-white min-h-screen flex flex-col">
@@ -86,13 +88,62 @@
                 <div class="hidden md:flex items-center gap-1">
                     <a href="{{ route('storefront') }}" class="px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">Products</a>
                     @auth
-                        <a href="{{ route('dashboard.index') }}" class="px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">Dashboard</a>
-                        <a href="{{ route('dashboard.servers') }}" class="px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">Servers</a>
-                        <div class="w-px h-6 bg-white/10 mx-2"></div>
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button type="submit" class="px-4 py-2 text-sm text-dark-400 hover:text-white rounded-lg hover:bg-white/5 transition-all">Logout</button>
-                        </form>
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" @click.outside="open = false" class="flex items-center gap-2 px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
+                                <div class="w-6 h-6 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white">
+                                    {{ substr(auth()->user()->name, 0, 1) }}
+                                </div>
+                                <svg class="w-3.5 h-3.5" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <div x-show="open" x-cloak class="absolute right-0 mt-2 w-56 glass rounded-xl border border-white/5 shadow-xl overflow-hidden z-50">
+                                <div class="px-4 py-3 border-b border-white/5">
+                                    <p class="text-sm font-medium text-white">{{ auth()->user()->name }}</p>
+                                    <p class="text-xs text-dark-500">{{ auth()->user()->email }}</p>
+                                </div>
+                                <div class="p-2 space-y-0.5">
+                                    <a href="{{ route('dashboard.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                                        Dashboard
+                                    </a>
+                                    <a href="{{ route('dashboard.servers') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
+                                        My Servers
+                                    </a>
+                                    <a href="{{ route('dashboard.invoices') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        Invoices
+                                    </a>
+                                    <a href="{{ route('dashboard.tickets') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                                        Support Tickets
+                                    </a>
+                                    <a href="{{ route('dashboard.affiliate') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                        Affiliate
+                                    </a>
+                                    <a href="{{ route('dashboard.profile') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                        Profile
+                                    </a>
+                                    @can('admin')
+                                        <div class="border-t border-white/5 my-1"></div>
+                                        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-primary-400 hover:text-primary-300 rounded-lg hover:bg-primary-500/10 transition-all">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016a11.955 11.955 0 01-2.667 1.048 11.958 11.958 0 01-2.544.51 11.99 11.99 0 01-1.827-.104A5.974 5.974 0 0112 6.804a5.974 5.974 0 01-2.128 1.036 12.05 12.05 0 01-2.542-.375A11.98 11.98 0 014.4 5.398c.004.128.006.256.006.384A6.301 6.301 0 006 11.5a6.193 6.193 0 01-1.893.434M19 11.5a6.301 6.301 0 01-1.594-5.718 11.99 11.99 0 01-2.5.51c-.851 0-1.68-.12-2.5-.36"/></svg>
+                                            Admin Panel
+                                        </a>
+                                    @endcan
+                                </div>
+                                <div class="p-2 border-t border-white/5">
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:text-red-300 rounded-lg hover:bg-red-500/10 transition-all w-full">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                            Logout
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     @else
                         <a href="{{ route('login') }}" class="px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">Login</a>
                         <a href="{{ route('register') }}" class="ml-2 px-5 py-2 text-sm font-medium btn-primary text-white rounded-lg">Get Started</a>
@@ -111,11 +162,20 @@
             <div class="px-4 py-3 space-y-1">
                 <a href="{{ route('storefront') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Products</a>
                 @auth
+                    <div class="px-4 py-2.5 text-xs text-dark-500 uppercase tracking-wider">{{ auth()->user()->name }}</div>
                     <a href="{{ route('dashboard.index') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Dashboard</a>
                     <a href="{{ route('dashboard.servers') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Servers</a>
+                    <a href="{{ route('dashboard.invoices') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Invoices</a>
+                    <a href="{{ route('dashboard.tickets') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Support</a>
+                    <a href="{{ route('dashboard.profile') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Profile</a>
+                    @can('admin')
+                        <div class="border-t border-white/5 my-1"></div>
+                        <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2.5 text-sm text-primary-400 hover:text-primary-300 rounded-lg hover:bg-primary-500/10">Admin Panel</a>
+                    @endcan
+                    <div class="border-t border-white/5 my-1"></div>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="block w-full text-left px-4 py-2.5 text-sm text-dark-400 hover:text-white rounded-lg hover:bg-white/5">Logout</button>
+                        <button type="submit" class="block w-full text-left px-4 py-2.5 text-sm text-red-400 hover:text-red-300 rounded-lg hover:bg-red-500/10">Logout</button>
                     </form>
                 @else
                     <a href="{{ route('login') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Login</a>
