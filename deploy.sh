@@ -143,8 +143,13 @@ fi
 # ──────────────────────────────────────────────
 # System Packages
 # ──────────────────────────────────────────────
+echo -e "${YELLOW}Cleaning old PHP repos...${NC}"
+rm -f /etc/apt/sources.list.d/ondrej-*.list /etc/apt/sources.list.d/php*.list 2>/dev/null || true
+sed -i '/ondrej\/php/d' /etc/apt/sources.list 2>/dev/null || true
+
 echo -e "${YELLOW}Updating system packages...${NC}"
-apt update && apt upgrade -y
+apt update 2>&1 | grep -v "404\|Err\|NotFound" || true
+apt upgrade -y 2>&1 | grep -v "404\|Err\|NotFound" || true
 
 echo -e "${YELLOW}Installing dependencies...${NC}"
 apt install -y software-properties-common curl git nginx mysql-server redis-server supervisor certbot python3-certbot-nginx lsb-release
@@ -155,6 +160,8 @@ UBUNTU_CODENAME=$(lsb_release -sc 2>/dev/null || echo "")
 UBUNTU_VERSION=$(lsb_release -sr 2>/dev/null || echo "")
 # Remove old PHP repos to avoid 404 conflicts
 rm -f /etc/apt/sources.list.d/ondrej-*.list /etc/apt/sources.list.d/php*.list 2>/dev/null || true
+# Also remove any leftover ondrej sources from /etc/apt/sources.list
+sed -i '/ondrej\/php/d' /etc/apt/sources.list 2>/dev/null || true
 
 if [ "$UBUNTU_CODENAME" = "resolute" ] || [ "$(echo "$UBUNTU_VERSION" | cut -d. -f1)" -ge 25 ]; then
     # Ubuntu 25.10+ — use sury.org repo (recommended by Ondrej for modern releases)
@@ -163,7 +170,7 @@ if [ "$UBUNTU_CODENAME" = "resolute" ] || [ "$(echo "$UBUNTU_VERSION" | cut -d. 
 else
     add-apt-repository ppa:ondrej/php -y
 fi
-apt update
+apt update 2>&1 | grep -v "404\|Err\|NotFound" || apt update
 apt install -y php8.3-fpm php8.3-cli php8.3-mysql php8.3-xml php8.3-mbstring php8.3-curl php8.3-zip php8.3-bcmath php8.3-gd php8.3-intl php8.3-sodium
 
 echo -e "${YELLOW}Installing Composer...${NC}"
