@@ -183,8 +183,11 @@ DB_PASSWORD=$(openssl rand -base64 32)
 echo -e "${YELLOW}Configuring MySQL...${NC}"
 mysql -e "CREATE DATABASE IF NOT EXISTS $DB_NAME CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 mysql -e "DROP USER IF EXISTS '$DB_USER'@'localhost';"
+mysql -e "DROP USER IF EXISTS '$DB_USER'@'127.0.0.1';"
 mysql -e "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';"
+mysql -e "CREATE USER '$DB_USER'@'127.0.0.1' IDENTIFIED BY '$DB_PASSWORD';"
 mysql -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';"
+mysql -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'127.0.0.1';"
 mysql -e "FLUSH PRIVILEGES;"
 
 # ──────────────────────────────────────────────
@@ -206,6 +209,7 @@ sed -i "s/APP_NAME=.*/APP_NAME=DevlioBilling/" .env
 sed -i "s/APP_ENV=.*/APP_ENV=production/" .env
 sed -i "s/APP_DEBUG=.*/APP_DEBUG=false/" .env
 sed -i "s|APP_URL=.*|APP_URL=$APP_URL|" .env
+sed -i "s|DB_HOST=.*|DB_HOST=localhost|" .env
 sed -i "s|DB_DATABASE=.*|DB_DATABASE=$DB_NAME|" .env
 sed -i "s|DB_USERNAME=.*|DB_USERNAME=$DB_USER|" .env
 sed -i "s|DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|" .env
