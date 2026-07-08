@@ -171,7 +171,8 @@ else
     add-apt-repository ppa:ondrej/php -y
 fi
 apt update 2>&1 | grep -v "404\|Err\|NotFound" || apt update
-apt install -y php8.3-fpm php8.3-cli php8.3-mysql php8.3-xml php8.3-mbstring php8.3-curl php8.3-zip php8.3-bcmath php8.3-gd php8.3-intl php8.3-sodium
+apt install -y php8.3-fpm php8.3-cli php8.3-mysql php8.3-xml php8.3-mbstring php8.3-curl php8.3-zip php8.3-bcmath php8.3-gd php8.3-intl || true
+# sodium is built-in since PHP 8.3, no separate package needed
 
 echo -e "${YELLOW}Installing Composer...${NC}"
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
