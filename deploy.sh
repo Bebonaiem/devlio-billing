@@ -133,10 +133,18 @@ echo -e "${YELLOW}Updating system packages...${NC}"
 apt update && apt upgrade -y
 
 echo -e "${YELLOW}Installing dependencies...${NC}"
-apt install -y software-properties-common curl git nginx mysql-server redis-server supervisor certbot python3-certbot-nginx
+apt install -y software-properties-common curl git nginx mysql-server redis-server supervisor certbot python3-certbot-nginx lsb-release
 
 echo -e "${YELLOW}Installing PHP 8.3...${NC}"
-add-apt-repository ppa:ondrej/php -y
+UBUNTU_CODENAME=$(lsb_release -sc 2>/dev/null || echo "")
+UBUNTU_VERSION=$(lsb_release -sr 2>/dev/null || echo "")
+if [ "$UBUNTU_CODENAME" = "resolute" ] || [ "$(echo "$UBUNTU_VERSION" | cut -d. -f1)" -ge 25 ]; then
+    # Ubuntu 25.10+ — use sury.org repo (recommended by Ondrej for modern releases)
+    curl -sSLo /usr/share/keyrings/deb.sury.org-php.gpg https://packages.sury.org/php/apt.gpg
+    echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $UBUNTU_CODENAME main" > /etc/apt/sources.list.d/php.list
+else
+    add-apt-repository ppa:ondrej/php -y
+fi
 apt update
 apt install -y php8.3-fpm php8.3-cli php8.3-mysql php8.3-xml php8.3-mbstring php8.3-curl php8.3-zip php8.3-bcmath php8.3-gd php8.3-intl php8.3-sodium
 
