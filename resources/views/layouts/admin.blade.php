@@ -53,7 +53,7 @@
                 </div>
             </a>
         </div>
-        <nav class="flex-1 p-3 space-y-1">
+        <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
             <a href="{{ route('admin.dashboard') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                 Dashboard
@@ -70,9 +70,30 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                 Orders
             </a>
+            <a href="{{ route('admin.servers.index') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('admin.servers.*') ? 'active' : '' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
+                Servers
+            </a>
+            <a href="{{ route('admin.tickets.index') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('admin.tickets.*') ? 'active' : '' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                Tickets
+            </a>
             <a href="{{ route('admin.users') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('admin.users') || request()->routeIs('admin.user-detail') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
                 Users
+            </a>
+            <div class="border-t border-white/5 my-2"></div>
+            <a href="{{ route('admin.invoices.index') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('admin.invoices.*') ? 'active' : '' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Invoices
+            </a>
+            <a href="{{ route('admin.transactions.index') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                Transactions
+            </a>
+            <a href="{{ route('admin.commissions.index') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('admin.commissions.*') ? 'active' : '' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                Commissions
             </a>
             <a href="{{ route('admin.settings') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>

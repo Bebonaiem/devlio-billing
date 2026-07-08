@@ -79,6 +79,46 @@ class DashboardController extends Controller
     public function userDetail(User $user)
     {
         $user->load(['orders.plan.product', 'invoices', 'transactions', 'tickets']);
-        return view('admin.user-detail', compact('user'));
+        $roles = \Spatie\Permission\Models\Role::all();
+        return view('admin.user-detail', compact('user', 'roles'));
+    }
+
+    public function updateUser(Request $request, User $user)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'credit_balance' => 'required|numeric|min:0',
+            'role' => 'nullable|exists:roles,name',
+        ]);
+
+        $user->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'credit_balance' => $request->credit_balance,
+        ]);
+
+        if ($request->role) {
+            $user->syncRoles([$request->role]);
+        }
+
+        return back()->with('success', 'User updated successfully.');
+    }
+
+    public function destroyUser(User $user)
+    {
+        if ($user->id === auth()->id()) {
+            return back()->with('error', 'You cannot delete yourself.');
+        }
+
+        $user->tickets()->delete();
+        $user->servers()->delete();
+        $user->orders()->delete();
+        $user->invoices()->delete();
+        $user->transactions()->delete();
+        $user->delete();
+
+        return redirect()->route('admin.users')
+            ->with('success', 'User deleted successfully.');
     }
 }
