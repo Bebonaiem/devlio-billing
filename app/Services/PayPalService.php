@@ -16,8 +16,8 @@ class PayPalService
 
     public function __construct()
     {
-        $this->clientId = config('services.paypal.client_id');
-        $this->clientSecret = config('services.paypal.secret');
+        $this->clientId = config('services.paypal.client_id') ?? '';
+        $this->clientSecret = config('services.paypal.secret') ?? '';
         $this->baseUrl = config('services.paypal.mode') === 'live'
             ? 'https://api-m.paypal.com'
             : 'https://api-m.sandbox.paypal.com';

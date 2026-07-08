@@ -11,7 +11,7 @@
             <tbody>
                 @foreach ($invoices as $invoice)
                     <tr class="border-b border-white/5 hover:bg-white/[0.02]">
-                        <td class="px-6 py-4 text-sm font-medium text-white">{{ $invoice->invoice_number }}</td>
+                        <td class="px-6 py-4 text-sm font-medium text-white">{{ $invoice->number }}</td>
                         <td class="px-6 py-4 text-sm text-dark-300">{{ $invoice->user->name }}</td>
                         <td class="px-6 py-4 text-sm text-white">${{ number_format($invoice->total, 2) }}</td>
                         <td class="px-6 py-4 text-sm text-dark-400">{{ $invoice->due_date->format('M d, Y') }}</td>

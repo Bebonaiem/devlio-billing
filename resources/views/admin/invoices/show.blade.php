@@ -1,12 +1,12 @@
 @extends('layouts.admin')
-@section('title', 'Invoice ' . $invoice->invoice_number)
+@section('title', 'Invoice ' . $invoice->number)
 @section('content')
 <div class="max-w-4xl">
     <div class="grid lg:grid-cols-2 gap-6">
         <div class="glass rounded-2xl p-6 sm:p-8">
             <div class="flex justify-between items-start mb-6">
                 <div>
-                    <h2 class="text-lg font-display font-bold text-white mb-1">Invoice {{ $invoice->invoice_number }}</h2>
+                    <h2 class="text-lg font-display font-bold text-white mb-1">Invoice {{ $invoice->number }}</h2>
                     <p class="text-sm text-dark-400">{{ $invoice->user->name }} <span class="text-dark-600">·</span> {{ $invoice->created_at->format('M d, Y') }}</p>
                 </div>
                 <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium {{ $invoice->status === 'paid' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : ($invoice->status === 'pending' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : ($invoice->status === 'overdue' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-dark-500/10 text-dark-400 border border-dark-500/20')) }}">{{ ucfirst($invoice->status) }}</span>
@@ -28,7 +28,7 @@
                     @forelse ($invoice->items as $item)
                         <div class="flex justify-between py-2 border-b border-white/5 last:border-0">
                             <span class="text-sm text-dark-300">{{ $item->description }}</span>
-                            <span class="text-sm text-white">${{ number_format($item->amount, 2) }}</span>
+                            <span class="text-sm text-white">${{ number_format($item->price, 2) }}</span>
                         </div>
                     @empty
                         <p class="text-sm text-dark-500">No items.</p>

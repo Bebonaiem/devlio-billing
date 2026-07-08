@@ -18,7 +18,7 @@
         </div>
         <div class="flex items-center gap-6">
             <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="is_active" value="1" checked class="w-4 h-4 rounded border-dark-600 bg-dark-800 text-primary-500 focus:ring-primary-500 focus:ring-offset-0">
+                <input type="checkbox" name="enabled" value="1" checked class="w-4 h-4 rounded border-dark-600 bg-dark-800 text-primary-500 focus:ring-primary-500 focus:ring-offset-0">
                 <span class="text-sm text-dark-300">Active</span>
             </label>
             <div>

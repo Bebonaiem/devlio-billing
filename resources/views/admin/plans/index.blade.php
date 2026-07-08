@@ -17,9 +17,8 @@
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Name</th>
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Product</th>
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Price</th>
-                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Cycle</th>
-                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Resources</th>
-                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Status</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Billing</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Type</th>
                     <th class="text-right px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
@@ -27,13 +26,12 @@
                 @foreach ($plans as $plan)
                     <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
                         <td class="px-6 py-4 font-medium text-white text-sm">{{ $plan->name }}</td>
-                        <td class="px-6 py-4 text-sm text-dark-300">{{ $plan->product->name }}</td>
-                        <td class="px-6 py-4 text-sm text-white">${{ number_format($plan->price, 2) }}</td>
-                        <td class="px-6 py-4 text-sm text-dark-400 capitalize">{{ str_replace('_', ' ', $plan->billing_cycle) }}</td>
-                        <td class="px-6 py-4 text-xs text-dark-400">{{ $plan->cpu }}% / {{ $plan->memory }}MB / {{ $plan->disk }}MB</td>
+                        <td class="px-6 py-4 text-sm text-dark-300">{{ $plan->product->name ?? 'N/A' }}</td>
+                        <td class="px-6 py-4 text-sm text-white">${{ number_format($plan->prices->first()?->price ?? 0, 2) }}</td>
+                        <td class="px-6 py-4 text-sm text-dark-400 capitalize">{{ $plan->billing_period ? $plan->billing_period . ' ' . $plan->billing_unit : 'N/A' }}</td>
                         <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium {{ $plan->is_active ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-dark-500/10 text-dark-400 border border-dark-500/20' }}">
-                                {{ $plan->is_active ? 'Active' : 'Inactive' }}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium {{ $plan->type === 'recurring' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' }}">
+                                {{ ucfirst($plan->type) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right">

@@ -22,48 +22,29 @@
                 <textarea name="description" rows="2" class="w-full px-4 py-3 rounded-xl input-field text-white placeholder-dark-500 text-sm">{{ old('description', $plan->description) }}</textarea>
             </div>
             <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">CPU (%)</label>
-                <input type="number" name="cpu" required value="{{ $plan->cpu }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Memory (MB)</label>
-                <input type="number" name="memory" required value="{{ $plan->memory }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Disk (MB)</label>
-                <input type="number" name="disk" required value="{{ $plan->disk }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Swap (MB)</label>
-                <input type="number" name="swap" value="{{ $plan->swap }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Databases</label>
-                <input type="number" name="databases" value="{{ $plan->databases }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Backups</label>
-                <input type="number" name="backups" value="{{ $plan->backups }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Allocations</label>
-                <input type="number" name="allocations" value="{{ $plan->allocations }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Billing Cycle</label>
-                <select name="billing_cycle" required class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
-                    @foreach (['monthly', 'quarterly', 'semi_annually', 'annually'] as $cycle)
-                        <option value="{{ $cycle }}" {{ $plan->billing_cycle == $cycle ? 'selected' : '' }}>{{ ucfirst(str_replace('_', ' ', $cycle)) }}</option>
-                    @endforeach
+                <label class="block text-sm font-medium text-dark-300 mb-2">Type</label>
+                <select name="type" required class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                    <option value="recurring" {{ $plan->type === 'recurring' ? 'selected' : '' }}>Recurring</option>
+                    <option value="one-time" {{ $plan->type === 'one-time' ? 'selected' : '' }}>One-Time</option>
+                    <option value="free" {{ $plan->type === 'free' ? 'selected' : '' }}>Free</option>
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Price ($)</label>
-                <input type="number" name="price" required step="0.01" value="{{ $plan->price }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                <label class="block text-sm font-medium text-dark-300 mb-2">Billing Period</label>
+                <input type="number" name="billing_period" min="0" value="{{ old('billing_period', $plan->billing_period) }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
             </div>
             <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Setup Fee ($)</label>
-                <input type="number" name="setup_fee" step="0.01" value="{{ $plan->setup_fee }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                <label class="block text-sm font-medium text-dark-300 mb-2">Billing Unit</label>
+                <select name="billing_unit" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                    <option value="day" {{ $plan->billing_unit === 'day' ? 'selected' : '' }}>Day</option>
+                    <option value="week" {{ $plan->billing_unit === 'week' ? 'selected' : '' }}>Week</option>
+                    <option value="month" {{ $plan->billing_unit === 'month' ? 'selected' : '' }}>Month</option>
+                    <option value="year" {{ $plan->billing_unit === 'year' ? 'selected' : '' }}>Year</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-dark-300 mb-2">Sort</label>
+                <input type="number" name="sort" value="{{ old('sort', $plan->sort) }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
             </div>
             <div>
                 <label class="block text-sm font-medium text-dark-300 mb-2">Pterodactyl Nest ID</label>
@@ -74,10 +55,7 @@
                 <input type="number" name="egg_id" value="{{ $plan->egg_id }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
             </div>
         </div>
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="is_active" value="1" {{ $plan->is_active ? 'checked' : '' }} class="w-4 h-4 rounded border-dark-600 bg-dark-800 text-primary-500 focus:ring-primary-500 focus:ring-offset-0">
-            <span class="text-sm text-dark-300">Active</span>
-        </label>
+        <p class="text-xs text-dark-500">Prices are managed per currency in the prices section.</p>
         <button type="submit" class="w-full py-3 px-4 btn-primary text-white font-medium rounded-xl text-sm">Update Plan</button>
     </form>
 </div>

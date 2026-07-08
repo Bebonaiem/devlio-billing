@@ -1,5 +1,5 @@
 @extends('layouts.admin')
-@section('title', 'Server: ' . $server->name)
+@section('title', 'Service: ' . $server->name)
 @section('content')
 <div class="max-w-3xl">
     <div class="glass rounded-2xl p-6 sm:p-8">
@@ -13,22 +13,25 @@
 
         <div class="grid md:grid-cols-2 gap-6 mb-6">
             <div>
-                <h3 class="text-sm font-semibold text-dark-300 uppercase tracking-wider mb-4">Resources</h3>
-                <div class="space-y-4">
-                    @foreach ([['CPU', $server->cpu], ['Memory', $server->memory], ['Disk', $server->disk]] as [$label, $val])
-                        <div>
-                            <div class="flex justify-between text-sm mb-2"><span class="text-dark-400">{{ $label }}</span><span class="text-white">{{ $val }}%</span></div>
-                            <div class="w-full bg-dark-800 rounded-full h-2"><div class="bg-gradient-to-r from-primary-500 to-primary-400 rounded-full h-2" style="width: {{ min($val, 100) }}%"></div></div>
-                        </div>
-                    @endforeach
-                </div>
+                <h3 class="text-sm font-semibold text-dark-300 uppercase tracking-wider mb-4">Config Options</h3>
+                @if ($server->configs->isNotEmpty())
+                    <dl class="space-y-3">
+                        @foreach ($server->configs as $config)
+                            <div class="flex justify-between py-2 border-b border-white/5">
+                                <dt class="text-dark-400 text-sm">{{ $config->option->name ?? 'N/A' }}</dt>
+                                <dd class="text-white text-sm">{{ $config->value }}</dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                @else
+                    <p class="text-sm text-dark-500">No config options set.</p>
+                @endif
             </div>
             <div>
                 <h3 class="text-sm font-semibold text-dark-300 uppercase tracking-wider mb-4">Details</h3>
                 <dl class="space-y-3">
-                    <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Product</dt><dd class="text-white text-sm">{{ $server->order->plan->product->name ?? 'N/A' }}</dd></div>
-                    <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Plan</dt><dd class="text-white text-sm">{{ $server->order->plan->name ?? 'N/A' }}</dd></div>
-                    <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Order ID</dt><dd class="text-white text-sm">#{{ $server->order->id }}</dd></div>
+                    <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Product</dt><dd class="text-white text-sm">{{ $server->product->name ?? 'N/A' }}</dd></div>
+                    <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Plan</dt><dd class="text-white text-sm">{{ $server->plan->name ?? 'N/A' }}</dd></div>
                     <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Pterodactyl ID</dt><dd class="text-white text-sm">{{ $server->pterodactyl_server_id ?? 'N/A' }}</dd></div>
                     <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Node</dt><dd class="text-white text-sm">{{ $server->node ?? 'N/A' }}</dd></div>
                     <div class="flex justify-between py-2"><dt class="text-dark-400 text-sm">IP</dt><dd class="text-white text-sm">{{ $server->ip ?? 'N/A' }}</dd></div>
@@ -36,9 +39,9 @@
             </div>
         </div>
 
-        <form method="POST" action="{{ route('admin.servers.destroy', $server) }}" class="mt-6 pt-4 border-t border-white/5" onsubmit="return confirm('Delete this server?')">
+        <form method="POST" action="{{ route('admin.servers.destroy', $server) }}" class="mt-6 pt-4 border-t border-white/5" onsubmit="return confirm('Delete this service?')">
             @csrf @method('DELETE')
-            <button type="submit" class="text-sm text-red-400 hover:text-red-300 transition">Delete Server</button>
+            <button type="submit" class="text-sm text-red-400 hover:text-red-300 transition">Delete Service</button>
         </form>
     </div>
 </div>

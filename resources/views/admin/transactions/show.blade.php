@@ -15,7 +15,7 @@
             <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">User</dt><dd class="text-white text-sm">{{ $transaction->user->name }} ({{ $transaction->user->email }})</dd></div>
             <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Gateway</dt><dd class="text-white text-sm capitalize">{{ $transaction->gateway }}</dd></div>
             <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Amount</dt><dd class="text-white text-sm">${{ number_format($transaction->amount, 2) }} {{ strtoupper($transaction->currency ?? 'USD') }}</dd></div>
-            <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Invoice</dt><dd class="text-white text-sm">{{ $transaction->invoice ? $transaction->invoice->invoice_number : 'N/A' }}</dd></div>
+            <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Invoice</dt><dd class="text-white text-sm">{{ $transaction->invoice ? $transaction->invoice->number : 'N/A' }}</dd></div>
             <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Gateway TXN ID</dt><dd class="text-white text-sm font-mono text-xs">{{ $transaction->gateway_transaction_id ?? 'N/A' }}</dd></div>
             <div class="flex justify-between py-2"><dt class="text-dark-400 text-sm">Gateway Response</dt><dd class="text-white text-sm font-mono text-xs max-w-xs truncate">{{ json_encode($transaction->gateway_response) }}</dd></div>
         </dl>

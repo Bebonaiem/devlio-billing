@@ -67,7 +67,7 @@
         <h2 class="text-lg font-display font-bold text-white mb-6">Invoices ({{ $user->invoices->count() }})</h2>
         @forelse ($user->invoices->take(10) as $invoice)
             <div class="flex justify-between items-center py-3 border-b border-white/5 last:border-0">
-                <span class="text-sm text-dark-300">{{ $invoice->invoice_number }}</span>
+                <span class="text-sm text-dark-300">{{ $invoice->number }}</span>
                 <span class="{{ $invoice->status === 'paid' ? 'text-green-400' : ($invoice->status === 'overdue' ? 'text-red-400' : 'text-yellow-400') }} text-sm">${{ number_format($invoice->total, 2) }} - {{ ucfirst($invoice->status) }}</span>
             </div>
         @empty

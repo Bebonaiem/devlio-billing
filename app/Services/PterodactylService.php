@@ -15,8 +15,8 @@ class PterodactylService
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('services.pterodactyl.panel_url'), '/');
-        $this->apiKey = config('services.pterodactyl.api_key');
+        $this->baseUrl = rtrim(config('services.pterodactyl.panel_url') ?? '', '/');
+        $this->apiKey = config('services.pterodactyl.api_key') ?? '';
     }
 
     private function applicationRequest(string $method, string $endpoint, array $data = []): Response

@@ -27,8 +27,8 @@
                         <td class="px-6 py-4 font-medium text-white text-sm">{{ $product->name }}</td>
                         <td class="px-6 py-4 text-sm text-dark-400">{{ $product->plans->count() }}</td>
                         <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium {{ $product->is_active ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-dark-500/10 text-dark-400 border border-dark-500/20' }}">
-                                {{ $product->is_active ? 'Active' : 'Inactive' }}
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium {{ $product->enabled ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-dark-500/10 text-dark-400 border border-dark-500/20' }}">
+                                {{ $product->enabled ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-sm text-dark-400">{{ $product->sort_order }}</td>
