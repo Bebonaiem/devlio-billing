@@ -182,7 +182,8 @@ DB_PASSWORD=$(openssl rand -base64 32)
 
 echo -e "${YELLOW}Configuring MySQL...${NC}"
 mysql -e "CREATE DATABASE IF NOT EXISTS $DB_NAME CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -e "CREATE USER IF NOT EXISTS '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';"
+mysql -e "DROP USER IF EXISTS '$DB_USER'@'localhost';"
+mysql -e "CREATE USER '$DB_USER'@'localhost' IDENTIFIED BY '$DB_PASSWORD';"
 mysql -e "GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'localhost';"
 mysql -e "FLUSH PRIVILEGES;"
 
