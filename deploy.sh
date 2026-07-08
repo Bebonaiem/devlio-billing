@@ -63,8 +63,8 @@ echo ""
 # 3. Pterodactyl
 # ──────────────────────────────────────────────
 echo -e "${YELLOW}Step 3: Pterodactyl Integration${NC}"
-echo -e "You can skip this and configure later in the admin panel."
-read -p "Pterodactyl Panel URL (or press Enter to skip): " PTERODACTYL_URL
+echo -e "Press Enter to skip (configure later in admin panel)."
+read -p "Pterodactyl Panel URL (press Enter to skip): " PTERODACTYL_URL
 if [ -n "$PTERODACTYL_URL" ]; then
     read -p "Pterodactyl Application API Key (ptlc_...): " PTERODACTYL_KEY
 fi
@@ -74,29 +74,38 @@ echo ""
 # 4. Stripe (optional)
 # ──────────────────────────────────────────────
 echo -e "${YELLOW}Step 4: Stripe (optional)${NC}"
-read -p "Stripe Public Key (pk_...): " STRIPE_PK
-read -p "Stripe Secret Key (sk_...): " STRIPE_SK
-read -p "Stripe Webhook Secret (whsec_...): " STRIPE_WH
+echo -e "Press Enter to skip all Stripe fields."
+read -p "Stripe Public Key (pk_..., or Enter to skip): " STRIPE_PK
+if [ -n "$STRIPE_PK" ]; then
+    read -p "Stripe Secret Key (sk_...): " STRIPE_SK
+    read -p "Stripe Webhook Secret (whsec_...): " STRIPE_WH
+fi
 echo ""
 
 # ──────────────────────────────────────────────
 # 5. PayPal (optional)
 # ──────────────────────────────────────────────
 echo -e "${YELLOW}Step 5: PayPal (optional)${NC}"
-read -p "PayPal Client ID: " PAYPAL_CID
-read -p "PayPal Secret: " PAYPAL_SEC
-read -p "PayPal Webhook ID: " PAYPAL_WH
-read -p "PayPal Mode (sandbox/live) [sandbox]: " PAYPAL_MODE
-PAYPAL_MODE=${PAYPAL_MODE:-sandbox}
+echo -e "Press Enter to skip all PayPal fields."
+read -p "PayPal Client ID (or Enter to skip): " PAYPAL_CID
+if [ -n "$PAYPAL_CID" ]; then
+    read -p "PayPal Secret: " PAYPAL_SEC
+    read -p "PayPal Webhook ID: " PAYPAL_WH
+    read -p "PayPal Mode (sandbox/live) [sandbox]: " PAYPAL_MODE
+    PAYPAL_MODE=${PAYPAL_MODE:-sandbox}
+fi
 echo ""
 
 # ──────────────────────────────────────────────
 # 6. Discord (optional)
 # ──────────────────────────────────────────────
 echo -e "${YELLOW}Step 6: Discord Bot (optional)${NC}"
-read -p "Discord Bot Token: " DISCORD_TOKEN
-read -p "Discord Guild ID: " DISCORD_GUILD
-read -p "Discord Notification Channel ID: " DISCORD_CHANNEL
+echo -e "Press Enter to skip all Discord fields."
+read -p "Discord Bot Token (or Enter to skip): " DISCORD_TOKEN
+if [ -n "$DISCORD_TOKEN" ]; then
+    read -p "Discord Guild ID: " DISCORD_GUILD
+    read -p "Discord Notification Channel ID: " DISCORD_CHANNEL
+fi
 echo ""
 
 # ──────────────────────────────────────────────
