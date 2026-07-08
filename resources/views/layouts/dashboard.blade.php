@@ -78,9 +78,9 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
                         <span x-show="cartCount > 0" x-cloak class="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary-500 text-[10px] font-bold text-white flex items-center justify-center" x-text="cartCount"></span>
                     </a>
-                    @can('admin')
+                    @role('admin')
                         <a href="{{ route('admin.dashboard') }}" class="hidden sm:inline-flex px-3 py-1.5 text-xs text-primary-400 hover:text-primary-300 rounded-lg hover:bg-primary-500/10 transition-all">Admin</a>
-                    @endcan
+                    @endrole
                     <div class="relative" x-data="{ open: false }">
                         <button @click="open = !open" @click.outside="open = false" class="flex items-center gap-2 px-3 py-1.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
                             <div class="w-7 h-7 rounded-full bg-gradient-to-br from-primary-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white">
@@ -135,12 +135,12 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                         Browse Store
                     </a>
-                    @can('admin')
+                    @role('admin')
                         <a href="{{ route('admin.dashboard') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-primary-400 hover:text-primary-300">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016a11.955 11.955 0 01-2.667 1.048M12 6.804a5.974 5.974 0 01-2.128 1.036M4.4 5.398c.004.128.006.256.006.384A6.301 6.301 0 006 11.5a6.193 6.193 0 01-1.893.434"/></svg>
                             Admin Panel
                         </a>
-                    @endcan
+                    @endrole
                 </div>
             </nav>
         </aside>
