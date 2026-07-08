@@ -109,9 +109,9 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
                                         Dashboard
                                     </a>
-                                    <a href="{{ route('dashboard.servers') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
+                                    <a href="{{ route('dashboard.services') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
-                                        My Servers
+                                        My Services
                                     </a>
                                     <a href="{{ route('dashboard.invoices') }}" class="flex items-center gap-2.5 px-3 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -172,7 +172,7 @@
                         <span class="px-2 py-0.5 rounded-full bg-primary-500/20 text-primary-400 text-xs font-medium" x-data="{ n: {{ count(session('cart', [])) }} }" x-show="n > 0" x-text="n + ' items'"></span>
                     </a>
                     <a href="{{ route('dashboard.index') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Dashboard</a>
-                    <a href="{{ route('dashboard.servers') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Servers</a>
+                    <a href="{{ route('dashboard.services') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Services</a>
                     <a href="{{ route('dashboard.invoices') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Invoices</a>
                     <a href="{{ route('dashboard.tickets') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Support</a>
                     <a href="{{ route('dashboard.profile') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Profile</a>

@@ -105,7 +105,7 @@ class DashboardController extends Controller
 
     public function userDetail(User $user)
     {
-        $user->load(['services.product', 'services.plan', 'invoices', 'tickets']);
+        $user->load(['services.product', 'services.plan', 'invoices', 'tickets', 'transactions']);
         $roles = \Spatie\Permission\Models\Role::all();
         return view('admin.user-detail', compact('user', 'roles'));
     }

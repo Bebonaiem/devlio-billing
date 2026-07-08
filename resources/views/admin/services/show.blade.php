@@ -10,7 +10,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-display font-bold text-white">Service #{{ $service->id }}</h1>
-                <p class="text-dark-400 mt-1">{{ $service->user->first_name }} {{ $service->user->last_name }} - {{ $service->product->name ?? 'N/A' }}</p>
+                <p class="text-dark-400 mt-1">{{ $service->user->name }} - {{ $service->product->name ?? 'N/A' }}</p>
             </div>
             <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium
                 {{ $service->status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : ($service->status === 'suspended' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-dark-700 text-dark-400 border border-dark-600') }}">
@@ -32,7 +32,7 @@
                 <div class="grid sm:grid-cols-2 gap-4">
                     <div>
                         <label class="text-xs text-dark-500 mb-1 block">User</label>
-                        <p class="text-white font-medium">{{ $service->user->first_name }} {{ $service->user->last_name }}</p>
+                        <p class="text-white font-medium">{{ $service->user->name }}</p>
                         <p class="text-xs text-dark-500">{{ $service->user->email }}</p>
                     </div>
                     <div>
@@ -66,7 +66,7 @@
                     <div class="space-y-3">
                         @foreach ($service->configs as $config)
                             <div class="glass-light rounded-xl p-3 flex justify-between">
-                                <span class="text-dark-400 text-sm">{{ $config->configOption->name ?? 'Config' }}</span>
+                                <span class="text-dark-400 text-sm">{{ $config->configOption?->name ?? 'N/A' }}</span>
                                 <span class="text-white text-sm font-medium">{{ $config->configValue->name ?? $config->config_value_id }}</span>
                             </div>
                         @endforeach
@@ -142,7 +142,7 @@
                     @if ($service->currency)
                         <div class="flex justify-between">
                             <span class="text-dark-400">Currency</span>
-                            <span class="text-white">{{ $service->currency->code }}</span>
+                            <span class="text-white">{{ $service->currency_code }}</span>
                         </div>
                     @endif
                     @if ($service->coupon)

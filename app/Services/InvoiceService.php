@@ -8,6 +8,7 @@ use App\Models\InvoiceSnapshot;
 use App\Models\InvoiceTransaction;
 use App\Models\Service;
 use App\Models\User;
+use App\Jobs\ProvisionServer;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceService
@@ -157,12 +158,8 @@ class InvoiceService
 
     private function dispatchProvisioning(Service $service): void
     {
-        if ($service->order && $service->order->server) {
-            return;
-        }
-
         try {
-            $job = new \App\Jobs\ProvisionServer($service->order);
+            $job = new ProvisionServer($service);
             dispatch($job);
         } catch (\Exception $e) {
             report($e);
@@ -171,12 +168,10 @@ class InvoiceService
 
     private function dispatchUnsuspend(Service $service): void
     {
-        if ($service->order && $service->order->server) {
-            try {
-                app(ProvisioningService::class)->unsuspend($service->order->server);
-            } catch (\Exception $e) {
-                report($e);
-            }
+        try {
+            app(\App\Services\ServiceService::class)->unsuspend($service);
+        } catch (\Exception $e) {
+            report($e);
         }
     }
 }

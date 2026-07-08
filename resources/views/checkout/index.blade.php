@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Checkout')
 @section('content')
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12" x-data="checkoutPage()">
     <div class="flex items-center gap-3 mb-8">
         <div class="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center">
             <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -129,8 +129,9 @@
 <script>
 function checkoutPage() {
     return {
-        selectedGateway: {{ $paymentGateways->first()?->id ?? 'null' }},
+        selectedGateway: '{{ $paymentGateways->first()?->id ?? '' }}',
         applyCredit: false,
+        creditBalance: {{ $creditBalance ?? 0 }},
     }
 }
 </script>

@@ -1,10 +1,15 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\CouponController as AdminCouponController;
+use App\Http\Controllers\Admin\CurrencyController as AdminCurrencyController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
+use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\CartController;
@@ -57,12 +62,14 @@ Route::middleware('auth')->group(function () {
         Route::patch('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
         Route::patch('/profile/password', [DashboardController::class, 'updatePassword'])->name('profile.password');
         Route::get('/affiliate', [DashboardController::class, 'affiliate'])->name('affiliate');
+        Route::get('/tickets/create', [DashboardController::class, 'createTicket'])->name('tickets.create');
+        Route::post('/tickets', [DashboardController::class, 'storeTicket'])->name('tickets.store');
     });
 
     Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/settings', [AdminDashboardController::class, 'settings'])->name('settings');
-        Route::post('/settings', [AdminDashboardController::class, 'updateSettings'])->name('settings.update');
+        Route::get('/settings', [AdminSettingsController::class, 'index'])->name('settings');
+        Route::post('/settings', [AdminSettingsController::class, 'update'])->name('settings.update');
 
         Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
         Route::get('/users/{user}', [AdminDashboardController::class, 'userDetail'])->name('user-detail');
@@ -117,6 +124,18 @@ Route::middleware('auth')->group(function () {
         Route::post('/tickets/{ticket}/close', [AdminTicketController::class, 'close'])->name('tickets.close');
         Route::post('/tickets/{ticket}/reopen', [AdminTicketController::class, 'reopen'])->name('tickets.reopen');
         Route::delete('/tickets/{ticket}', [AdminTicketController::class, 'destroy'])->name('tickets.destroy');
+
+        Route::resource('categories', AdminCategoryController::class);
+        Route::resource('currencies', AdminCurrencyController::class);
+        Route::resource('coupons', AdminCouponController::class);
+        Route::post('currencies/{currency}/default', [AdminCurrencyController::class, 'setDefault'])->name('currencies.setDefault');
+
+        Route::get('plans', [AdminPlanController::class, 'index'])->name('plans.index');
+        Route::get('plans/create', [AdminPlanController::class, 'create'])->name('plans.create');
+        Route::post('plans', [AdminPlanController::class, 'store'])->name('plans.store');
+        Route::get('plans/{plan}/edit', [AdminPlanController::class, 'edit'])->name('plans.edit');
+        Route::patch('plans/{plan}', [AdminPlanController::class, 'update'])->name('plans.update');
+        Route::delete('plans/{plan}', [AdminPlanController::class, 'destroy'])->name('plans.destroy');
     });
 });
 

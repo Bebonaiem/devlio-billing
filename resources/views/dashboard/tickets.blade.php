@@ -2,7 +2,13 @@
 @section('title', 'My Tickets')
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <h1 class="text-2xl font-display font-bold text-white mb-8">Support Tickets</h1>
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-2xl font-display font-bold text-white">Support Tickets</h1>
+        <a href="{{ route('dashboard.tickets.create') }}" class="inline-flex items-center gap-2 px-5 py-2.5 btn-primary text-white text-sm font-medium rounded-xl">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Create Ticket
+        </a>
+    </div>
 
     @if ($tickets->isEmpty())
         <div class="glass rounded-2xl p-12 text-center">

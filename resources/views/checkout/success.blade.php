@@ -11,14 +11,13 @@
 
         <div class="glass rounded-xl p-5 mb-8 text-left">
             <div class="space-y-2">
-                <div class="flex justify-between"><span class="text-dark-400 text-sm">Order ID</span><span class="text-white text-sm font-medium">#{{ $order->id }}</span></div>
-                <div class="flex justify-between"><span class="text-dark-400 text-sm">Product</span><span class="text-white text-sm">{{ $order->plan->product->name }} - {{ $order->plan->name }}</span></div>
-                <div class="flex justify-between"><span class="text-dark-400 text-sm">Status</span><span class="text-yellow-400 text-sm font-semibold">Pending Setup</span></div>
+                <div class="flex justify-between"><span class="text-dark-400 text-sm">Invoice ID</span><span class="text-white text-sm font-medium">#{{ $invoice->id }}</span></div>
+                <div class="flex justify-between"><span class="text-dark-400 text-sm">Status</span><span class="text-yellow-400 text-sm font-semibold">Processing</span></div>
             </div>
         </div>
 
         <div class="flex flex-col sm:flex-row justify-center gap-3">
-            <a href="{{ route('dashboard.servers') }}" class="px-6 py-3 btn-primary text-white font-medium rounded-xl text-sm">View My Servers</a>
+            <a href="{{ route('dashboard.services') }}" class="px-6 py-3 btn-primary text-white font-medium rounded-xl text-sm">View My Services</a>
             <a href="{{ route('storefront') }}" class="px-6 py-3 bg-dark-700 hover:bg-dark-600 text-dark-300 font-medium rounded-xl text-sm transition">Continue Shopping</a>
         </div>
     </div>

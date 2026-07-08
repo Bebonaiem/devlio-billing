@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Order;
+use App\Models\Service;
 use App\Services\DiscordService;
 use App\Services\ProvisioningService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,18 +13,18 @@ class ProvisionServer implements ShouldQueue
     use Queueable;
 
     public function __construct(
-        public Order $order
+        public Service $service
     ) {}
 
     public function handle(ProvisioningService $provisioning, DiscordService $discord): void
     {
-        $server = $provisioning->provision($this->order);
+        $server = $provisioning->provision($this->service);
 
         if ($server) {
             $discord->sendNotification('new_order', [
-                'user' => $this->order->user->name,
-                'product' => $this->order->plan?->product?->name ?? 'Game Server',
-                'amount' => $this->order->plan?->price ?? 0,
+                'user' => $this->service->user->name,
+                'product' => $this->service->product?->name ?? 'Game Server',
+                'amount' => $this->service->price ?? 0,
             ]);
         }
     }

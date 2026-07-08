@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceTransaction;
 use App\Models\Service;
 use App\Models\Ticket;
+use App\Models\TicketMessage;
 use App\Models\User;
 use App\Services\CreditService;
 use App\Services\ServiceService;
@@ -143,6 +144,39 @@ class DashboardController extends Controller
             ->paginate(10);
 
         return view('dashboard.tickets', compact('tickets'));
+    }
+
+    public function createTicket()
+    {
+        $services = Service::where('user_id', Auth::id())->whereIn('status', ['active', 'suspended'])->get();
+        return view('dashboard.tickets-create', compact('services'));
+    }
+
+    public function storeTicket(Request $request)
+    {
+        $validated = $request->validate([
+            'subject' => 'required|string|max:255',
+            'message' => 'required|string',
+            'priority' => 'required|in:low,medium,high,critical',
+            'service_id' => 'nullable|exists:services,id',
+        ]);
+
+        $ticket = Ticket::create([
+            'user_id' => Auth::id(),
+            'service_id' => $validated['service_id'] ?? null,
+            'subject' => $validated['subject'],
+            'status' => 'open',
+            'priority' => $validated['priority'],
+        ]);
+
+        TicketMessage::create([
+            'ticket_id' => $ticket->id,
+            'user_id' => Auth::id(),
+            'message' => $validated['message'],
+        ]);
+
+        return redirect()->route('dashboard.tickets')
+            ->with('success', 'Ticket created successfully.');
     }
 
     public function profile()

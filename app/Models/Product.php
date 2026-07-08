@@ -42,7 +42,7 @@ class Product extends Model
     public function plans(): HasMany
     {
         return $this->hasMany(Plan::class, 'priceable_id')
-            ->where('priceable_type', Plan::class);
+            ->where('priceable_type', Product::class);
     }
 
     public function configOptions(): BelongsToMany

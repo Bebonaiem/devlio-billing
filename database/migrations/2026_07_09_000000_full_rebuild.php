@@ -272,6 +272,7 @@ return new class extends Migration
             $table->enum('status', ['processing', 'succeeded', 'failed'])->default('processing');
             $table->boolean('is_credit_transaction')->default(false);
             $table->timestamps();
+            $table->foreign('gateway_id')->references('id')->on('extensions')->nullOnDelete();
         });
 
         // =====================================================

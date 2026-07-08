@@ -18,7 +18,7 @@
             </div>
             <span class="text-dark-400 text-sm">Active Orders</span>
         </div>
-        <p class="text-3xl font-bold text-white">{{ $stats['active_orders'] }}</p>
+        <p class="text-3xl font-bold text-white">{{ $stats['active_services'] }}</p>
     </div>
     <div class="glass rounded-xl p-5 hover:border-yellow-500/30 transition-all">
         <div class="flex items-center gap-3 mb-3">
@@ -52,19 +52,19 @@
         <div class="px-6 py-4 border-b border-white/5">
             <h2 class="text-lg font-display font-bold text-white">Recent Orders</h2>
         </div>
-        @if ($recentOrders->isEmpty())
-            <div class="p-8 text-center"><p class="text-dark-500">No orders yet.</p></div>
+        @if ($recentServices->isEmpty())
+            <div class="p-8 text-center"><p class="text-dark-500">No services yet.</p></div>
         @else
             <div class="overflow-x-auto">
                 <table class="w-full">
                     <thead><tr class="border-b border-white/5"><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">ID</th><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">User</th><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Product</th><th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Status</th></tr></thead>
                     <tbody>
-                        @foreach ($recentOrders as $order)
+                        @foreach ($recentServices as $service)
                             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
-                                <td class="px-6 py-3 text-sm text-white">#{{ $order->id }}</td>
-                                <td class="px-6 py-3 text-sm text-dark-300">{{ $order->user->name }}</td>
-                                <td class="px-6 py-3 text-sm text-dark-300">{{ $order->plan->product->name ?? 'N/A' }}</td>
-                                <td class="px-6 py-3"><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium {{ $order->status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : ($order->status === 'suspended' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20') }}">{{ ucfirst($order->status) }}</span></td>
+                                <td class="px-6 py-3 text-sm text-white">#{{ $service->id }}</td>
+                                <td class="px-6 py-3 text-sm text-dark-300">{{ $service->user->name }}</td>
+                                <td class="px-6 py-3 text-sm text-dark-300">{{ $service->product->name ?? ($service->plan->product->name ?? 'N/A') }}</td>
+                                <td class="px-6 py-3"><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium {{ $service->status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : ($service->status === 'suspended' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20') }}">{{ ucfirst($service->status) }}</span></td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -86,8 +86,8 @@
                     <tbody>
                         @foreach ($recentTransactions as $txn)
                             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
-                                <td class="px-6 py-3 text-sm text-dark-300">{{ $txn->user->name }}</td>
-                                <td class="px-6 py-3 text-sm text-dark-300 capitalize">{{ $txn->gateway }}</td>
+                                <td class="px-6 py-3 text-sm text-dark-300">{{ $txn->invoice->user->name ?? $txn->user->name ?? 'N/A' }}</td>
+                                <td class="px-6 py-3 text-sm text-dark-300 capitalize">{{ $txn->gateway->name ?? $txn->gateway }}</td>
                                 <td class="px-6 py-3 text-sm text-white">${{ number_format($txn->amount, 2) }}</td>
                                 <td class="px-6 py-3 text-sm text-dark-400">{{ $txn->created_at->format('M d') }}</td>
                             </tr>
