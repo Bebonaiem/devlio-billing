@@ -1,62 +1,79 @@
-# Devlio Billing
+<div align="center">
+  <h1>Devlio Billing</h1>
+  <p><strong>Open-source game server billing platform</strong></p>
+  <p>Automated provisioning via Pterodactyl &bull; Stripe &bull; PayPal &bull; Discord</p>
+  <p>
+    <a href="https://github.com/Bebonaiem/devlio-billing/actions"><img src="https://img.shields.io/github/actions/workflow/status/Bebonaiem/devlio-billing/ci.yml?branch=main&label=CI" alt="CI"></a>
+    <a href="https://github.com/Bebonaiem/devlio-billing/blob/main/LICENSE"><img src="https://img.shields.io/github/license/Bebonaiem/devlio-billing" alt="License"></a>
+    <a href="https://github.com/Bebonaiem/devlio-billing"><img src="https://img.shields.io/github/stars/Bebonaiem/devlio-billing?style=social" alt="Stars"></a>
+  </p>
+</div>
 
-A gaming-focused billing platform with automated server provisioning via Pterodactyl, Stripe/PayPal payments, Discord notifications, and full customer management.
+---
+
+## One-Command Install (Ubuntu VPS)
+
+```bash
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/Bebonaiem/devlio-billing/main/deploy.sh)"
+```
+
+This installs everything: Nginx, PHP 8.3, MySQL, Redis, Supervisor, queue workers, SSL via Certbot, and the app itself — asking only for your domain and API keys along the way.
+
+---
 
 ## Features
 
-- **Product & Plan Management** — Create game server packages with configurable CPU, RAM, disk, swap, databases, backups
-- **Pterodactyl Integration** — Auto-create, suspend, unsuspend, and terminate game servers via API
-- **Stripe Payments** — One-time and recurring subscription billing with webhooks
-- **PayPal Payments** — Checkout orders and subscription billing with webhook verification
-- **Billing Engine** — Automated invoice generation, renewal reminders, overdue suspension, and termination
-- **Customer Dashboard** — View servers, invoices, payment methods, support tickets
-- **Admin Panel** — Manage products, plans, orders, users, and settings
-- **Affiliate System** — Referral tracking with commission management
-- **Support Ticketing** — Ticket system per order/account
-- **Discord Notifications** — Real-time alerts for orders, payments, suspensions
-- **REST API** — Public API for products, orders, servers, invoices
-- **Async Jobs** — Queue-driven provisioning for non-blocking server creation
+| Category | Capabilities |
+|----------|-------------|
+| **Game Server Plans** | CPU, RAM, disk, swap, databases, backups — per-plan config |
+| **Pterodactyl** | Auto-create, suspend, unsuspend, terminate servers via API |
+| **Stripe** | One-time payments, subscriptions, webhooks |
+| **PayPal** | Checkout orders, subscriptions, webhook verification |
+| **Billing Engine** | Auto invoices, renewals, overdue suspension (3d/14d grace) |
+| **Customer Dashboard** | Servers, invoices, tickets, payment methods, affiliate |
+| **Admin Panel** | Products, plans, orders, users, settings |
+| **Discord** | Real-time alerts on orders, payments, suspensions |
+| **Affiliates** | Referral tracking, commission management |
+| **REST API** | Public endpoints for products, orders, servers, invoices |
+| **Async Jobs** | Queue-driven provisioning via Redis + Supervisor |
 
-## Quick Start
+---
 
-### Manual Setup
+## Quick Start (Manual)
 
 ```bash
+git clone https://github.com/Bebonaiem/devlio-billing.git
+cd devlio-billing
 cp .env.example .env
-# Edit .env with your database, Stripe, PayPal, Pterodactyl credentials
+# Edit .env with your DB, Stripe, PayPal, Pterodactyl credentials
 composer install
 php artisan key:generate
 php artisan migrate --seed
 php artisan serve
 ```
 
-### Ubuntu VPS Auto-Deploy
-
-```bash
-# On a fresh Ubuntu 22.04/24.04 VPS:
-sudo bash deploy.sh
-```
-
-The script will install all dependencies (Nginx, PHP 8.3, MySQL, Redis, Supervisor), configure the app, set up SSL via Certbot, and create the admin user.
-
-### Queue Worker (required for server provisioning)
+### Queue Worker
 
 ```bash
 php artisan queue:work
 ```
 
-### Cron (required for billing automation)
+### Cron (billing automation)
 
 ```
-* * * * * cd /path/to/app && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /var/www/devlio-billing && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-## Webhook Configuration
+---
+
+## Webhooks
 
 | Gateway | Endpoint |
 |---------|----------|
 | Stripe | `https://your-domain.com/webhook/stripe` |
 | PayPal | `https://your-domain.com/webhook/paypal` |
+
+---
 
 ## Requirements
 
@@ -65,8 +82,10 @@ php artisan queue:work
 - Composer
 - Redis (for queues)
 - Nginx
-- Pterodactyl Panel (v1.0+)
+- Pterodactyl Panel v1.0+
+
+---
 
 ## License
 
-MIT
+MIT — free to use, modify, and distribute.
