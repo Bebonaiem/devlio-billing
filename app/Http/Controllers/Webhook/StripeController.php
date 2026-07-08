@@ -4,17 +4,15 @@ namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
-use App\Services\BillingService;
-use App\Services\DiscordService;
-use App\Services\StripeService;
+use App\Models\InvoiceTransaction;
+use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 
 class StripeController extends Controller
 {
     public function __construct(
-        private readonly StripeService $stripe,
-        private readonly BillingService $billing,
-        private readonly DiscordService $discord,
+        private readonly \App\Services\StripeService $stripe,
+        private readonly InvoiceService $invoiceService,
     ) {}
 
     public function handleWebhook(Request $request)
@@ -32,7 +30,6 @@ class StripeController extends Controller
             'checkout.session.completed' => $this->handleCheckoutCompleted($event->data->object),
             'invoice.paid' => $this->handleInvoicePaid($event->data->object),
             'invoice.payment_failed' => $this->handleInvoicePaymentFailed($event->data->object),
-            'customer.subscription.updated' => $this->handleSubscriptionUpdated($event->data->object),
             default => response()->json(['status' => 'unhandled']),
         };
     }
@@ -49,18 +46,17 @@ class StripeController extends Controller
             return response()->json(['status' => 'already_paid']);
         }
 
-        $this->billing->markInvoicePaid(
-            $invoice,
-            'stripe',
-            $session->payment_intent ?? $session->id,
-            json_decode(json_encode($session), true)
-        );
-
-        $this->discord->sendNotification('payment_received', [
-            'user' => $invoice->user->name,
-            'invoice' => $invoice->invoice_number,
-            'amount' => $invoice->total,
+        $transaction = InvoiceTransaction::create([
+            'invoice_id' => $invoice->id,
+            'gateway_id' => null,
+            'amount' => (float) ($session->amount_total ?? 0) / 100,
+            'fee' => 0,
+            'transaction_id' => $session->payment_intent ?? $session->id,
+            'status' => 'succeeded',
+            'is_credit_transaction' => false,
         ]);
+
+        $this->invoiceService->markPaid($invoice, $transaction);
 
         return response()->json(['status' => 'success']);
     }
@@ -77,12 +73,17 @@ class StripeController extends Controller
             return response()->json(['status' => 'already_paid']);
         }
 
-        $this->billing->markInvoicePaid(
-            $invoice,
-            'stripe',
-            $stripeInvoice->payment_intent ?? $stripeInvoice->id,
-            json_decode(json_encode($stripeInvoice), true)
-        );
+        $transaction = InvoiceTransaction::create([
+            'invoice_id' => $invoice->id,
+            'gateway_id' => null,
+            'amount' => (float) ($stripeInvoice->amount_paid ?? 0) / 100,
+            'fee' => (float) ($stripeInvoice->charge ?? 0) / 100,
+            'transaction_id' => $stripeInvoice->payment_intent ?? $stripeInvoice->id,
+            'status' => 'succeeded',
+            'is_credit_transaction' => false,
+        ]);
+
+        $this->invoiceService->markPaid($invoice, $transaction);
 
         return response()->json(['status' => 'success']);
     }
@@ -98,11 +99,5 @@ class StripeController extends Controller
         }
 
         return response()->json(['status' => 'logged']);
-    }
-
-    private function handleSubscriptionUpdated(object $subscription)
-    {
-        // Handle subscription status changes
-        return response()->json(['status' => 'handled']);
     }
 }

@@ -3,21 +3,60 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
 {
-    protected $fillable = ['name', 'description', 'image', 'is_active', 'sort_order'];
+    protected $fillable = [
+        'name',
+        'slug',
+        'description',
+        'category_id',
+        'image',
+        'enabled',
+        'per_user_limit',
+        'stock',
+        'hidden',
+        'allow_quantity',
+        'server_id',
+    ];
 
     protected function casts(): array
     {
         return [
-            'is_active' => 'boolean',
-            'sort_order' => 'integer',
+            'enabled' => 'boolean',
+            'per_user_limit' => 'integer',
+            'stock' => 'integer',
+            'hidden' => 'boolean',
+            'allow_quantity' => 'boolean',
         ];
     }
 
-    public function plans()
+    public function category(): BelongsTo
     {
-        return $this->hasMany(Plan::class);
+        return $this->belongsTo(Category::class);
+    }
+
+    public function plans(): HasMany
+    {
+        return $this->hasMany(Plan::class, 'priceable_id')
+            ->where('priceable_type', Plan::class);
+    }
+
+    public function configOptions(): BelongsToMany
+    {
+        return $this->belongsToMany(ConfigOption::class, 'config_option_products');
+    }
+
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class);
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(CartItem::class);
     }
 }

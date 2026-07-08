@@ -3,26 +3,46 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'password', 'pterodactyl_user_id', 'pterodactyl_api_key', 'credit_balance', 'affiliate_code', 'referred_by'])]
-#[Hidden(['password', 'remember_token', 'pterodactyl_api_key'])]
 class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasRoles;
+
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'name',
+        'email',
+        'password',
+        'pterodactyl_user_id',
+        'pterodactyl_api_key',
+        'tfa_secret',
+        'role_id',
+        'email_verified',
+        'affiliate_code',
+        'referred_by',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+        'pterodactyl_api_key',
+        'tfa_secret',
+    ];
 
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'credit_balance' => 'decimal:2',
+            'email_verified' => 'boolean',
         ];
     }
 
@@ -35,34 +55,54 @@ class User extends Authenticatable
         });
     }
 
-    public function orders()
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
 
-    public function servers()
+    public function services(): HasMany
     {
-        return $this->hasMany(Server::class);
+        return $this->hasMany(Service::class);
     }
 
-    public function invoices()
+    public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
     }
 
-    public function transactions()
+    public function credits(): HasMany
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(Credit::class);
     }
 
-    public function paymentMethods()
+    public function notifications(): HasMany
     {
-        return $this->hasMany(PaymentMethod::class);
+        return $this->hasMany(Notification::class);
     }
 
-    public function tickets()
+    public function notificationPreferences(): HasMany
+    {
+        return $this->hasMany(NotificationPreference::class);
+    }
+
+    public function billingAgreements(): HasMany
+    {
+        return $this->hasMany(BillingAgreement::class);
+    }
+
+    public function tickets(): HasMany
     {
         return $this->hasMany(Ticket::class);
+    }
+
+    public function carts(): HasMany
+    {
+        return $this->hasMany(Cart::class);
+    }
+
+    public function apiKeys(): HasMany
+    {
+        return $this->hasMany(ApiKey::class);
     }
 
     public function referredBy()
@@ -70,14 +110,29 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'referred_by');
     }
 
-    public function referrals()
+    public function referrals(): HasMany
     {
         return $this->hasMany(User::class, 'referred_by');
     }
 
-    public function affiliateCommissions()
+    public function affiliateCommissions(): HasMany
     {
         return $this->hasMany(AffiliateCommission::class, 'affiliate_id');
+    }
+
+    public function referredAffiliateCommissions(): HasMany
+    {
+        return $this->hasMany(AffiliateCommission::class, 'referred_user_id');
+    }
+
+    public function paymentMethods()
+    {
+        return $this->hasMany(PaymentMethod::class);
+    }
+
+    public function servers()
+    {
+        return $this->hasManyThrough(Server::class, Service::class);
     }
 
     public function isAdmin(): bool

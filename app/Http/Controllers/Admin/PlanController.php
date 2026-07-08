@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
 use App\Models\Product;
+use App\Models\Price;
+use App\Models\Currency;
 use Illuminate\Http\Request;
 
 class PlanController extends Controller
@@ -16,14 +18,15 @@ class PlanController extends Controller
 
     public function index()
     {
-        $plans = Plan::with('product')->orderBy('price')->get();
+        $plans = Plan::with(['priceable', 'prices'])->orderBy('sort')->get();
         return view('admin.plans.index', compact('plans'));
     }
 
     public function create()
     {
-        $products = Product::where('is_active', true)->get();
-        return view('admin.plans.create', compact('products'));
+        $products = Product::where('enabled', true)->get();
+        $currencies = Currency::where('enabled', true)->get();
+        return view('admin.plans.create', compact('products', 'currencies'));
     }
 
     public function store(Request $request)
@@ -31,23 +34,37 @@ class PlanController extends Controller
         $data = $request->validate([
             'product_id' => 'required|exists:products,id',
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'cpu' => 'required|integer|min:1',
-            'memory' => 'required|integer|min:1',
-            'disk' => 'required|integer|min:1',
-            'swap' => 'integer|min:0',
-            'databases' => 'integer|min:0',
-            'backups' => 'integer|min:0',
-            'allocations' => 'integer|min:1',
-            'nest_id' => 'nullable|integer',
-            'egg_id' => 'nullable|integer',
-            'billing_cycle' => 'required|in:monthly,quarterly,semi_annually,annually',
-            'price' => 'required|numeric|min:0',
-            'setup_fee' => 'numeric|min:0',
-            'is_active' => 'boolean',
+            'type' => 'required|in:free,one-time,recurring',
+            'billing_period' => 'nullable|integer|min:1',
+            'billing_unit' => 'nullable|in:day,week,month,year',
+            'sort' => 'nullable|integer|min:0',
+            'prices' => 'nullable|array',
+            'prices.*.currency_code' => 'required_with:prices|exists:currencies,code',
+            'prices.*.price' => 'required_with:prices|numeric|min:0',
+            'prices.*.setup_fee' => 'nullable|numeric|min:0',
         ]);
 
-        Plan::create($data);
+        $product = Product::find($data['product_id']);
+
+        $plan = $product->plans()->create([
+            'name' => $data['name'],
+            'type' => $data['type'],
+            'billing_period' => $data['billing_period'] ?? null,
+            'billing_unit' => $data['billing_unit'] ?? null,
+            'sort' => $data['sort'] ?? 0,
+            'priceable_type' => Product::class,
+        ]);
+
+        if (!empty($data['prices'])) {
+            foreach ($data['prices'] as $priceData) {
+                Price::create([
+                    'plan_id' => $plan->id,
+                    'currency_code' => $priceData['currency_code'],
+                    'price' => $priceData['price'],
+                    'setup_fee' => $priceData['setup_fee'] ?? 0,
+                ]);
+            }
+        }
 
         return redirect()->route('admin.plans.index')
             ->with('success', 'Plan created successfully.');
@@ -55,32 +72,56 @@ class PlanController extends Controller
 
     public function edit(Plan $plan)
     {
-        $products = Product::where('is_active', true)->get();
-        return view('admin.plans.edit', compact('plan', 'products'));
+        $products = Product::where('enabled', true)->get();
+        $currencies = Currency::where('enabled', true)->get();
+        $plan->load('prices');
+        return view('admin.plans.edit', compact('plan', 'products', 'currencies'));
     }
 
     public function update(Request $request, Plan $plan)
     {
         $data = $request->validate([
-            'product_id' => 'required|exists:products,id',
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'cpu' => 'required|integer|min:1',
-            'memory' => 'required|integer|min:1',
-            'disk' => 'required|integer|min:1',
-            'swap' => 'integer|min:0',
-            'databases' => 'integer|min:0',
-            'backups' => 'integer|min:0',
-            'allocations' => 'integer|min:1',
-            'nest_id' => 'nullable|integer',
-            'egg_id' => 'nullable|integer',
-            'billing_cycle' => 'required|in:monthly,quarterly,semi_annually,annually',
-            'price' => 'required|numeric|min:0',
-            'setup_fee' => 'numeric|min:0',
-            'is_active' => 'boolean',
+            'type' => 'required|in:free,one-time,recurring',
+            'billing_period' => 'nullable|integer|min:1',
+            'billing_unit' => 'nullable|in:day,week,month,year',
+            'sort' => 'nullable|integer|min:0',
+            'prices' => 'nullable|array',
+            'prices.*.id' => 'nullable|integer',
+            'prices.*.currency_code' => 'required_with:prices|exists:currencies,code',
+            'prices.*.price' => 'required_with:prices|numeric|min:0',
+            'prices.*.setup_fee' => 'nullable|numeric|min:0',
         ]);
 
-        $plan->update($data);
+        $plan->update([
+            'name' => $data['name'],
+            'type' => $data['type'],
+            'billing_period' => $data['billing_period'] ?? null,
+            'billing_unit' => $data['billing_unit'] ?? null,
+            'sort' => $data['sort'] ?? 0,
+        ]);
+
+        if (!empty($data['prices'])) {
+            $existingPriceIds = collect($data['prices'])->pluck('id')->filter()->toArray();
+            $plan->prices()->whereNotIn('id', $existingPriceIds)->delete();
+
+            foreach ($data['prices'] as $priceData) {
+                if (!empty($priceData['id'])) {
+                    Price::where('id', $priceData['id'])->update([
+                        'currency_code' => $priceData['currency_code'],
+                        'price' => $priceData['price'],
+                        'setup_fee' => $priceData['setup_fee'] ?? 0,
+                    ]);
+                } else {
+                    Price::create([
+                        'plan_id' => $plan->id,
+                        'currency_code' => $priceData['currency_code'],
+                        'price' => $priceData['price'],
+                        'setup_fee' => $priceData['setup_fee'] ?? 0,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('admin.plans.index')
             ->with('success', 'Plan updated successfully.');
@@ -88,6 +129,7 @@ class PlanController extends Controller
 
     public function destroy(Plan $plan)
     {
+        $plan->prices()->delete();
         $plan->delete();
         return redirect()->route('admin.plans.index')
             ->with('success', 'Plan deleted successfully.');

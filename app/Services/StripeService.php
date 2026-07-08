@@ -3,15 +3,12 @@
 namespace App\Services;
 
 use App\Models\Invoice;
-use App\Models\PaymentMethod;
 use App\Models\User;
 use Stripe\Checkout\Session;
 use Stripe\Customer;
 use Stripe\Exception\ApiErrorException;
 use Stripe\PaymentIntent;
-use Stripe\PaymentMethod as StripePaymentMethod;
 use Stripe\Stripe;
-use Stripe\Subscription;
 use Stripe\Webhook;
 
 class StripeService
@@ -28,13 +25,15 @@ class StripeService
         foreach ($invoice->items as $item) {
             $lineItems[] = [
                 'price_data' => [
-                    'currency' => 'usd',
+                    'currency' => $invoice->currency_code ?? 'usd',
                     'product_data' => ['name' => $item->description],
-                    'unit_amount' => (int) ($item->amount * 100),
+                    'unit_amount' => (int) ($item->price * 100),
                 ],
-                'quantity' => 1,
+                'quantity' => $item->quantity ?? 1,
             ];
         }
+
+        $totals = app(InvoiceService::class)->calculateTotal($invoice);
 
         $sessionData = [
             'mode' => 'payment',
@@ -43,40 +42,12 @@ class StripeService
             'cancel_url' => $cancelUrl,
             'metadata' => [
                 'invoice_id' => $invoice->id,
-                'invoice_number' => $invoice->invoice_number,
+                'invoice_number' => $invoice->number,
             ],
         ];
 
         if ($customerId) {
             $sessionData['customer'] = $customerId;
-        }
-
-        if ($invoice->order && $invoice->order->plan->billing_cycle !== 'one_time') {
-            $sessionData['mode'] = 'subscription';
-            $sessionData['line_items'] = [[
-                'price_data' => [
-                    'currency' => 'usd',
-                    'product_data' => ['name' => $invoice->items->first()->description ?? 'Game Server'],
-                    'recurring' => [
-                        'interval' => match ($invoice->order->plan->billing_cycle) {
-                            'monthly' => 'month',
-                            'quarterly' => 'month',
-                            'semi_annually' => 'month',
-                            'annually' => 'year',
-                            default => 'month',
-                        },
-                        'interval_count' => match ($invoice->order->plan->billing_cycle) {
-                            'monthly' => 1,
-                            'quarterly' => 3,
-                            'semi_annually' => 6,
-                            'annually' => 1,
-                            default => 1,
-                        },
-                    ],
-                    'unit_amount' => (int) ($invoice->total * 100),
-                ],
-                'quantity' => 1,
-            ]];
         }
 
         try {
@@ -92,7 +63,7 @@ class StripeService
         try {
             return Customer::create([
                 'email' => $user->email,
-                'name' => $user->name,
+                'name' => $user->first_name . ' ' . $user->last_name,
                 'metadata' => ['user_id' => $user->id],
             ]);
         } catch (ApiErrorException $e) {
@@ -103,14 +74,16 @@ class StripeService
 
     public function createPaymentIntent(Invoice $invoice, ?string $customerId = null): ?PaymentIntent
     {
+        $totals = app(InvoiceService::class)->calculateTotal($invoice);
+
         try {
             return PaymentIntent::create([
-                'amount' => (int) ($invoice->total * 100),
-                'currency' => 'usd',
+                'amount' => (int) ($totals['total'] * 100),
+                'currency' => $invoice->currency_code ?? 'usd',
                 'customer' => $customerId,
                 'metadata' => [
                     'invoice_id' => $invoice->id,
-                    'invoice_number' => $invoice->invoice_number,
+                    'invoice_number' => $invoice->number,
                 ],
             ]);
         } catch (ApiErrorException $e) {

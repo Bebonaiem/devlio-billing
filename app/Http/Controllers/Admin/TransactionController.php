@@ -3,39 +3,40 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Transaction;
-use Illuminate\Http\Request;
 use App\Models\AffiliateCommission;
+use App\Models\InvoiceTransaction;
+use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     public function index()
     {
-        $transactions = Transaction::with(['user', 'invoice'])
+        $transactions = InvoiceTransaction::with(['invoice.user', 'gateway'])
             ->latest()
             ->paginate(20);
+
         return view('admin.transactions.index', compact('transactions'));
     }
 
-    public function show(Transaction $transaction)
+    public function show(InvoiceTransaction $transaction)
     {
-        $transaction->load(['user', 'invoice']);
+        $transaction->load(['invoice.user', 'gateway']);
+
         return view('admin.transactions.show', compact('transaction'));
     }
 
-    public function refund(Transaction $transaction)
+    public function refund(InvoiceTransaction $transaction)
     {
         $transaction->update(['status' => 'refunded']);
 
         if ($transaction->invoice) {
-            $invoice = $transaction->invoice;
-            if ($invoice->transactions()->where('status', 'completed')->count() === 0) {
-                $invoice->update(['status' => 'pending']);
+            $completedTransactions = $transaction->invoice->transactions()
+                ->where('status', 'succeeded')
+                ->where('id', '!=', $transaction->id)
+                ->count();
+
+            if ($completedTransactions === 0) {
+                $transaction->invoice->update(['status' => 'pending']);
             }
         }
 
@@ -47,18 +48,21 @@ class TransactionController extends Controller
         $commissions = AffiliateCommission::with(['affiliate', 'referredUser'])
             ->latest()
             ->paginate(20);
+
         return view('admin.transactions.commissions', compact('commissions'));
     }
 
     public function approveCommission(AffiliateCommission $commission)
     {
         $commission->update(['status' => 'approved']);
+
         return back()->with('success', 'Commission approved.');
     }
 
     public function payCommission(AffiliateCommission $commission)
     {
         $commission->update(['status' => 'paid']);
+
         return back()->with('success', 'Commission marked as paid.');
     }
 }

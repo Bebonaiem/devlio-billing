@@ -3,41 +3,28 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
-    protected $fillable = ['user_id', 'plan_id', 'status', 'next_due_date', 'expires_at'];
+    protected $fillable = [
+        'user_id',
+        'currency_code',
+    ];
 
-    protected function casts(): array
-    {
-        return [
-            'next_due_date' => 'datetime',
-            'expires_at' => 'datetime',
-        ];
-    }
-
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function plan()
+    public function services(): HasMany
     {
-        return $this->belongsTo(Plan::class);
+        return $this->hasMany(Service::class);
     }
 
-    public function server()
+    public function currency(): BelongsTo
     {
-        return $this->hasOne(Server::class);
-    }
-
-    public function invoices()
-    {
-        return $this->hasMany(Invoice::class);
-    }
-
-    public function tickets()
-    {
-        return $this->hasMany(Ticket::class);
+        return $this->belongsTo(Currency::class, 'currency_code', 'code');
     }
 }

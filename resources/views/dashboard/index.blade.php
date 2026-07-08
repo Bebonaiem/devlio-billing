@@ -4,8 +4,8 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-2xl font-display font-bold text-white">Welcome back, <span class="gradient-text">{{ $user->name }}</span></h1>
-            <p class="text-dark-400 mt-1">Here's what's happening with your servers.</p>
+            <h1 class="text-2xl font-display font-bold text-white">Welcome back, <span class="gradient-text">{{ $user->first_name }}</span></h1>
+            <p class="text-dark-400 mt-1">Here's what's happening with your services.</p>
         </div>
         <a href="{{ route('storefront') }}" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 btn-primary text-white text-sm font-medium rounded-xl">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
@@ -19,10 +19,10 @@
                 <div class="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center">
                     <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
                 </div>
-                <span class="text-dark-400 text-sm">Active Servers</span>
+                <span class="text-dark-400 text-sm">Active Services</span>
             </div>
-            <p class="text-3xl font-bold text-white">{{ $stats['active_servers'] }}</p>
-            <a href="{{ route('dashboard.servers') }}" class="text-primary-400 hover:text-primary-300 text-xs mt-2 inline-flex items-center gap-1 transition">Manage <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></a>
+            <p class="text-3xl font-bold text-white">{{ $stats['active_services'] }}</p>
+            <a href="{{ route('dashboard.services') }}" class="text-primary-400 hover:text-primary-300 text-xs mt-2 inline-flex items-center gap-1 transition">Manage <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></a>
         </div>
         <div class="glass rounded-xl p-5 group hover:border-yellow-500/30 transition-all">
             <div class="flex items-center gap-3 mb-3">
@@ -39,9 +39,10 @@
                 <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
                     <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
                 </div>
-                <span class="text-dark-400 text-sm">Credit Balance</span>
+                <span class="text-dark-400 text-sm">Open Tickets</span>
             </div>
-            <p class="text-3xl font-bold gradient-text">${{ number_format($user->credit_balance, 2) }}</p>
+            <p class="text-3xl font-bold text-white">{{ $stats['open_tickets'] }}</p>
+            <a href="{{ route('dashboard.tickets') }}" class="text-primary-400 hover:text-primary-300 text-xs mt-2 inline-flex items-center gap-1 transition">View <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></a>
         </div>
         <div class="glass rounded-xl p-5 group hover:border-purple-500/30 transition-all">
             <div class="flex items-center gap-3 mb-3">
@@ -72,8 +73,8 @@
                             <div class="px-6 py-4 hover:bg-white/[0.02] transition">
                                 <div class="flex items-center gap-4">
                                     <div class="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center
-                                        {{ $item['type'] === 'order' ? 'bg-primary-500/20' : ($item['type'] === 'invoice' ? 'bg-yellow-500/20' : 'bg-green-500/20') }}">
-                                        @if ($item['type'] === 'order')
+                                        {{ $item['type'] === 'service' ? 'bg-primary-500/20' : ($item['type'] === 'invoice' ? 'bg-yellow-500/20' : 'bg-green-500/20') }}">
+                                        @if ($item['type'] === 'service')
                                             <svg class="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
                                         @elseif ($item['type'] === 'invoice')
                                             <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -112,13 +113,13 @@
                             <p class="text-xs text-dark-500">Browse products</p>
                         </div>
                     </a>
-                    <a href="{{ route('dashboard.servers') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.03] transition-all group">
+                    <a href="{{ route('dashboard.services') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.03] transition-all group">
                         <div class="w-9 h-9 rounded-xl bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition">
                             <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-white">Manage Servers</p>
-                            <p class="text-xs text-dark-500">View your servers</p>
+                            <p class="text-sm font-medium text-white">My Services</p>
+                            <p class="text-xs text-dark-500">Manage your services</p>
                         </div>
                     </a>
                     <a href="{{ route('dashboard.tickets') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.03] transition-all group">

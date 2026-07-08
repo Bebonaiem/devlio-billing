@@ -2,162 +2,171 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Plan;
+use App\Exceptions\CartEmptyException;
+use App\Exceptions\InvalidCouponException;
+use App\Exceptions\InsufficientStockException;
+use App\Exceptions\InvalidPlanException;
+use App\Exceptions\ProductUnavailableException;
+use App\Exceptions\UserLimitExceededException;
+use App\Models\Cart;
+use App\Models\Currency;
+use App\Models\Invoice;
 use App\Models\Order;
-use App\Jobs\ProvisionServer;
-use App\Services\BillingService;
-use App\Services\StripeService;
-use App\Services\PayPalService;
+use App\Services\CheckoutService;
+use App\Services\CreditService;
+use App\Services\CurrencyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class CheckoutController extends Controller
 {
     public function __construct(
-        private readonly BillingService $billing,
-        private readonly StripeService $stripe,
-        private readonly PayPalService $paypal,
+        private readonly CheckoutService $checkout,
+        private readonly CurrencyService $currency,
+        private readonly CreditService $credit,
     ) {
         $this->middleware('auth');
     }
 
     public function index()
     {
-        $cart = session()->get('cart', []);
+        $user = Auth::user();
+        $currencyCode = session('currency', config('billing.default_currency', 'USD'));
 
-        if (empty($cart)) {
+        $cart = Cart::where('user_id', $user->id)
+            ->where('currency_code', $currencyCode)
+            ->with(['items.product', 'items.plan.prices', 'coupon'])
+            ->first();
+
+        if (!$cart || $cart->items->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        $items = [];
-        $total = 0;
+        $subtotal = 0;
+        foreach ($cart->items as $item) {
+            $priceModel = $item->plan->prices()
+                ->where('currency_code', $currencyCode)
+                ->first() ?? $item->plan->prices()->first();
 
-        foreach ($cart as $key => $item) {
-            $plan = Plan::with('product')->find($item['plan_id']);
-            if ($plan && $plan->is_active) {
-                $quantity = $item['quantity'] ?? 1;
-                $subtotal = $plan->price * $quantity;
-                $items[$key] = [
-                    'plan' => $plan,
-                    'quantity' => $quantity,
-                    'config' => $item['config'] ?? [],
-                    'subtotal' => $subtotal,
-                ];
-                $total += $subtotal;
+            $price = $priceModel ? (float) $priceModel->price : 0.0;
+            $setupFee = $priceModel ? (float) $priceModel->setup_fee : 0.0;
+            $item->subtotal = ($price * $item->quantity) + ($setupFee * $item->quantity);
+            $subtotal += $item->subtotal;
+        }
+
+        $discount = 0.0;
+        if ($cart->coupon) {
+            if ($cart->coupon->type === 'percentage') {
+                $discount = round($subtotal * ($cart->coupon->value / 100), 2);
+            } else {
+                $discount = min($cart->coupon->value, $subtotal);
             }
         }
 
-        return view('checkout.index', compact('items', 'total'));
+        $total = max(0, $subtotal - $discount);
+
+        $creditBalance = $this->credit->getBalance($user, $currencyCode);
+        $currency = Currency::where('code', $currencyCode)->first();
+        $paymentGateways = \App\Models\Extension::where('type', 'gateway')->where('enabled', true)->get();
+
+        return view('checkout.index', compact(
+            'cart', 'subtotal', 'discount', 'total', 'creditBalance', 'currency', 'paymentGateways'
+        ));
     }
 
     public function process(Request $request)
     {
-        $cart = session()->get('cart', []);
-
-        if (empty($cart)) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
-        }
-
         $validated = $request->validate([
-            'gateway' => 'required|in:stripe,paypal',
+            'gateway' => 'required|exists:extensions,id',
+            'apply_credit' => 'nullable|boolean',
         ]);
 
         $user = Auth::user();
-        $gateway = $validated['gateway'];
-        $orders = [];
+        $currencyCode = session('currency', config('billing.default_currency', 'USD'));
 
-        DB::beginTransaction();
+        $cart = Cart::where('user_id', $user->id)
+            ->where('currency_code', $currencyCode)
+            ->first();
+
+        if (!$cart || $cart->items->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        }
+
         try {
-            foreach ($cart as $key => $item) {
-                $plan = Plan::with('product')->find($item['plan_id']);
-                if (!$plan || !$plan->is_active) {
-                    continue;
-                }
+            $result = $this->checkout->processCart($cart, $user);
 
-                $quantity = $item['quantity'] ?? 1;
-                for ($i = 0; $i < $quantity; $i++) {
-                    $order = Order::create([
-                        'user_id' => $user->id,
-                        'plan_id' => $plan->id,
-                        'status' => 'pending',
-                    ]);
-
-                    $invoice = $this->billing->createInitialInvoice($order);
-                    $orders[] = ['order' => $order, 'invoice' => $invoice];
-                }
+            if (!empty($validated['apply_credit']) && $result['invoice']) {
+                $this->credit->applyToInvoice($user, $result['invoice']);
             }
 
-            DB::commit();
+            if ($result['invoice']) {
+                return redirect()->route('checkout.pay', ['invoice' => $result['invoice']->id]);
+            }
+
+            return redirect()->route('dashboard.index')
+                ->with('success', 'Order placed successfully!');
+        } catch (CartEmptyException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (ProductUnavailableException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (InsufficientStockException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (UserLimitExceededException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (InvalidPlanException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (InvalidCouponException $e) {
+            return back()->with('error', $e->getMessage());
         } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Failed to create orders. Please try again.');
+            return back()->with('error', 'Failed to process checkout. Please try again.');
         }
-
-        if (empty($orders)) {
-            return back()->with('error', 'No valid items in cart.');
-        }
-
-        if ($gateway === 'stripe') {
-            $customerId = $user->paymentMethods()
-                ->where('gateway', 'stripe')
-                ->where('is_default', true)
-                ->first()?->gateway_customer_id;
-
-            $successUrl = route('checkout.success', ['order' => $orders[0]['order']->id]);
-            $cancelUrl = route('checkout.cancel', ['order' => $orders[0]['order']->id]);
-
-            $session = $this->stripe->createCheckoutSession(
-                $orders[0]['invoice'],
-                $successUrl,
-                $cancelUrl,
-                $customerId
-            );
-
-            if ($session) {
-                session()->forget('cart');
-                return redirect($session->url);
-            }
-
-            return back()->with('error', 'Failed to create checkout session.');
-        }
-
-        if ($gateway === 'paypal') {
-            $returnUrl = route('checkout.success', ['order' => $orders[0]['order']->id]);
-            $cancelUrl = route('checkout.cancel', ['order' => $orders[0]['order']->id]);
-
-            $orderId = $this->paypal->createOrder($orders[0]['invoice'], $returnUrl, $cancelUrl);
-
-            if ($orderId) {
-                session()->forget('cart');
-                return redirect('https://www.paypal.com/checkoutnow?token=' . $orderId);
-            }
-
-            return back()->with('error', 'Failed to create PayPal order.');
-        }
-
-        return back()->with('error', 'Invalid payment gateway.');
     }
 
-    public function success(Order $order)
+    public function pay(Invoice $invoice)
     {
-        if ($order->user_id !== Auth::id()) {
+        if ($invoice->user_id !== Auth::id()) {
             abort(403);
         }
 
-        if ($order->status === 'pending') {
-            ProvisionServer::dispatch($order);
+        if ($invoice->isPaid()) {
+            return redirect()->route('dashboard.index')
+                ->with('success', 'Invoice is already paid.');
         }
 
-        return view('checkout.success', compact('order'));
+        $invoice->load(['items', 'currency']);
+
+        $currencies = Currency::where('enabled', true)->get();
+        $paymentGateways = \App\Models\Extension::where('type', 'gateway')->where('enabled', true)->get();
+
+        return view('checkout.pay', compact('invoice', 'currencies', 'paymentGateways'));
     }
 
-    public function cancel(Order $order)
+    public function success(Request $request)
     {
-        if ($order->user_id !== Auth::id()) {
-            abort(403);
+        $invoiceId = $request->query('invoice');
+        $invoice = Invoice::where('id', $invoiceId)->first();
+
+        if ($invoice && $invoice->user_id === Auth::id()) {
+            $invoice->load(['items']);
         }
 
-        return view('checkout.cancel', compact('order'));
+        return view('checkout.success', compact('invoice'));
+    }
+
+    public function cancel(Request $request)
+    {
+        return view('checkout.cancel');
+    }
+
+    public function setCurrency(Request $request)
+    {
+        $validated = $request->validate([
+            'currency' => 'required|string|exists:currencies,code',
+        ]);
+
+        session(['currency' => $validated['currency']]);
+
+        return back()->with('success', 'Currency updated.');
     }
 }

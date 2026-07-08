@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Setting;
 use App\Models\Invoice;
-use App\Models\Order;
+use App\Models\InvoiceTransaction;
+use App\Models\Service;
+use App\Models\Setting;
 use App\Models\User;
-use App\Models\Transaction;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -23,33 +23,40 @@ class DashboardController extends Controller
     {
         $stats = [
             'total_users' => User::count(),
-            'active_orders' => Order::where('status', 'active')->count(),
+            'active_services' => Service::where('status', 'active')->count(),
             'pending_invoices' => Invoice::where('status', 'pending')->count(),
-            'total_revenue' => Transaction::where('status', 'completed')
+            'total_revenue' => InvoiceTransaction::where('status', 'succeeded')
+                ->where('is_credit_transaction', false)
                 ->where('amount', '>', 0)
                 ->sum('amount'),
-            'monthly_revenue' => Transaction::where('status', 'completed')
+            'monthly_revenue' => InvoiceTransaction::where('status', 'succeeded')
+                ->where('is_credit_transaction', false)
                 ->where('amount', '>', 0)
                 ->whereMonth('created_at', now()->month)
                 ->sum('amount'),
-            'suspended_servers' => Order::where('status', 'suspended')->count(),
+            'suspended_services' => Service::where('status', 'suspended')->count(),
         ];
 
-        $recentOrders = Order::with(['user', 'plan.product'])
+        $recentServices = Service::with(['user', 'product', 'plan'])
             ->latest()
             ->take(10)
             ->get();
 
-        $recentTransactions = Transaction::with('user')
-            ->where('status', 'completed')
+        $recentTransactions = InvoiceTransaction::with(['invoice.user', 'gateway'])
+            ->where('status', 'succeeded')
             ->latest()
             ->take(10)
             ->get();
 
-        $revenueByMonth = Transaction::where('status', 'completed')
+        $revenueByMonth = InvoiceTransaction::where('status', 'succeeded')
+            ->where('is_credit_transaction', false)
             ->where('amount', '>', 0)
             ->where('created_at', '>=', now()->subMonths(12))
-            ->select(DB::raw('MONTH(created_at) as month'), DB::raw('YEAR(created_at) as year'), DB::raw('SUM(amount) as total'))
+            ->select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('YEAR(created_at) as year'),
+                DB::raw('SUM(amount) as total')
+            )
             ->groupBy('year', 'month')
             ->orderBy('year')
             ->orderBy('month')
@@ -61,7 +68,9 @@ class DashboardController extends Controller
 
         $revenueData = $revenueByMonth->pluck('total')->toArray();
 
-        return view('admin.dashboard', compact('stats', 'recentOrders', 'recentTransactions', 'revenueLabels', 'revenueData'));
+        return view('admin.dashboard', compact(
+            'stats', 'recentServices', 'recentTransactions', 'revenueLabels', 'revenueData'
+        ));
     }
 
     public function settings()
@@ -73,8 +82,9 @@ class DashboardController extends Controller
     public function updateSettings(Request $request)
     {
         $keys = [
-            'site_name', 'site_description', 'currency', 'tax_rate',
-            'invoice_prefix', 'grace_days', 'terminate_days',
+            'site_name', 'site_description', 'default_currency', 'default_country',
+            'invoice_prefix', 'invoice_due_days',
+            'grace_days', 'terminate_days',
             'affiliate_rate', 'smtp_host', 'smtp_port',
         ];
 
@@ -89,13 +99,13 @@ class DashboardController extends Controller
 
     public function users()
     {
-        $users = User::withCount('orders', 'invoices')->latest()->paginate(20);
+        $users = User::withCount('services', 'invoices')->latest()->paginate(20);
         return view('admin.users', compact('users'));
     }
 
     public function userDetail(User $user)
     {
-        $user->load(['orders.plan.product', 'invoices', 'transactions', 'tickets']);
+        $user->load(['services.product', 'services.plan', 'invoices', 'tickets']);
         $roles = \Spatie\Permission\Models\Role::all();
         return view('admin.user-detail', compact('user', 'roles'));
     }
@@ -103,16 +113,16 @@ class DashboardController extends Controller
     public function updateUser(Request $request, User $user)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-            'credit_balance' => 'required|numeric|min:0',
             'role' => 'nullable|exists:roles,name',
         ]);
 
         $user->update([
-            'name' => $request->name,
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
             'email' => $request->email,
-            'credit_balance' => $request->credit_balance,
         ]);
 
         if ($request->role) {
@@ -129,10 +139,9 @@ class DashboardController extends Controller
         }
 
         $user->tickets()->delete();
-        $user->servers()->delete();
-        $user->orders()->delete();
+        $user->services()->delete();
         $user->invoices()->delete();
-        $user->transactions()->delete();
+        $user->credits()->delete();
         $user->delete();
 
         return redirect()->route('admin.users')

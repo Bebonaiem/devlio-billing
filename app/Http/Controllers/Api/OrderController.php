@@ -3,27 +3,29 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
+use App\Models\Service;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::where('user_id', request()->user()->id)
-            ->with('plan.product', 'server', 'invoices')
+        $services = Service::where('user_id', request()->user()->id)
+            ->with('product', 'plan', 'invoices')
             ->latest()
             ->get();
 
-        return JsonResource::collection($orders);
+        return JsonResource::collection($services);
     }
 
-    public function show(Order $order)
+    public function show(Service $service)
     {
-        if ($order->user_id !== request()->user()->id) {
+        if ($service->user_id !== request()->user()->id) {
             abort(403);
         }
-        $order->load('plan.product', 'server', 'invoices.items');
-        return new JsonResource($order);
+
+        $service->load('product', 'plan.prices', 'configs.configOption', 'configs.configValue', 'invoices.items');
+
+        return new JsonResource($service);
     }
 }

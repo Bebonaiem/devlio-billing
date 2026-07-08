@@ -22,95 +22,102 @@
             </p>
         </div>
 
-        @if ($products->isNotEmpty())
-            <div class="flex flex-wrap justify-center gap-3 mb-10" x-data="{ active: 'all' }">
-                <button @click="active = 'all'; document.querySelectorAll('.product-card').forEach(el => el.style.display = '')" :class="active === 'all' ? 'btn-primary text-white' : 'btn-ghost text-dark-400 hover:text-white'" class="px-5 py-2 text-sm font-medium rounded-xl transition-all">
-                    All Products
-                </button>
-                @foreach ($products as $product)
-                    <button @click="active = '{{ $product->id }}'; document.querySelectorAll('.product-card').forEach(el => el.style.display = 'none'); document.querySelectorAll('.product-card[data-id={{ $product->id }}]').forEach(el => el.style.display = '')" :class="active === '{{ $product->id }}' ? 'btn-primary text-white' : 'btn-ghost text-dark-400 hover:text-white'" class="px-5 py-2 text-sm font-medium rounded-xl transition-all">
-                        {{ $product->name }}
-                    </button>
-                @endforeach
+        @if ($categories->isNotEmpty())
+            <div class="mb-10">
+                <h2 class="text-2xl font-display font-bold text-white mb-6 text-center">Browse by Category</h2>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @foreach ($categories as $category)
+                        <a href="{{ route('storefront.category', $category->slug) }}" class="glass rounded-xl p-5 group hover:border-primary-500/30 transition-all animate-slide-up">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-primary-500/20 flex items-center justify-center group-hover:bg-primary-500/30 transition">
+                                    @if ($category->image)
+                                        <img src="{{ $category->image }}" alt="{{ $category->name }}" class="w-8 h-8 rounded-lg object-cover">
+                                    @else
+                                        <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                                    @endif
+                                </div>
+                                <div>
+                                    <h3 class="font-display font-bold text-white group-hover:text-primary-300 transition">{{ $category->name }}</h3>
+                                    <p class="text-dark-400 text-sm">{{ $category->products->count() }} products</p>
+                                </div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
             </div>
         @endif
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @forelse ($products as $product)
-                <div class="product-card glass rounded-2xl overflow-hidden card-hover group animate-slide-up animate-delay-{{ $loop->index * 100 }}" data-id="{{ $product->id }}">
-                    @if ($product->image)
-                        <div class="relative h-48 overflow-hidden">
-                            <img src="{{ $product->image }}" alt="{{ $product->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                            <div class="absolute inset-0 bg-gradient-to-t from-dark-950/80 to-transparent"></div>
-                        </div>
-                    @endif
-                    <div class="p-6">
-                        <div class="flex items-center gap-2 mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center">
-                                <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                            </div>
-                            <div>
-                                <h2 class="text-lg font-display font-bold text-white">{{ $product->name }}</h2>
-                            </div>
-                        </div>
-                        <p class="text-dark-400 text-sm mb-5 line-clamp-2">{{ $product->description }}</p>
+        @if ($products->isNotEmpty())
+            <div class="mb-10">
+                <h2 class="text-2xl font-display font-bold text-white mb-6 text-center">All Products</h2>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @foreach ($products as $product)
+                        <div class="glass rounded-2xl overflow-hidden card-hover group animate-slide-up">
+                            @if ($product->image)
+                                <div class="relative h-48 overflow-hidden">
+                                    <img src="{{ $product->image }}" alt="{{ $product->name }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-dark-950/80 to-transparent"></div>
+                                </div>
+                            @endif
+                            <div class="p-6">
+                                <div class="flex items-center gap-2 mb-3">
+                                    <div class="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center">
+                                        <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-display font-bold text-white">{{ $product->name }}</h3>
+                                        @if ($product->category)
+                                            <span class="text-xs text-dark-500">{{ $product->category->name }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                                <p class="text-dark-400 text-sm mb-5 line-clamp-2">{{ $product->description }}</p>
 
-                        @if ($product->plans->isNotEmpty())
-                            <div class="space-y-3">
-                                @foreach ($product->plans as $plan)
-                                    <div class="glass-light rounded-xl p-4 hover:border-primary-500/30 transition-all group/plan">
-                                        <div class="flex justify-between items-start mb-3">
-                                            <div>
-                                                <h3 class="font-semibold text-white text-sm">{{ $plan->name }}</h3>
-                                                <div class="text-xs text-dark-400 mt-1 flex flex-wrap gap-2">
-                                                    <span class="flex items-center gap-1">
-                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                                                        {{ $plan->cpu }}% CPU
-                                                    </span>
-                                                    <span class="flex items-center gap-1">
-                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-                                                        {{ $plan->memory }}MB RAM
-                                                    </span>
-                                                    <span class="flex items-center gap-1">
-                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
-                                                        {{ $plan->disk }}MB Disk
-                                                    </span>
+                                @if ($product->plans->isNotEmpty())
+                                    <div class="space-y-3">
+                                        @foreach ($product->plans->take(3) as $plan)
+                                            @php
+                                                $price = $plan->prices->first();
+                                            @endphp
+                                            <div class="glass-light rounded-xl p-4 hover:border-primary-500/30 transition-all">
+                                                <div class="flex justify-between items-center">
+                                                    <div>
+                                                        <h4 class="font-semibold text-white text-sm">{{ $plan->name }}</h4>
+                                                        <span class="text-xs text-dark-500">{{ ucfirst(str_replace('-', ' ', $plan->type)) }}</span>
+                                                    </div>
+                                                    <div class="text-right">
+                                                        @if ($plan->type === 'free')
+                                                            <span class="text-lg font-bold text-green-400">Free</span>
+                                                        @elseif ($price)
+                                                            <span class="text-lg font-bold gradient-text">${{ number_format($price->price, 2) }}</span>
+                                                            @if ($plan->type === 'recurring')
+                                                                <span class="text-xs text-dark-500 block">/{{ $plan->billing_unit ?? 'mo' }}</span>
+                                                            @endif
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class="text-right">
-                                                <span class="text-lg font-bold gradient-text">${{ number_format($plan->price, 2) }}</span>
-                                                <span class="text-xs text-dark-500 block">/{{ str_replace('_', '-', $plan->billing_cycle) }}</span>
-                                            </div>
-                                        </div>
-                                        @auth
-                                            <form method="POST" action="{{ route('cart.add', $plan) }}">
-                                                @csrf
-                                                <input type="hidden" name="quantity" value="1">
-                                                <button type="submit" class="block w-full text-center py-2.5 px-4 btn-primary text-white text-sm font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-primary-500/25">
-                                                    Add to Cart
-                                                </button>
-                                            </form>
-                                        @else
-                                            <a href="{{ route('register') }}" class="block w-full text-center py-2.5 px-4 bg-dark-700 hover:bg-dark-600 text-dark-300 text-sm font-medium rounded-lg transition">
-                                                Register to Order
-                                            </a>
-                                        @endauth
+                                        @endforeach
                                     </div>
-                                @endforeach
+
+                                    <a href="{{ route('storefront.product', $product->slug) }}" class="block w-full text-center py-2.5 px-4 btn-primary text-white text-sm font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-primary-500/25 mt-4">
+                                        View Plans
+                                    </a>
+                                @endif
                             </div>
-                        @endif
-                    </div>
+                        </div>
+                    @endforeach
                 </div>
-            @empty
-                <div class="col-span-full text-center py-20">
-                    <div class="w-20 h-20 mx-auto rounded-2xl bg-dark-800 flex items-center justify-center mb-4">
-                        <svg class="w-10 h-10 text-dark-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                    </div>
-                    <h3 class="text-lg font-medium text-dark-300 mb-1">No products available yet</h3>
-                    <p class="text-dark-500 text-sm">Check back soon for our game server offerings.</p>
+            </div>
+        @else
+            <div class="text-center py-20">
+                <div class="w-20 h-20 mx-auto rounded-2xl bg-dark-800 flex items-center justify-center mb-4">
+                    <svg class="w-10 h-10 text-dark-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                 </div>
-            @endforelse
-        </div>
+                <h3 class="text-lg font-medium text-dark-300 mb-1">No products available yet</h3>
+                <p class="text-dark-500 text-sm">Check back soon for our game server offerings.</p>
+            </div>
+        @endif
 
         <div class="mt-20 glass rounded-2xl p-8 sm:p-12">
             <div class="grid md:grid-cols-3 gap-8">

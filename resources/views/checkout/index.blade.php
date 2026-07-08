@@ -14,36 +14,30 @@
             <div class="glass rounded-2xl p-6">
                 <h2 class="font-display font-bold text-white mb-4">Order Summary</h2>
                 <div class="space-y-3">
-                    @foreach ($items as $key => $item)
+                    @foreach ($cart->items as $item)
                         <div class="glass-light rounded-xl p-4 flex items-center justify-between">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-xs font-medium text-primary-400 bg-primary-500/10 px-2 py-0.5 rounded-md">{{ $item['plan']->product->name }}</span>
-                                    @if ($item['quantity'] > 1)
-                                        <span class="text-xs text-dark-500">x{{ $item['quantity'] }}</span>
+                                    @if ($item->product->category)
+                                        <span class="text-xs font-medium text-primary-400 bg-primary-500/10 px-2 py-0.5 rounded-md">{{ $item->product->category->name }}</span>
+                                    @endif
+                                    @if ($item->quantity > 1)
+                                        <span class="text-xs text-dark-500">x{{ $item->quantity }}</span>
                                     @endif
                                 </div>
-                                <h3 class="font-semibold text-white text-sm">{{ $item['plan']->name }}</h3>
+                                <h3 class="font-semibold text-white text-sm">{{ $item->plan->name }}</h3>
+                                <p class="text-xs text-dark-500 mt-1">{{ $item->product->name }}</p>
                                 <div class="flex gap-3 mt-1 text-xs text-dark-400">
-                                    <span>{{ $item['plan']->cpu }}% CPU</span>
-                                    <span>{{ $item['plan']->memory }}MB RAM</span>
-                                    <span>{{ $item['plan']->disk }}MB Disk</span>
+                                    <span>${{ number_format($item->formatted_price ?? 0, 2) }}</span>
+                                    @if ($item->plan->type === 'recurring')
+                                        <span>/{{ $item->plan->billing_unit ?? 'mo' }}</span>
+                                    @endif
                                 </div>
-                                @if (!empty($item['config']['hostname']) || !empty($item['config']['game_username']))
-                                    <div class="mt-2 text-xs text-dark-500">
-                                        @if (!empty($item['config']['hostname']))
-                                            Hostname: {{ $item['config']['hostname'] }}
-                                        @endif
-                                        @if (!empty($item['config']['game_username']))
-                                            | Username: {{ $item['config']['game_username'] }}
-                                        @endif
-                                    </div>
-                                @endif
                             </div>
                             <div class="text-right ml-4">
-                                <p class="font-bold gradient-text">${{ number_format($item['subtotal'], 2) }}</p>
-                                @if ($item['quantity'] > 1)
-                                    <p class="text-xs text-dark-500">${{ number_format($item['plan']->price, 2) }}/ea</p>
+                                <p class="font-bold gradient-text">${{ number_format($item->subtotal ?? 0, 2) }}</p>
+                                @if ($item->quantity > 1)
+                                    <p class="text-xs text-dark-500">${{ number_format($item->formatted_price ?? 0, 2) }}/ea</p>
                                 @endif
                             </div>
                         </div>
@@ -56,31 +50,31 @@
                 <form method="POST" action="{{ route('checkout.process') }}" id="paymentForm" class="space-y-4">
                     @csrf
                     <div class="space-y-3">
-                        <label class="flex items-center p-4 glass-light rounded-xl cursor-pointer hover:border-primary-500/30 transition-all border border-transparent" :class="{ 'border-primary-500/50 bg-primary-500/5': gateway === 'stripe' }">
-                            <input type="radio" name="gateway" value="stripe" x-model="gateway" class="w-4 h-4 text-primary-500 bg-dark-800 border-dark-600 focus:ring-primary-500 focus:ring-offset-0">
-                            <div class="ml-3 flex items-center gap-3">
-                                <div class="w-10 h-7 rounded bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-7.076-2.19L3.36 21.8C5.578 22.926 8.758 24 12.21 24c2.631 0 4.808-.657 6.298-1.878 1.676-1.36 2.519-3.397 2.519-5.937 0-4.114-2.553-5.843-7.051-7.035z"/></svg>
+                        @foreach ($paymentGateways as $gateway)
+                            <label class="flex items-center p-4 glass-light rounded-xl cursor-pointer hover:border-primary-500/30 transition-all border border-transparent"
+                                   :class="{ 'border-primary-500/50 bg-primary-500/5': selectedGateway === {{ $gateway->id }} }">
+                                <input type="radio" name="gateway" value="{{ $gateway->id }}" x-model="selectedGateway" class="w-4 h-4 text-primary-500 bg-dark-800 border-dark-600 focus:ring-primary-500 focus:ring-offset-0">
+                                <div class="ml-3">
+                                    <span class="font-medium text-white text-sm">{{ $gateway->name }}</span>
                                 </div>
-                                <div>
-                                    <span class="font-medium text-white text-sm">Credit / Debit Card</span>
-                                    <p class="text-xs text-dark-500">Powered by Stripe</p>
-                                </div>
-                            </div>
-                        </label>
-                        <label class="flex items-center p-4 glass-light rounded-xl cursor-pointer hover:border-primary-500/30 transition-all border border-transparent" :class="{ 'border-primary-500/50 bg-primary-500/5': gateway === 'paypal' }">
-                            <input type="radio" name="gateway" value="paypal" x-model="gateway" class="w-4 h-4 text-primary-500 bg-dark-800 border-dark-600 focus:ring-primary-500 focus:ring-offset-0">
-                            <div class="ml-3 flex items-center gap-3">
-                                <div class="w-10 h-7 rounded bg-gradient-to-r from-blue-600 to-blue-400 flex items-center justify-center">
-                                    <span class="text-white font-bold text-xs">PayPal</span>
-                                </div>
-                                <div>
-                                    <span class="font-medium text-white text-sm">PayPal</span>
-                                    <p class="text-xs text-dark-500">Pay with your PayPal account</p>
-                                </div>
-                            </div>
-                        </label>
+                            </label>
+                        @endforeach
                     </div>
+
+                    @if ($creditBalance > 0)
+                        <div class="glass-light rounded-xl p-4 mt-4">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" name="apply_credit" value="1" x-model="applyCredit" class="w-4 h-4 text-primary-500 bg-dark-800 border-dark-600 rounded focus:ring-primary-500 focus:ring-offset-0">
+                                    <div>
+                                        <span class="text-sm font-medium text-white">Use Account Credit</span>
+                                        <p class="text-xs text-dark-500">${{ number_format($creditBalance, 2) }} available</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm text-green-400" x-show="applyCredit">-${{ number_format(min($creditBalance, $total), 2) }}</span>
+                            </label>
+                        </div>
+                    @endif
 
                     <div class="border-t border-white/5 pt-4 mt-4">
                         <button type="submit" class="w-full py-3.5 px-4 btn-primary text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-primary-500/25 transition-all flex items-center justify-center gap-2">
@@ -96,17 +90,23 @@
             <div class="glass rounded-2xl p-6 sticky top-24">
                 <h3 class="font-display font-bold text-white mb-4">Price Breakdown</h3>
                 <div class="space-y-3">
-                    @foreach ($items as $key => $item)
+                    @foreach ($cart->items as $item)
                         <div class="flex justify-between text-sm">
-                            <span class="text-dark-400">{{ $item['plan']->name }} @if ($item['quantity'] > 1) x{{ $item['quantity'] }} @endif</span>
-                            <span class="text-white">${{ number_format($item['subtotal'], 2) }}</span>
+                            <span class="text-dark-400">{{ $item->plan->name }} @if ($item->quantity > 1) x{{ $item->quantity }} @endif</span>
+                            <span class="text-white">${{ number_format($item->subtotal ?? 0, 2) }}</span>
                         </div>
                     @endforeach
                     <div class="border-t border-white/5 pt-3">
-                        <div class="flex justify-between">
+                        <div class="flex justify-between text-sm">
                             <span class="text-dark-400">Subtotal</span>
-                            <span class="text-white">${{ number_format($total, 2) }}</span>
+                            <span class="text-white">${{ number_format($subtotal, 2) }}</span>
                         </div>
+                        @if ($discount > 0)
+                            <div class="flex justify-between text-sm text-green-400 mt-1">
+                                <span>Discount</span>
+                                <span>-${{ number_format($discount, 2) }}</span>
+                            </div>
+                        @endif
                     </div>
                     <div class="flex justify-between font-bold text-lg pt-2">
                         <span class="text-white">Total</span>
@@ -127,9 +127,10 @@
 </div>
 
 <script>
-function productPage() {
+function checkoutPage() {
     return {
-        gateway: 'stripe'
+        selectedGateway: {{ $paymentGateways->first()?->id ?? 'null' }},
+        applyCredit: false,
     }
 }
 </script>

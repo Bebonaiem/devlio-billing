@@ -11,7 +11,7 @@ class InvoiceController extends Controller
     public function index()
     {
         $invoices = Invoice::where('user_id', request()->user()->id)
-            ->with('items')
+            ->with('items', 'currency')
             ->latest()
             ->get();
 
@@ -23,7 +23,9 @@ class InvoiceController extends Controller
         if ($invoice->user_id !== request()->user()->id) {
             abort(403);
         }
-        $invoice->load('items', 'transactions');
+
+        $invoice->load('items', 'transactions', 'currency', 'snapshot');
+
         return new JsonResource($invoice);
     }
 }

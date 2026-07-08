@@ -72,14 +72,16 @@ class PayPalService
 
     public function createOrder(Invoice $invoice, string $returnUrl, string $cancelUrl): ?string
     {
+        $totals = app(InvoiceService::class)->calculateTotal($invoice);
+
         $result = $this->apiRequest('post', '/v2/checkout/orders', [
             'intent' => 'CAPTURE',
             'purchase_units' => [[
                 'reference_id' => (string) $invoice->id,
-                'description' => 'Invoice #' . $invoice->invoice_number,
+                'description' => 'Invoice #' . $invoice->number,
                 'amount' => [
-                    'currency_code' => 'USD',
-                    'value' => number_format($invoice->total, 2, '.', ''),
+                    'currency_code' => $invoice->currency_code ?? 'USD',
+                    'value' => number_format($totals['total'], 2, '.', ''),
                 ],
             ]],
             'payment_source' => [
@@ -107,47 +109,6 @@ class PayPalService
     public function getOrder(string $orderId): array
     {
         return $this->apiRequest('get', "/v2/checkout/orders/{$orderId}");
-    }
-
-    public function createSubscription(Invoice $invoice, string $returnUrl, string $cancelUrl): ?string
-    {
-        $billingCycle = $invoice->order?->plan?->billing_cycle ?? 'monthly';
-
-        $intervalMap = [
-            'monthly' => ['unit' => 'MONTH', 'count' => 1],
-            'quarterly' => ['unit' => 'MONTH', 'count' => 3],
-            'semi_annually' => ['unit' => 'MONTH', 'count' => 6],
-            'annually' => ['unit' => 'YEAR', 'count' => 1],
-        ];
-
-        $interval = $intervalMap[$billingCycle] ?? ['unit' => 'MONTH', 'count' => 1];
-
-        $result = $this->apiRequest('post', '/v1/billing/subscriptions', [
-            'plan' => [
-                'payment_preferences' => [
-                    'auto_bill_outstanding' => true,
-                    'setup_fee' => [
-                        'value' => '0',
-                        'currency_code' => 'USD',
-                    ],
-                ],
-            ],
-            'custom_id' => (string) $invoice->id,
-            'subscriber' => [
-                'name' => ['given_name' => $invoice->user->name],
-                'email_address' => $invoice->user->email,
-            ],
-            'application_context' => [
-                'return_url' => $returnUrl,
-                'cancel_url' => $cancelUrl,
-            ],
-        ]);
-
-        if (isset($result['id'])) {
-            return $result['id'];
-        }
-
-        return null;
     }
 
     public function verifyWebhook(string $headers, string $body): bool

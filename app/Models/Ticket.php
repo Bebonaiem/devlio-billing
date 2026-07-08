@@ -3,22 +3,37 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ticket extends Model
 {
-    protected $fillable = ['user_id', 'order_id', 'subject', 'status', 'priority'];
+    protected $fillable = [
+        'user_id',
+        'subject',
+        'status',
+        'priority',
+        'department',
+        'assigned_to',
+        'service_id',
+    ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function order()
+    public function assignedTo(): BelongsTo
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(User::class, 'assigned_to');
     }
 
-    public function messages()
+    public function service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function messages(): HasMany
     {
         return $this->hasMany(TicketMessage::class);
     }

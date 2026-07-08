@@ -3,49 +3,40 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Plan extends Model
 {
     protected $fillable = [
-        'product_id', 'name', 'description', 'cpu', 'memory', 'disk', 'swap',
-        'databases', 'backups', 'allocations', 'nest_id', 'egg_id',
-        'billing_cycle', 'price', 'setup_fee', 'is_active',
+        'name',
+        'type',
+        'billing_period',
+        'billing_unit',
+        'sort',
+        'priceable_id',
+        'priceable_type',
     ];
 
     protected function casts(): array
     {
         return [
-            'cpu' => 'integer',
-            'memory' => 'integer',
-            'disk' => 'integer',
-            'swap' => 'integer',
-            'databases' => 'integer',
-            'backups' => 'integer',
-            'allocations' => 'integer',
-            'price' => 'decimal:2',
-            'setup_fee' => 'decimal:2',
-            'is_active' => 'boolean',
+            'sort' => 'integer',
         ];
     }
 
-    public function product()
+    public function priceable(): MorphTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->morphTo();
     }
 
-    public function orders()
+    public function prices(): HasMany
     {
-        return $this->hasMany(Order::class);
+        return $this->hasMany(Price::class);
     }
 
-    public function getBillingLabelAttribute(): string
+    public function services(): HasMany
     {
-        return match ($this->billing_cycle) {
-            'monthly' => 'Monthly',
-            'quarterly' => 'Quarterly',
-            'semi_annually' => 'Semi-Annually',
-            'annually' => 'Annually',
-            default => ucfirst($this->billing_cycle),
-        };
+        return $this->hasMany(Service::class);
     }
 }

@@ -4,18 +4,15 @@ namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
-use App\Models\Transaction;
-use App\Services\BillingService;
-use App\Services\DiscordService;
-use App\Services\PayPalService;
+use App\Models\InvoiceTransaction;
+use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 
 class PayPalController extends Controller
 {
     public function __construct(
-        private readonly PayPalService $paypal,
-        private readonly BillingService $billing,
-        private readonly DiscordService $discord,
+        private readonly \App\Services\PayPalService $paypal,
+        private readonly InvoiceService $invoiceService,
     ) {}
 
     public function handleWebhook(Request $request)
@@ -35,7 +32,6 @@ class PayPalController extends Controller
         return match ($eventType) {
             'CHECKOUT.ORDER.APPROVED' => $this->handleOrderApproved($event),
             'PAYMENT.CAPTURE.COMPLETED' => $this->handleCaptureCompleted($event),
-            'BILLING.SUBSCRIPTION.ACTIVATED' => $this->handleSubscriptionActivated($event),
             default => response()->json(['status' => 'unhandled']),
         };
     }
@@ -43,9 +39,7 @@ class PayPalController extends Controller
     private function handleOrderApproved(array $event)
     {
         $resource = $event['resource'] ?? [];
-
-        // Capture the order
-        $result = $this->paypal->captureOrder($resource['id'] ?? '');
+        $this->paypal->captureOrder($resource['id'] ?? '');
 
         return response()->json(['status' => 'captured']);
     }
@@ -55,8 +49,6 @@ class PayPalController extends Controller
         $resource = $event['resource'] ?? [];
 
         $invoiceId = null;
-
-        // Try to get invoice ID from custom data
         $purchaseUnits = $resource['purchase_units'] ?? [];
         foreach ($purchaseUnits as $unit) {
             $invoiceId = $unit['reference_id'] ?? null;
@@ -74,38 +66,25 @@ class PayPalController extends Controller
 
         $transactionId = $resource['id'] ?? $event['id'] ?? 'unknown';
 
-        $this->billing->markInvoicePaid(
-            $invoice,
-            'paypal',
-            $transactionId,
-            $event
-        );
-
-        $this->discord->sendNotification('payment_received', [
-            'user' => $invoice->user->name,
-            'invoice' => $invoice->invoice_number,
-            'amount' => $invoice->total,
-        ]);
-
-        return response()->json(['status' => 'success']);
-    }
-
-    private function handleSubscriptionActivated(array $event)
-    {
-        $resource = $event['resource'] ?? [];
-        $customId = $resource['custom_id'] ?? null;
-
-        if ($customId) {
-            $invoice = Invoice::find($customId);
-            if ($invoice && !$invoice->isPaid()) {
-                $this->billing->markInvoicePaid(
-                    $invoice,
-                    'paypal',
-                    $resource['id'] ?? 'sub_' . $customId,
-                    $event
-                );
+        $amount = 0;
+        foreach ($purchaseUnits as $unit) {
+            if (isset($unit['amount']['value'])) {
+                $amount = (float) $unit['amount']['value'];
+                break;
             }
         }
+
+        $transaction = InvoiceTransaction::create([
+            'invoice_id' => $invoice->id,
+            'gateway_id' => null,
+            'amount' => $amount,
+            'fee' => 0,
+            'transaction_id' => $transactionId,
+            'status' => 'succeeded',
+            'is_credit_transaction' => false,
+        ]);
+
+        $this->invoiceService->markPaid($invoice, $transaction);
 
         return response()->json(['status' => 'success']);
     }

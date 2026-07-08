@@ -3,43 +3,50 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Invoice extends Model
 {
     protected $fillable = [
-        'invoice_number', 'user_id', 'order_id', 'subtotal', 'tax', 'total',
-        'status', 'due_date', 'paid_at',
+        'number',
+        'user_id',
+        'currency_code',
+        'due_at',
+        'status',
     ];
 
     protected function casts(): array
     {
         return [
-            'subtotal' => 'decimal:2',
-            'tax' => 'decimal:2',
-            'total' => 'decimal:2',
-            'due_date' => 'datetime',
-            'paid_at' => 'datetime',
+            'due_at' => 'datetime',
         ];
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function order()
+    public function currency(): BelongsTo
     {
-        return $this->belongsTo(Order::class);
+        return $this->belongsTo(Currency::class, 'currency_code', 'code');
     }
 
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(InvoiceItem::class);
     }
 
-    public function transactions()
+    public function transactions(): HasMany
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasMany(InvoiceTransaction::class);
+    }
+
+    public function snapshot(): HasOne
+    {
+        return $this->hasOne(InvoiceSnapshot::class);
     }
 
     public function isPaid(): bool
@@ -47,8 +54,8 @@ class Invoice extends Model
         return $this->status === 'paid';
     }
 
-    public function isOverdue(): bool
+    public function isPending(): bool
     {
-        return $this->status === 'overdue' || ($this->status === 'pending' && $this->due_date->isPast());
+        return $this->status === 'pending';
     }
 }

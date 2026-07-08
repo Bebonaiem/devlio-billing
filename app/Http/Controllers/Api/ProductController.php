@@ -10,9 +10,10 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $products = Product::where('is_active', true)
+        $products = Product::where('enabled', true)
+            ->where('hidden', false)
             ->with('plans')
-            ->orderBy('sort_order')
+            ->orderBy('name')
             ->get();
 
         return JsonResource::collection($products);
@@ -20,10 +21,12 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        if (!$product->is_active) {
+        if (!$product->enabled || $product->hidden) {
             abort(404);
         }
-        $product->load('plans');
+
+        $product->load(['plans.prices', 'configOptions', 'category']);
+
         return new JsonResource($product);
     }
 }

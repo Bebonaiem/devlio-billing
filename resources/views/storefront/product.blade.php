@@ -3,9 +3,9 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" x-data="productPage()">
     <div class="mb-8">
-        <a href="{{ route('storefront') }}" class="text-primary-400 hover:text-primary-300 text-sm flex items-center gap-1.5 transition">
+        <a href="{{ $product->category ? route('storefront.category', $product->category->slug) : route('storefront') }}" class="text-primary-400 hover:text-primary-300 text-sm flex items-center gap-1.5 transition">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-            Back to Products
+            Back to {{ $product->category ? $product->category->name : 'Products' }}
         </a>
     </div>
 
@@ -30,6 +30,9 @@
     <div class="grid lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2 space-y-4">
             @foreach ($product->plans as $plan)
+                @php
+                    $price = $plan->prices->first();
+                @endphp
                 <div class="glass rounded-2xl p-6 transition-all hover:border-primary-500/30"
                      :class="{ 'border border-primary-500/50 shadow-lg shadow-primary-500/10': selectedPlan === {{ $plan->id }} }">
                     <div class="flex flex-col sm:flex-row gap-5">
@@ -37,57 +40,41 @@
                             <div class="flex items-start justify-between mb-3">
                                 <div>
                                     <h3 class="text-xl font-display font-bold text-white">{{ $plan->name }}</h3>
-                                    @if ($plan->setup_fee > 0)
-                                        <p class="text-xs text-dark-500 mt-1">+ ${{ number_format($plan->setup_fee, 2) }} setup fee</p>
+                                    <span class="text-xs text-dark-500 mt-1">{{ ucfirst(str_replace('-', ' ', $plan->type)) }}</span>
+                                    @if ($price && $price->setup_fee > 0)
+                                        <p class="text-xs text-dark-500 mt-1">+ ${{ number_format($price->setup_fee, 2) }} setup fee</p>
                                     @endif
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-2xl font-bold gradient-text">${{ number_format($plan->price, 2) }}</span>
-                                    <span class="text-dark-500 text-sm">/{{ str_replace('_', '-', $plan->billing_cycle) }}</span>
+                                    @if ($plan->type === 'free')
+                                        <span class="text-2xl font-bold text-green-400">Free</span>
+                                    @elseif ($price)
+                                        <span class="text-2xl font-bold gradient-text">${{ number_format($price->price, 2) }}</span>
+                                        @if ($plan->type === 'recurring')
+                                            <span class="text-dark-500 text-sm">/{{ $plan->billing_unit ?? 'mo' }}</span>
+                                        @endif
+                                    @endif
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-3 gap-3 mb-4">
-                                <div class="glass-light rounded-lg p-3 text-center">
-                                    <p class="text-xs text-dark-500 mb-1">CPU</p>
-                                    <p class="text-sm font-bold text-white">{{ $plan->cpu }}%</p>
+                            @if ($plan->type === 'recurring' && $plan->billing_period)
+                                <div class="mb-4">
+                                    <span class="text-xs text-dark-400">Billed every {{ $plan->billing_period }} {{ $plan->billing_unit }}(s)</span>
                                 </div>
-                                <div class="glass-light rounded-lg p-3 text-center">
-                                    <p class="text-xs text-dark-500 mb-1">RAM</p>
-                                    <p class="text-sm font-bold text-white">{{ $plan->memory }}MB</p>
-                                </div>
-                                <div class="glass-light rounded-lg p-3 text-center">
-                                    <p class="text-xs text-dark-500 mb-1">Disk</p>
-                                    <p class="text-sm font-bold text-white">{{ $plan->disk }}MB</p>
-                                </div>
-                            </div>
-
-                            <div class="flex flex-wrap gap-2 text-xs text-dark-400">
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-3 h-3 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                    {{ $plan->swap }}MB Swap
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-3 h-3 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                    {{ $plan->databases }} Databases
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-3 h-3 text-dark-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                    {{ $plan->backups }} Backups
-                                </span>
-                            </div>
+                            @endif
                         </div>
 
                         <div class="sm:w-40 flex flex-col gap-2">
-                            <button type="button" @click="selectPlan({{ $plan->id }}, {{ $plan->price }}, '{{ addslashes($plan->name) }}')"
+                            <button type="button" @click="selectPlan({{ $plan->id }}, {{ $price ? $price->price : 0 }}, '{{ addslashes($plan->name) }}', '{{ $plan->type }}')"
                                     :class="selectedPlan === {{ $plan->id }} ? 'btn-primary text-white shadow-lg shadow-primary-500/25' : 'btn-ghost text-dark-300 hover:text-white'"
                                     class="w-full py-2.5 px-4 text-sm font-medium rounded-xl transition-all text-center">
-                                {{ $product->form_fields ? 'Configure' : 'Select' }}
+                                {{ $product->configOptions->isNotEmpty() ? 'Configure' : 'Select' }}
                             </button>
-                            @if (empty($product->form_fields))
+                            @if ($product->configOptions->isEmpty())
                                 @auth
-                                    <form method="POST" action="{{ route('cart.add', $plan) }}">
+                                    <form method="POST" action="{{ route('cart.add') }}">
                                         @csrf
+                                        <input type="hidden" name="plan_id" value="{{ $plan->id }}">
                                         <input type="hidden" name="quantity" value="1">
                                         <button type="submit" class="w-full py-2.5 px-4 btn-primary text-white text-sm font-medium rounded-xl transition-all hover:shadow-lg hover:shadow-primary-500/25">
                                             Add to Cart
@@ -107,49 +94,42 @@
 
         <div class="lg:col-span-1" x-show="selectedPlan" x-cloak x-transition>
             <div class="glass rounded-2xl p-6 sticky top-24">
-                <h3 class="text-lg font-display font-bold text-white mb-1">Create Your Server</h3>
-                <p class="text-dark-400 text-xs mb-5">Fill in the details to configure your server.</p>
+                <h3 class="text-lg font-display font-bold text-white mb-1">Configure Your Server</h3>
+                <p class="text-dark-400 text-xs mb-5">Select options and add to cart.</p>
 
-                <form method="POST" action="{{ route('cart.add', '__PLAN__') }}" id="addToCartForm" class="space-y-4">
+                <form method="POST" action="{{ route('cart.add') }}" id="addToCartForm" class="space-y-4">
                     @csrf
-                    <input type="hidden" name="quantity" :value="quantity">
+                    <input type="hidden" name="plan_id" :value="selectedPlan">
+                    <input type="hidden" name="quantity" value="1">
 
-                    <div>
-                        <label class="block text-sm font-medium text-dark-300 mb-1.5">Server Name</label>
-                        <input type="text" name="hostname" x-model="hostname" placeholder="my-server" class="w-full px-4 py-2.5 input-field rounded-xl text-sm text-white placeholder-dark-500">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-dark-300 mb-1.5">Game Username</label>
-                        <input type="text" name="game_username" x-model="gameUsername" placeholder="Your in-game name" class="w-full px-4 py-2.5 input-field rounded-xl text-sm text-white placeholder-dark-500">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-dark-300 mb-1.5">Email</label>
-                        <input type="email" name="email" x-model="email" value="{{ auth()->user()->email ?? '' }}" placeholder="you@example.com" class="w-full px-4 py-2.5 input-field rounded-xl text-sm text-white placeholder-dark-500">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-dark-300 mb-1.5">Quantity</label>
-                        <div class="flex items-center gap-3">
-                            <button type="button" @click="quantity = Math.max(1, quantity - 1)" class="w-10 h-10 rounded-xl glass-light flex items-center justify-center text-dark-400 hover:text-white transition">-</button>
-                            <span class="text-white font-medium min-w-[2rem] text-center" x-text="quantity">1</span>
-                            <button type="button" @click="quantity = Math.min(10, quantity + 1)" class="w-10 h-10 rounded-xl glass-light flex items-center justify-center text-dark-400 hover:text-white transition">+</button>
-                        </div>
-                    </div>
+                    @if ($product->configOptions->isNotEmpty())
+                        @foreach ($product->configOptions as $configOption)
+                            <div>
+                                <label class="block text-sm font-medium text-dark-300 mb-1.5">{{ $configOption->name }}</label>
+                                @if ($configOption->type === 'text')
+                                    <input type="text" name="config_options[{{ $configOption->id }}]" placeholder="{{ $configOption->description }}" class="w-full px-4 py-2.5 input-field rounded-xl text-sm text-white placeholder-dark-500">
+                                @elseif ($configOption->type === 'select')
+                                    <select name="config_options[{{ $configOption->id }}]" class="w-full px-4 py-2.5 input-field rounded-xl text-sm text-white">
+                                        <option value="">Select...</option>
+                                        @foreach ($configOption->children as $child)
+                                            <option value="{{ $child->id }}">{{ $child->name }}</option>
+                                        @endforeach
+                                    </select>
+                                @elseif ($configOption->type === 'number')
+                                    <input type="number" name="config_options[{{ $configOption->id }}]" placeholder="{{ $configOption->description }}" min="0" class="w-full px-4 py-2.5 input-field rounded-xl text-sm text-white placeholder-dark-500">
+                                @endif
+                            </div>
+                        @endforeach
+                    @endif
 
                     <div class="border-t border-white/5 pt-4 mt-4">
                         <div class="flex justify-between text-sm mb-1">
                             <span class="text-dark-400" x-text="planName"></span>
                             <span class="text-white" x-text="'$' + planPrice.toFixed(2)"></span>
                         </div>
-                        <div class="flex justify-between text-sm mb-3" x-show="quantity > 1">
-                            <span class="text-dark-500" x-text="'x' + quantity + ' servers'"></span>
-                            <span class="text-dark-300" x-text="'$' + (planPrice * quantity).toFixed(2)"></span>
-                        </div>
                         <div class="flex justify-between font-bold">
                             <span class="text-white">Total</span>
-                            <span class="gradient-text text-lg" x-text="'$' + (planPrice * quantity).toFixed(2)"></span>
+                            <span class="gradient-text text-lg" x-text="'$' + planPrice.toFixed(2)"></span>
                         </div>
                     </div>
 
@@ -180,16 +160,12 @@ function productPage() {
         selectedPlan: null,
         planPrice: 0,
         planName: '',
-        hostname: '',
-        gameUsername: '',
-        email: '{{ auth()->user()->email ?? "" }}',
-        quantity: 1,
-        selectPlan(planId, price, name) {
+        planType: '',
+        selectPlan(planId, price, name, type) {
             this.selectedPlan = planId;
             this.planPrice = price;
             this.planName = name;
-            const form = document.getElementById('addToCartForm');
-            form.action = '/cart/add/' + planId;
+            this.planType = type;
         }
     }
 }

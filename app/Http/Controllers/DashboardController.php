@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
+use App\Models\Credit;
 use App\Models\Invoice;
-use App\Models\Server;
+use App\Models\InvoiceTransaction;
+use App\Models\Service;
 use App\Models\Ticket;
-use App\Models\Transaction;
-use App\Services\PterodactylService;
+use App\Models\User;
+use App\Services\CreditService;
+use App\Services\ServiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -22,20 +24,25 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $currencyCode = session('currency', config('billing.default_currency', 'USD'));
+
         $stats = [
-            'active_servers' => Server::where('user_id', $user->id)->where('status', 'active')->count(),
+            'active_services' => Service::where('user_id', $user->id)->where('status', 'active')->count(),
             'pending_invoices' => Invoice::where('user_id', $user->id)->where('status', 'pending')->count(),
             'open_tickets' => Ticket::where('user_id', $user->id)->whereIn('status', ['open', 'awaiting_reply'])->count(),
-            'total_spent' => Transaction::where('user_id', $user->id)->where('status', 'completed')->sum('amount'),
+            'total_spent' => InvoiceTransaction::where('is_credit_transaction', false)
+                ->whereHas('invoice', fn($q) => $q->where('user_id', $user->id)->where('status', 'paid'))
+                ->sum('amount'),
         ];
 
-        $recentInvoices = Invoice::where('user_id', $user->id)
+        $recentServices = Service::where('user_id', $user->id)
+            ->with(['product', 'plan'])
             ->latest()
             ->take(5)
             ->get();
 
-        $recentOrders = Order::where('user_id', $user->id)
-            ->with('plan.product')
+        $recentInvoices = Invoice::where('user_id', $user->id)
+            ->with('items')
             ->latest()
             ->take(5)
             ->get();
@@ -47,21 +54,22 @@ class DashboardController extends Controller
 
         $activity = collect();
 
-        foreach ($recentOrders as $order) {
+        foreach ($recentServices as $service) {
             $activity->push([
-                'type' => 'order',
+                'type' => 'service',
                 'icon' => 'server',
-                'title' => 'New Order: ' . $order->plan->product->name . ' - ' . $order->plan->name,
-                'status' => $order->status,
-                'date' => $order->created_at,
+                'title' => ($service->label ?? ($service->product->name ?? 'Service')),
+                'status' => $service->status,
+                'date' => $service->created_at,
             ]);
         }
 
         foreach ($recentInvoices as $invoice) {
+            $totals = app(\App\Services\InvoiceService::class)->calculateTotal($invoice);
             $activity->push([
                 'type' => 'invoice',
                 'icon' => 'invoice',
-                'title' => 'Invoice ' . $invoice->invoice_number . ' - $' . number_format($invoice->total, 2),
+                'title' => 'Invoice ' . $invoice->number . ' - $' . number_format($totals['total'], 2),
                 'status' => $invoice->status,
                 'date' => $invoice->created_at,
             ]);
@@ -79,32 +87,36 @@ class DashboardController extends Controller
 
         $activity = $activity->sortByDesc('date')->take(10);
 
-        return view('dashboard.index', compact('user', 'stats', 'recentInvoices', 'activity'));
+        return view('dashboard.index', compact('user', 'stats', 'recentServices', 'recentInvoices', 'activity'));
     }
 
-    public function servers()
+    public function services()
     {
-        $servers = Server::where('user_id', Auth::id())
-            ->with('order.plan.product')
+        $services = Service::where('user_id', Auth::id())
+            ->with(['product', 'plan', 'currency'])
             ->latest()
             ->paginate(10);
 
-        return view('dashboard.servers', compact('servers'));
+        return view('dashboard.services', compact('services'));
     }
 
-    public function serverDetail(Server $server)
+    public function serviceDetail(Service $service)
     {
-        if ($server->user_id !== Auth::id()) {
+        if ($service->user_id !== Auth::id()) {
             abort(403);
         }
 
-        return view('dashboard.server-detail', compact('server'));
+        $service->load(['product', 'plan.prices', 'configs.configOption', 'configs.configValue', 'currency']);
+
+        $invoices = $service->invoices()->latest()->take(5)->get();
+
+        return view('dashboard.service-detail', compact('service', 'invoices'));
     }
 
     public function invoices()
     {
         $invoices = Invoice::where('user_id', Auth::id())
-            ->with('items', 'transactions')
+            ->with('items')
             ->latest()
             ->paginate(10);
 
@@ -117,14 +129,16 @@ class DashboardController extends Controller
             abort(403);
         }
 
-        $invoice->load('items', 'transactions', 'order.plan.product');
-        return view('dashboard.invoice-detail', compact('invoice'));
+        $invoice->load(['items', 'transactions', 'currency', 'snapshot']);
+        $totals = app(\App\Services\InvoiceService::class)->calculateTotal($invoice);
+
+        return view('dashboard.invoice-detail', compact('invoice', 'totals'));
     }
 
     public function tickets()
     {
         $tickets = Ticket::where('user_id', Auth::id())
-            ->with('messages')
+            ->with('service')
             ->latest()
             ->paginate(10);
 
@@ -135,13 +149,16 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $paymentMethods = $user->paymentMethods;
-        return view('dashboard.profile', compact('user', 'paymentMethods'));
+        $credits = Credit::where('user_id', $user->id)->get();
+
+        return view('dashboard.profile', compact('user', 'paymentMethods', 'credits'));
     }
 
     public function updateProfile(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . Auth::id(),
         ]);
 
