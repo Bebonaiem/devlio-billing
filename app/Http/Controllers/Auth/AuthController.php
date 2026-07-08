@@ -55,7 +55,9 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $user->assignRole('customer');
+        if (\Spatie\Permission\Models\Role::where('name', 'customer')->exists()) {
+            $user->assignRole('customer');
+        }
 
         event(new Registered($user));
         Auth::login($user);
