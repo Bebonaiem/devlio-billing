@@ -30,7 +30,7 @@ echo ""
 # ──────────────────────────────────────────────
 echo -e "${YELLOW}Step 1: Server Host${NC}"
 echo -e "Enter your server's ${CYAN}IP address${NC} or ${CYAN}domain name${NC}."
-echo -e "Example: https://devlio.store/"
+echo -e "Examples: https://devlio.store/  or  http://192.168.1.10"
 echo -e "If you enter a domain, SSL will be set up automatically."
 read -p "Host (IP or domain): " HOST
 
