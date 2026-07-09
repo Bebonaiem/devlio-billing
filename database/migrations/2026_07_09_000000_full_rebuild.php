@@ -178,6 +178,7 @@ return new class extends Migration
             $table->integer('databases')->default(0);
             $table->integer('backups')->default(0);
             $table->integer('allocations')->default(1);
+            $table->text('description')->nullable();
             $table->unsignedBigInteger('nest_id')->nullable();
             $table->unsignedBigInteger('egg_id')->nullable();
             $table->timestamps();
