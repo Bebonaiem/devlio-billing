@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use App\Jobs\ProvisionServer;
+use App\Jobs\UnsuspendServer;
 use App\Models\Plan;
 use App\Models\Service;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 
 class ServiceService
 {
@@ -14,58 +17,59 @@ class ServiceService
 
     public function activateService(Service $service): void
     {
-        $service->update(['status' => 'active']);
+        $service->update(['status' => Service::STATUS_ACTIVE]);
 
-        if (!$service->server) {
+        if (! $service->server) {
             $this->provisioning->provision($service);
         } else {
-            $this->provisioning->unsuspend($service->server);
+            $this->provisioning->unsuspend($service);
         }
     }
 
     public function suspendService(Service $service): void
     {
-        $service->update(['status' => 'suspended']);
+        $service->update(['status' => Service::STATUS_SUSPENDED]);
 
         if ($service->server) {
-            $this->provisioning->suspend($service->server);
+            $this->provisioning->suspend($service);
         }
     }
 
     public function unsuspendService(Service $service): void
     {
-        $service->update(['status' => 'active']);
+        $service->update(['status' => Service::STATUS_ACTIVE]);
 
         if ($service->server) {
-            $this->provisioning->unsuspend($service->server);
+            $this->provisioning->unsuspend($service);
         }
     }
 
     public function terminateService(Service $service): void
     {
-        $service->update(['status' => 'cancelled']);
+        $service->update(['status' => Service::STATUS_CANCELLED]);
 
         if ($service->server) {
-            $this->provisioning->terminate($service->server);
+            $this->provisioning->terminate($service);
         }
+
+        $service->invoices()
+            ->where('status', 'pending')
+            ->update(['status' => 'cancelled']);
     }
 
-    public function renewService(Service $service, float $price): void
+    public function renewService(Service $service): void
     {
-        $plan = $service->plan;
-
-        if (!$plan) {
-            return;
+        if ($service->product && $service->product->server) {
+            if ($service->status === Service::STATUS_SUSPENDED) {
+                UnsuspendServer::dispatch($service);
+            } elseif ($service->status === Service::STATUS_PENDING) {
+                ProvisionServer::dispatch($service);
+            }
         }
 
-        $currentExpiry = $service->expires_at ? Carbon::parse($service->expires_at) : now();
-        $newExpiry = $this->calculateNewExpiry($currentExpiry, $plan);
-
-        $service->update([
-            'expires_at' => $newExpiry,
-            'status' => 'active',
-            'price' => $price,
-        ]);
+        $service->expires_at = $service->calculateNextDueDate();
+        $service->status = Service::STATUS_ACTIVE;
+        $service->save();
     }
 
     public function getExpiryDate(Plan $plan): Carbon
@@ -77,11 +81,7 @@ class ServiceService
     {
         $startDate = $currentExpiry->isFuture() ? $currentExpiry : now();
 
-        if ($plan->type === 'free') {
-            return $startDate->copy()->addCentury();
-        }
-
-        if ($plan->type === 'one-time') {
+        if ($plan->isFree() || $plan->isOneTime()) {
             return $startDate->copy()->addCentury();
         }
 
@@ -97,17 +97,17 @@ class ServiceService
         };
     }
 
-    public function getUserActiveServices($userId): \Illuminate\Database\Eloquent\Collection
+    public function getUserActiveServices(int $userId): Collection
     {
         return Service::where('user_id', $userId)
-            ->where('status', 'active')
+            ->where('status', Service::STATUS_ACTIVE)
             ->with(['product', 'plan', 'order'])
             ->get();
     }
 
-    public function getExpiringServices(int $daysAhead = 3): \Illuminate\Database\Eloquent\Collection
+    public function getExpiringServices(int $daysAhead = 3): Collection
     {
-        return Service::where('status', 'active')
+        return Service::where('status', Service::STATUS_ACTIVE)
             ->where('expires_at', '<=', now()->addDays($daysAhead))
             ->where('expires_at', '>', now())
             ->with(['user', 'product', 'plan'])

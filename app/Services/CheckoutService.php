@@ -2,6 +2,13 @@
 
 namespace App\Services;
 
+use App\Exceptions\CartEmptyException;
+use App\Exceptions\CheckoutException;
+use App\Exceptions\InsufficientStockException;
+use App\Exceptions\InvalidCouponException;
+use App\Exceptions\InvalidPlanException;
+use App\Exceptions\ProductUnavailableException;
+use App\Exceptions\UserLimitExceededException;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Invoice;
@@ -37,7 +44,7 @@ class CheckoutService
                 'currency_code' => $cart->currency_code,
             ]);
 
-            $services = new Collection();
+            $services = new Collection;
             $invoiceItems = [];
             $totalAmount = 0.0;
 
@@ -87,20 +94,20 @@ class CheckoutService
     private function validateCart(Cart $cart, User $user): void
     {
         if ($cart->items->isEmpty()) {
-            throw new \App\Exceptions\CartEmptyException('Cart is empty');
+            throw new CartEmptyException('Cart is empty');
         }
 
         foreach ($cart->items as $cartItem) {
             $product = $cartItem->product;
 
             if (! $product || ! $product->enabled) {
-                throw new \App\Exceptions\ProductUnavailableException(
+                throw new ProductUnavailableException(
                     "Product is not available: {$cartItem->product_id}"
                 );
             }
 
             if ($product->stock !== null && $product->stock < $cartItem->quantity) {
-                throw new \App\Exceptions\InsufficientStockException(
+                throw new InsufficientStockException(
                     "Insufficient stock for product: {$product->name}"
                 );
             }
@@ -111,14 +118,14 @@ class CheckoutService
                     ->count();
 
                 if ($existingCount + $cartItem->quantity > $product->per_user_limit) {
-                    throw new \App\Exceptions\UserLimitExceededException(
+                    throw new UserLimitExceededException(
                         "Per-user limit exceeded for product: {$product->name}"
                     );
                 }
             }
 
             if (! $cartItem->plan) {
-                throw new \App\Exceptions\InvalidPlanException(
+                throw new InvalidPlanException(
                     "Invalid plan selected for product: {$product->name}"
                 );
             }
@@ -133,7 +140,7 @@ class CheckoutService
                 }
             }
             if (! $couponValid) {
-                throw new \App\Exceptions\InvalidCouponException('Invalid coupon code');
+                throw new InvalidCouponException('Invalid coupon code');
             }
         }
     }
@@ -203,7 +210,7 @@ class CheckoutService
         }
 
         if (! $priceModel) {
-            throw new \App\Exceptions\CheckoutException(
+            throw new CheckoutException(
                 "No price found for plan: {$plan->name}"
             );
         }
@@ -268,7 +275,7 @@ class CheckoutService
                 'invoice_id' => $invoice->id,
                 'quantity' => 1,
                 'price' => -$discount,
-                'description' => 'Discount' . ($couponCode ? ' (' . $couponCode . ')' : ''),
+                'description' => 'Discount'.($couponCode ? ' ('.$couponCode.')' : ''),
                 'reference_id' => null,
                 'reference_type' => null,
             ]);
@@ -284,25 +291,25 @@ class CheckoutService
         foreach ($services as $service) {
             $plan = $service->plan;
 
-            if (!$plan) {
+            if (! $plan) {
                 continue;
             }
 
-            if (($plan->type === 'free' || $plan->type === 'one-time') && $invoice && !$invoicePaid) {
+            if (($plan->type === 'free' || $plan->type === 'one-time') && $invoice && ! $invoicePaid) {
                 $service->update(['status' => 'active']);
                 $this->invoice->markPaid($invoice, $this->createCreditTransaction($invoice));
                 $invoicePaid = true;
             }
 
-            if (!$service->expires_at) {
+            if (! $service->expires_at) {
                 $service->update(['expires_at' => $this->service->getExpiryDate($plan)]);
             }
 
-            if (!$service->relationLoaded('server')) {
+            if (! $service->relationLoaded('server')) {
                 $service->load('server');
             }
 
-            if (!$service->server) {
+            if (! $service->server) {
                 $this->service->activateService($service);
             }
         }
@@ -316,7 +323,7 @@ class CheckoutService
             'invoice_id' => $invoice->id,
             'amount' => $totals['total'],
             'fee' => 0,
-            'transaction_id' => 'FREE-' . strtoupper(uniqid()),
+            'transaction_id' => 'FREE-'.strtoupper(uniqid()),
             'status' => 'succeeded',
             'is_credit_transaction' => true,
         ]);

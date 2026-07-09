@@ -7,6 +7,7 @@ use App\Models\User;
 use Stripe\Checkout\Session;
 use Stripe\Customer;
 use Stripe\Exception\ApiErrorException;
+use Stripe\Exception\SignatureVerificationException;
 use Stripe\PaymentIntent;
 use Stripe\Stripe;
 use Stripe\Webhook;
@@ -29,7 +30,7 @@ class StripeService
                 'line_items' => [[
                     'price_data' => [
                         'currency' => strtolower($invoice->currency_code ?? 'usd'),
-                        'product_data' => ['name' => 'Invoice #' . $invoice->number],
+                        'product_data' => ['name' => 'Invoice #'.$invoice->number],
                         'unit_amount' => (int) round($amount * 100),
                     ],
                     'quantity' => 1,
@@ -43,6 +44,7 @@ class StripeService
             ]);
         } catch (ApiErrorException $e) {
             report($e);
+
             return null;
         }
     }
@@ -81,6 +83,7 @@ class StripeService
             return Session::create($sessionData);
         } catch (ApiErrorException $e) {
             report($e);
+
             return null;
         }
     }
@@ -90,11 +93,12 @@ class StripeService
         try {
             return Customer::create([
                 'email' => $user->email,
-                'name' => $user->first_name . ' ' . $user->last_name,
+                'name' => $user->first_name.' '.$user->last_name,
                 'metadata' => ['user_id' => $user->id],
             ]);
         } catch (ApiErrorException $e) {
             report($e);
+
             return null;
         }
     }
@@ -115,6 +119,7 @@ class StripeService
             ]);
         } catch (ApiErrorException $e) {
             report($e);
+
             return null;
         }
     }
@@ -125,6 +130,7 @@ class StripeService
             return PaymentIntent::retrieve($paymentIntentId);
         } catch (ApiErrorException $e) {
             report($e);
+
             return null;
         }
     }
@@ -135,6 +141,7 @@ class StripeService
             return Customer::retrieve($customerId);
         } catch (ApiErrorException $e) {
             report($e);
+
             return null;
         }
     }
@@ -147,8 +154,9 @@ class StripeService
                 $sigHeader,
                 config('services.stripe.webhook_secret')
             );
-        } catch (\UnexpectedValueException|\Stripe\Exception\SignatureVerificationException $e) {
+        } catch (\UnexpectedValueException|SignatureVerificationException $e) {
             report($e);
+
             return null;
         }
     }

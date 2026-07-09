@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\ServiceService;
-use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
@@ -27,6 +26,7 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load(['user', 'services.product', 'services.plan', 'services.server', 'services.invoices.items']);
+
         return view('admin.orders.show', compact('order'));
     }
 

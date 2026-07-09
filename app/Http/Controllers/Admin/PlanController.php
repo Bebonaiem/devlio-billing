@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Plan;
-use App\Models\Product;
-use App\Models\Price;
 use App\Models\Currency;
+use App\Models\Plan;
+use App\Models\Price;
+use App\Models\Product;
 use App\Services\PterodactylService;
 use Illuminate\Http\Request;
 
@@ -20,6 +20,7 @@ class PlanController extends Controller
     public function index()
     {
         $plans = Plan::with(['priceable', 'prices'])->orderBy('sort')->get();
+
         return view('admin.plans.index', compact('plans'));
     }
 
@@ -32,6 +33,7 @@ class PlanController extends Controller
         } catch (\Exception $e) {
             $nests = [];
         }
+
         return view('admin.plans.create', compact('products', 'currencies', 'nests'));
     }
 
@@ -81,7 +83,7 @@ class PlanController extends Controller
             'egg_id' => $data['egg_id'] ?? null,
         ]);
 
-        if (!empty($data['prices'])) {
+        if (! empty($data['prices'])) {
             foreach ($data['prices'] as $priceData) {
                 Price::create([
                     'plan_id' => $plan->id,
@@ -106,6 +108,7 @@ class PlanController extends Controller
             $nests = [];
         }
         $plan->load('prices');
+
         return view('admin.plans.edit', compact('plan', 'products', 'currencies', 'nests'));
     }
 
@@ -155,12 +158,12 @@ class PlanController extends Controller
             'egg_id' => $data['egg_id'] ?? null,
         ]);
 
-        if (!empty($data['prices'])) {
+        if (! empty($data['prices'])) {
             $existingPriceIds = collect($data['prices'])->pluck('id')->filter()->toArray();
             $plan->prices()->whereNotIn('id', $existingPriceIds)->delete();
 
             foreach ($data['prices'] as $priceData) {
-                if (!empty($priceData['id'])) {
+                if (! empty($priceData['id'])) {
                     Price::where('id', $priceData['id'])->update([
                         'currency_code' => $priceData['currency_code'],
                         'price' => $priceData['price'],
@@ -185,6 +188,7 @@ class PlanController extends Controller
     {
         $plan->prices()->delete();
         $plan->delete();
+
         return redirect()->route('admin.plans.index')
             ->with('success', 'Plan deleted successfully.');
     }

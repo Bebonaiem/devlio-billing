@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\CartEmptyException;
-use App\Exceptions\InvalidCouponException;
 use App\Exceptions\InsufficientStockException;
+use App\Exceptions\InvalidCouponException;
 use App\Exceptions\InvalidPlanException;
 use App\Exceptions\ProductUnavailableException;
 use App\Exceptions\UserLimitExceededException;
@@ -13,16 +13,17 @@ use App\Models\Currency;
 use App\Models\Extension;
 use App\Models\Invoice;
 use App\Models\InvoiceTransaction;
-use App\Models\Order;
+use App\Models\Service;
 use App\Services\CheckoutService;
 use App\Services\CreditService;
 use App\Services\CurrencyService;
 use App\Services\InvoiceService;
 use App\Services\PayPalService;
+use App\Services\ServiceService;
 use App\Services\StripeService;
+use App\Services\TaxService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 
 class CheckoutController extends Controller
 {
@@ -30,7 +31,7 @@ class CheckoutController extends Controller
         private readonly CheckoutService $checkout,
         private readonly CurrencyService $currency,
         private readonly CreditService $credit,
-        private readonly \App\Services\TaxService $tax,
+        private readonly TaxService $tax,
     ) {
         $this->middleware('auth');
     }
@@ -45,7 +46,7 @@ class CheckoutController extends Controller
             ->with(['items.product', 'items.plan.prices', 'coupon'])
             ->first();
 
-        if (!$cart || $cart->items->isEmpty()) {
+        if (! $cart || $cart->items->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
@@ -97,14 +98,14 @@ class CheckoutController extends Controller
             ->where('currency_code', $currencyCode)
             ->first();
 
-        if (!$cart || $cart->items->isEmpty()) {
+        if (! $cart || $cart->items->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
         try {
             $result = $this->checkout->processCart($cart, $user);
 
-            if (!empty($validated['apply_credit']) && $result['invoice']) {
+            if (! empty($validated['apply_credit']) && $result['invoice']) {
                 $this->credit->applyToInvoice($user, $result['invoice']);
 
                 $totals = app(InvoiceService::class)->calculateTotal($result['invoice']);
@@ -118,6 +119,7 @@ class CheckoutController extends Controller
                     $result['invoice']->update(['status' => 'paid']);
                     app(InvoiceService::class)->createSnapshot($result['invoice']);
                     $this->activateInvoiceServices($result['invoice']);
+
                     return redirect()->route('checkout.success', ['invoice' => $result['invoice']->id]);
                 }
             }
@@ -206,6 +208,7 @@ class CheckoutController extends Controller
             $invoice->update(['status' => 'paid']);
             $invoiceService->createSnapshot($invoice);
             $this->activateInvoiceServices($invoice);
+
             return redirect()->route('checkout.success', ['invoice' => $invoice->id]);
         }
 
@@ -220,7 +223,7 @@ class CheckoutController extends Controller
     private function processStripePayment(Invoice $invoice, float $amount, Extension $gateway)
     {
         $stripe = app(StripeService::class);
-        $successUrl = route('checkout.success', ['invoice' => $invoice->id]) . '&session_id={CHECKOUT_SESSION_ID}';
+        $successUrl = route('checkout.success', ['invoice' => $invoice->id]).'&session_id={CHECKOUT_SESSION_ID}';
         $cancelUrl = route('checkout.cancel');
 
         $session = $stripe->createPaymentSession(
@@ -231,7 +234,7 @@ class CheckoutController extends Controller
             $cancelUrl
         );
 
-        if (!$session || !$session->url) {
+        if (! $session || ! $session->url) {
             return back()->with('error', 'Failed to create Stripe payment session. Please try again.');
         }
 
@@ -246,7 +249,7 @@ class CheckoutController extends Controller
 
         $order = $paypal->createOrder($invoice, $returnUrl, $cancelUrl, $amount);
 
-        if (!$order || !$order['approval_url']) {
+        if (! $order || ! $order['approval_url']) {
             return back()->with('error', 'Failed to create PayPal order. Please try again.');
         }
 
@@ -263,7 +266,7 @@ class CheckoutController extends Controller
                 'gateway_id' => $gateway->id,
                 'amount' => $amount,
                 'fee' => 0,
-                'transaction_id' => 'CREDIT-' . strtoupper(uniqid()),
+                'transaction_id' => 'CREDIT-'.strtoupper(uniqid()),
                 'status' => 'succeeded',
                 'is_credit_transaction' => true,
             ]);
@@ -296,12 +299,12 @@ class CheckoutController extends Controller
     {
         $items = $invoice->items()->whereNotNull('reference_id')->get();
         foreach ($items as $item) {
-            if ($item->reference_type === \App\Models\Service::class) {
-                $service = \App\Models\Service::find($item->reference_id);
+            if ($item->reference_type === Service::class) {
+                $service = Service::find($item->reference_id);
                 if ($service && $service->status === 'pending') {
                     $service->update(['status' => 'active']);
                     try {
-                        app(\App\Services\ServiceService::class)->activateService($service);
+                        app(ServiceService::class)->activateService($service);
                     } catch (\Exception $e) {
                         report($e);
                     }

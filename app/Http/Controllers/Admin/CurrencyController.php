@@ -18,6 +18,7 @@ class CurrencyController extends Controller
     {
         $currencies = Currency::orderBy('code')->paginate(20);
         $defaultCurrency = Setting::get('default_currency', 'USD');
+
         return view('admin.currencies.index', compact('currencies', 'defaultCurrency'));
     }
 

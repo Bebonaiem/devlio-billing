@@ -4,6 +4,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class CheckoutException extends Exception
-{
-}
+class CheckoutException extends Exception {}

@@ -2,6 +2,4 @@
 
 namespace App\Exceptions;
 
-class UserLimitExceededException extends CheckoutException
-{
-}
+class UserLimitExceededException extends CheckoutException {}

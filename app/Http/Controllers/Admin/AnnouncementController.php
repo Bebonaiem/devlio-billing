@@ -87,7 +87,7 @@ class AnnouncementController extends Controller
 
     public function toggle(Announcement $announcement)
     {
-        $announcement->update(['enabled' => !$announcement->enabled]);
+        $announcement->update(['enabled' => ! $announcement->enabled]);
 
         return redirect()->route('admin.announcements.index')
             ->with('success', 'Announcement status updated successfully.');

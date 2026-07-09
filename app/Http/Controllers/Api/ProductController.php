@@ -21,7 +21,7 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        if (!$product->enabled || $product->hidden) {
+        if (! $product->enabled || $product->hidden) {
             abort(404);
         }
 

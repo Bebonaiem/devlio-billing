@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\FetchTicketEmails;
 use App\Jobs\GenerateInvoices;
 use App\Jobs\ProcessBillingCycle;
 use App\Models\Setting;
@@ -56,5 +57,5 @@ Artisan::command('app:user:create', function () {
 })->purpose('Create an admin user');
 
 Artisan::command('app:fetch-emails', function () {
-    $this->call(\App\Console\Commands\FetchTicketEmails::class);
+    $this->call(FetchTicketEmails::class);
 })->purpose('Fetch ticket emails via IMAP');

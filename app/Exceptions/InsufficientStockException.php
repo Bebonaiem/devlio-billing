@@ -2,6 +2,4 @@
 
 namespace App\Exceptions;
 
-class InsufficientStockException extends CheckoutException
-{
-}
+class InsufficientStockException extends CheckoutException {}

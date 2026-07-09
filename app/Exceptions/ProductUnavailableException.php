@@ -2,6 +2,4 @@
 
 namespace App\Exceptions;
 
-class ProductUnavailableException extends CheckoutException
-{
-}
+class ProductUnavailableException extends CheckoutException {}

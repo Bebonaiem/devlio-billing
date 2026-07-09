@@ -2,109 +2,141 @@
 
 namespace App\Services;
 
+use App\Helpers\ExtensionHelper;
 use App\Models\Server;
 use App\Models\Service;
-use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
 class ProvisioningService
 {
-    public function __construct(
-        private readonly PterodactylService $pterodactyl,
-    ) {}
-
     public function provision(Service $service): ?Server
     {
-        $user = $service->user;
-        $plan = $service->plan;
         $product = $service->product;
 
-        if (!$user || !$plan) {
-            Log::error('Cannot provision service: missing user or plan', [
+        if (! $product || ! $product->server) {
+            Log::error('Cannot provision service: no server extension configured', [
                 'service_id' => $service->id,
-                'user_id' => $service->user_id,
-                'plan_id' => $service->plan_id,
             ]);
+
             return null;
         }
 
-        $result = $this->pterodactyl->createServer($user, [
-            'name' => ($product->name ?? 'Server') . ' - ' . $user->name,
-            'nest_id' => $plan->nest_id ?? 1,
-            'egg_id' => $plan->egg_id ?? 1,
-            'memory' => $plan->memory ?? 1024,
-            'swap' => $plan->swap ?? 0,
-            'disk' => $plan->disk ?? 1024,
-            'cpu' => $plan->cpu ?? 100,
-            'databases' => $plan->databases ?? 0,
-            'backups' => $plan->backups ?? 0,
-            'allocations' => $plan->allocations ?? 1,
-            'environment' => [],
-        ]);
+        try {
+            $result = ExtensionHelper::createServer($service);
 
-        if ($result) {
-            $server = Server::create([
+            if ($result) {
+                return Server::create([
+                    'service_id' => $service->id,
+                    'order_id' => $service->order_id,
+                    'user_id' => $service->user_id,
+                    'pterodactyl_server_id' => $result['pterodactyl_server_id'] ?? null,
+                    'pterodactyl_server_identifier' => $result['pterodactyl_server_identifier'] ?? null,
+                    'name' => $result['name'] ?? $product->name.' Server',
+                    'status' => 'active',
+                    'ip' => $result['ip'] ?? null,
+                    'cpu' => $service->plan?->cpu,
+                    'memory' => $service->plan?->memory,
+                    'disk' => $service->plan?->disk,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Server provisioning failed', [
                 'service_id' => $service->id,
-                'order_id' => $service->order_id,
-                'user_id' => $user->id,
-                'pterodactyl_server_id' => $result['id'],
-                'pterodactyl_server_identifier' => $result['identifier'],
-                'name' => $result['name'] ?? ($product->name . ' Server'),
-                'status' => 'active',
-                'cpu' => $plan->cpu ?? null,
-                'memory' => $plan->memory ?? null,
-                'disk' => $plan->disk ?? null,
-                'node' => $result['node'] ?? null,
+                'error' => $e->getMessage(),
             ]);
-
-            return $server;
         }
 
         return null;
     }
 
-    public function suspend(Server $server): bool
+    public function suspend(Service $service): bool
     {
-        if (!$server->pterodactyl_server_id) {
+        $server = $service->server;
+
+        if (! $server) {
             return false;
         }
 
-        $success = $this->pterodactyl->suspendServer($server->pterodactyl_server_id);
-
-        if ($success) {
+        try {
+            ExtensionHelper::suspendServer($service);
             $server->update(['status' => 'suspended']);
-        }
 
-        return $success;
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Server suspension failed', [
+                'service_id' => $service->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 
-    public function unsuspend(Server $server): bool
+    public function unsuspend(Service $service): bool
     {
-        if (!$server->pterodactyl_server_id) {
+        $server = $service->server;
+
+        if (! $server) {
             return false;
         }
 
-        $success = $this->pterodactyl->unsuspendServer($server->pterodactyl_server_id);
-
-        if ($success) {
+        try {
+            ExtensionHelper::unsuspendServer($service);
             $server->update(['status' => 'active']);
-        }
 
-        return $success;
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Server unsuspension failed', [
+                'service_id' => $service->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 
-    public function terminate(Server $server): bool
+    public function terminate(Service $service): bool
     {
-        if (!$server->pterodactyl_server_id) {
+        $server = $service->server;
+
+        if (! $server) {
             return false;
         }
 
-        $success = $this->pterodactyl->terminateServer($server->pterodactyl_server_id);
-
-        if ($success) {
+        try {
+            ExtensionHelper::terminateServer($service);
             $server->update(['status' => 'terminated']);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Server termination failed', [
+                'service_id' => $service->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    public function upgrade(Service $service): bool
+    {
+        $server = $service->server;
+
+        if (! $server) {
+            return false;
         }
 
-        return $success;
+        try {
+            ExtensionHelper::upgradeServer($service);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Server upgrade failed', [
+                'service_id' => $service->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 }

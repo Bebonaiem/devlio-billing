@@ -13,6 +13,8 @@ class Order extends Model
         'currency_code',
     ];
 
+    public bool $sendCreateEmail = true;
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -36,5 +38,34 @@ class Order extends Model
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
+    }
+
+    public function getTotalAttribute(): float
+    {
+        return (float) $this->services->sum(function ($service) {
+            return $service->price * $service->quantity;
+        });
+    }
+
+    public function getFormattedTotalAttribute(): string
+    {
+        $total = $this->total;
+        $currency = $this->currency;
+
+        if (! $currency) {
+            return number_format($total, 2);
+        }
+
+        return $currency->prefix.number_format($total, 2).$currency->suffix;
+    }
+
+    public function getInvoicesAttribute()
+    {
+        $invoiceIds = $this->services
+            ->flatMap(fn ($service) => $service->invoiceItems->pluck('invoice_id'))
+            ->unique()
+            ->values();
+
+        return Invoice::whereIn('id', $invoiceIds)->get();
     }
 }

@@ -5,10 +5,9 @@ namespace App\Services;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\InvoiceSnapshot;
-use App\Models\InvoiceTransaction;
 use App\Models\Service;
+use App\Models\Setting;
 use App\Models\User;
-use App\Jobs\ProvisionServer;
 use Illuminate\Support\Facades\DB;
 
 class InvoiceService
@@ -26,7 +25,7 @@ class InvoiceService
                 'user_id' => $user->id,
                 'order_id' => $orderId,
                 'currency_code' => $currencyCode,
-                'status' => 'pending',
+                'status' => Invoice::STATUS_PENDING,
                 'due_at' => now()->addDays(config('billing.invoice_due_days', 7)),
             ]);
 
@@ -38,6 +37,7 @@ class InvoiceService
                     'description' => $item['description'] ?? '',
                     'reference_id' => $item['reference_id'] ?? null,
                     'reference_type' => $item['reference_type'] ?? null,
+                    'gateway_id' => $item['gateway_id'] ?? null,
                 ]);
             }
 
@@ -47,61 +47,54 @@ class InvoiceService
 
     public function calculateTotal(Invoice $invoice): array
     {
-        $subtotal = $invoice->items->sum(function ($item) {
+        $subtotal = (float) $invoice->items->sum(function ($item) {
             return $item->price * $item->quantity;
         });
 
-        $country = null;
-        if ($invoice->user) {
-            $country = $this->tax->getUserCountry($invoice->user);
-        }
-
-        $taxResult = $this->tax->calculate($subtotal, $country ?? 'all');
+        $taxResult = $this->tax->calculateForUser($subtotal, $invoice->user);
 
         return [
             'subtotal' => round($subtotal, 2),
-            'tax' => $taxResult['tax_amount'],
-            'tax_rate' => $taxResult['tax_rate'],
-            'tax_name' => $taxResult['tax_name'],
-            'total' => round($subtotal + $taxResult['tax_amount'], 2),
+            'tax' => $taxResult['tax_amount'] ?? 0,
+            'tax_rate' => $taxResult['tax_rate'] ?? 0,
+            'tax_name' => $taxResult['tax_name'] ?? '',
+            'total' => round($subtotal + ($taxResult['tax_amount'] ?? 0), 2),
         ];
     }
 
-    public function markPaid(Invoice $invoice, InvoiceTransaction $transaction): void
+    public function markPaid(Invoice $invoice): void
     {
-        DB::transaction(function () use ($invoice, $transaction) {
-            $invoice->update(['status' => 'paid']);
+        DB::transaction(function () use ($invoice) {
+            $invoice->update(['status' => Invoice::STATUS_PAID]);
 
             $this->createSnapshot($invoice);
 
-            $invoiceItems = $invoice->items()->whereNotNull('reference_id')->get();
-
-            foreach ($invoiceItems as $item) {
-                if ($item->reference_type === Service::class) {
-                    $service = Service::find($item->reference_id);
-
-                    if ($service) {
-                    if ($service->status === 'pending') {
-                        $service->update(['status' => 'active']);
-                        $this->dispatchProvisioning($service);
-                    } elseif ($service->status === 'suspended') {
-                        $service->update(['status' => 'active']);
-                        $this->dispatchUnsuspend($service);
-                    } elseif ($service->status === 'active') {
-                        app(\App\Services\ServiceService::class)->renewService($service, (float) $service->price);
-                    }
-                    }
-                }
-            }
+            app(ProcessPaidInvoiceService::class)->handle($invoice);
         });
     }
 
     public function generateNumber(): string
     {
-        $prefix = config('billing.invoice_prefix', 'INV-');
-        $nextId = Invoice::max('id') + 1;
+        return DB::transaction(function () {
+            $setting = Setting::where('key', 'invoice_number')->lockForUpdate()->first();
 
-        return $prefix . str_pad((string) $nextId, 6, '0', STR_PAD_LEFT);
+            if (! $setting) {
+                $setting = Setting::create(['key' => 'invoice_number', 'value' => '0']);
+            }
+
+            $number = (int) $setting->value + 1;
+            $setting->update(['value' => (string) $number]);
+
+            $prefix = config('settings.invoice_prefix', 'INV-');
+            $format = config('settings.invoice_format', '{number}');
+
+            $formatted = str_replace('{number}', str_pad((string) $number, 6, '0', STR_PAD_LEFT), $format);
+            $formatted = str_replace('{year}', date('Y'), $formatted);
+            $formatted = str_replace('{month}', date('m'), $formatted);
+            $formatted = str_replace('{day}', date('d'), $formatted);
+
+            return $prefix.$formatted;
+        });
     }
 
     public function createRenewalInvoice(Service $service): ?Invoice
@@ -116,13 +109,15 @@ class InvoiceService
 
         $description = $product->name ?? 'Service';
         if ($plan) {
-            $description .= ' - ' . $plan->name;
+            $description .= ' - '.$plan->name;
         }
+
+        $price = $service->calculatePrice();
 
         return $this->createInvoice($user, [
             [
                 'quantity' => 1,
-                'price' => (float) $service->price,
+                'price' => $price,
                 'description' => $description,
                 'reference_id' => $service->id,
                 'reference_type' => Service::class,
@@ -132,7 +127,7 @@ class InvoiceService
 
     public function markCancelled(Invoice $invoice): void
     {
-        $invoice->update(['status' => 'cancelled']);
+        $invoice->update(['status' => Invoice::STATUS_CANCELLED]);
     }
 
     public function createSnapshot(Invoice $invoice): void
@@ -143,38 +138,14 @@ class InvoiceService
         InvoiceSnapshot::create([
             'invoice_id' => $invoice->id,
             'name' => $invoice->number,
-            'properties' => [
-                'subtotal' => $totals['subtotal'],
-                'total' => $totals['total'],
-                'items' => $invoice->items->map(fn ($item) => [
-                    'description' => $item->description,
-                    'quantity' => $item->quantity,
-                    'price' => $item->price,
-                ])->toArray(),
-            ],
+            'properties' => $user->properties()
+                ->whereHas('parent_property', fn ($q) => $q->where('show_on_invoice', true))
+                ->pluck('value', 'key')
+                ->toArray(),
             'tax_name' => $totals['tax_name'],
             'tax_rate' => $totals['tax_rate'],
             'tax_country' => $user ? $this->tax->getUserCountry($user) : null,
-            'bill_to' => $user ? $user->name . ' <' . $user->email . '>' : null,
+            'bill_to' => $user ? $user->fullName().' <'.$user->email.'>' : null,
         ]);
-    }
-
-    private function dispatchProvisioning(Service $service): void
-    {
-        try {
-            $job = new ProvisionServer($service);
-            dispatch($job);
-        } catch (\Exception $e) {
-            report($e);
-        }
-    }
-
-    private function dispatchUnsuspend(Service $service): void
-    {
-        try {
-            app(\App\Services\ServiceService::class)->unsuspendService($service);
-        } catch (\Exception $e) {
-            report($e);
-        }
     }
 }

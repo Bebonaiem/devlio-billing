@@ -3,11 +3,8 @@
 namespace App\Services;
 
 use App\Models\Invoice;
-use App\Models\InvoiceItem;
 use App\Models\InvoiceTransaction;
-use App\Models\Order;
 use App\Models\Service;
-use App\Models\ServiceCancellation;
 use App\Models\User;
 
 class BillingService
@@ -16,7 +13,8 @@ class BillingService
     {
         $prefix = config('billing.invoice_prefix', 'INV-');
         $nextId = Invoice::max('id') + 1;
-        return $prefix . str_pad((string) $nextId, 6, '0', STR_PAD_LEFT);
+
+        return $prefix.str_pad((string) $nextId, 6, '0', STR_PAD_LEFT);
     }
 
     public function createInvoice(User $user, array $items, string $currencyCode): Invoice
@@ -65,7 +63,7 @@ class BillingService
             })->where('status', 'pending')
                 ->exists();
 
-            if (!$hasPending) {
+            if (! $hasPending) {
                 $this->createRenewalInvoice($service);
                 $count++;
             }
@@ -97,7 +95,7 @@ class BillingService
 
         $count = 0;
         foreach ($services as $service) {
-            app(\App\Services\ServiceService::class)->suspendService($service);
+            app(ServiceService::class)->suspendService($service);
             $count++;
         }
 
@@ -115,7 +113,7 @@ class BillingService
 
         $count = 0;
         foreach ($services as $service) {
-            app(\App\Services\ServiceService::class)->terminateService($service);
+            app(ServiceService::class)->terminateService($service);
             $count++;
         }
 

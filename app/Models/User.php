@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
+use App\Models\Traits\HasProperties;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
@@ -13,7 +13,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, HasProperties, HasRoles, Notifiable;
 
     protected $fillable = [
         'first_name',
@@ -29,6 +29,7 @@ class User extends Authenticatable
         'email_verified',
         'affiliate_code',
         'referred_by',
+        'role_id',
     ];
 
     protected $hidden = [
@@ -45,6 +46,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'email_verified' => 'boolean',
+            'tfa_secret' => 'encrypted',
         ];
     }
 
@@ -55,6 +57,11 @@ class User extends Authenticatable
                 $user->affiliate_code = Str::random(10);
             }
         });
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 
     public function orders(): HasMany
@@ -142,8 +149,46 @@ class User extends Authenticatable
         return $this->hasManyThrough(Server::class, Service::class);
     }
 
+    public function transactions(): HasManyThrough
+    {
+        return $this->hasManyThrough(InvoiceTransaction::class, Invoice::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->hasRole('admin');
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        if (! $this->role) {
+            return false;
+        }
+
+        if (in_array('*', $this->role->permissions ?? [])) {
+            return true;
+        }
+
+        return in_array($permission, $this->role->permissions ?? []);
+    }
+
+    protected function initials(): string
+    {
+        $first = mb_substr($this->first_name ?? '', 0, 1);
+        $last = mb_substr($this->last_name ?? '', 0, 1);
+
+        return strtoupper($first.$last);
+    }
+
+    protected function avatar(): string
+    {
+        $hash = md5(strtolower(trim($this->email)));
+
+        return "https://www.gravatar.com/avatar/{$hash}?d=mp";
+    }
+
+    protected function fullName(): string
+    {
+        return trim(($this->first_name ?? '').' '.($this->last_name ?? '')) ?: $this->email;
     }
 }

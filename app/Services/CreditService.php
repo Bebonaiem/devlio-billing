@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Credit;
 use App\Models\Invoice;
+use App\Models\InvoiceTransaction;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -27,7 +28,7 @@ class CreditService
         DB::transaction(function () use ($user, $amount, $currencyCode) {
             Credit::updateOrCreate(
                 ['user_id' => $user->id, 'currency_code' => $currencyCode],
-                ['amount' => DB::raw('amount + ' . (float) $amount)]
+                ['amount' => DB::raw('amount + '.(float) $amount)]
             );
         });
     }
@@ -63,7 +64,7 @@ class CreditService
             return 0.0;
         }
 
-        $totals = app(\App\Services\InvoiceService::class)->calculateTotal($invoice);
+        $totals = app(InvoiceService::class)->calculateTotal($invoice);
         $amountToApply = min($balance, $totals['total']);
 
         if ($amountToApply <= 0) {
@@ -82,11 +83,11 @@ class CreditService
 
             $credit->decrement('amount', $amountToApply);
 
-            \App\Models\InvoiceTransaction::create([
+            InvoiceTransaction::create([
                 'invoice_id' => $invoice->id,
                 'amount' => $amountToApply,
                 'fee' => 0,
-                'transaction_id' => 'CREDIT-' . strtoupper(uniqid()),
+                'transaction_id' => 'CREDIT-'.strtoupper(uniqid()),
                 'status' => 'succeeded',
                 'is_credit_transaction' => true,
             ]);

@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasPlans;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Product extends Model
 {
+    use HasPlans;
+
     protected $fillable = [
         'name',
         'slug',
@@ -39,15 +43,24 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function plans(): HasMany
-    {
-        return $this->hasMany(Plan::class, 'priceable_id')
-            ->where('priceable_type', Product::class);
-    }
-
     public function configOptions(): BelongsToMany
     {
-        return $this->belongsToMany(ConfigOption::class, 'config_option_products');
+        return $this->belongsToMany(ConfigOption::class, 'config_option_products')
+            ->where('hidden', false)
+            ->orderBy('sort')
+            ->orderBy('id', 'desc');
+    }
+
+    public function upgradableConfigOptions(): BelongsToMany
+    {
+        return $this->belongsToMany(ConfigOption::class, 'config_option_products')
+            ->where('upgradable', true)
+            ->orderBy('sort');
+    }
+
+    public function server(): BelongsTo
+    {
+        return $this->belongsTo(Server::class);
     }
 
     public function services(): HasMany
@@ -58,5 +71,30 @@ class Product extends Model
     public function cartItems(): HasMany
     {
         return $this->hasMany(CartItem::class);
+    }
+
+    public function settings(): MorphMany
+    {
+        return $this->morphMany(Setting::class, 'settingable');
+    }
+
+    public function upgrades(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'product_upgrades', 'product_id', 'upgrade_id');
+    }
+
+    public function getSetting(string $key, mixed $default = null): mixed
+    {
+        $setting = $this->settings()->where('key', $key)->first();
+
+        return $setting?->value ?? $default;
+    }
+
+    public function setSetting(string $key, mixed $value): void
+    {
+        $this->settings()->updateOrCreate(
+            ['key' => $key],
+            ['value' => $value]
+        );
     }
 }

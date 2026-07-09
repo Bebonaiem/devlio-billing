@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Property;
 use App\Models\TaxRate;
 use App\Models\User;
 
@@ -12,7 +13,7 @@ class TaxService
         $taxRate = TaxRate::where(function ($query) use ($country) {
             $query->where('country', $country)
                 ->orWhere('country', 'all');
-        })->orderByRaw("CASE WHEN country = ? THEN 0 ELSE 1 END", [$country])
+        })->orderByRaw('CASE WHEN country = ? THEN 0 ELSE 1 END', [$country])
             ->first();
 
         if (! $taxRate || $taxRate->rate <= 0) {
@@ -34,7 +35,7 @@ class TaxService
 
     public function getUserCountry(User $user): string
     {
-        $property = \App\Models\Property::where('model_type', User::class)
+        $property = Property::where('model_type', User::class)
             ->where('model_id', $user->id)
             ->where('key', 'country')
             ->first();

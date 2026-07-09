@@ -89,7 +89,7 @@ class ArticleController extends Controller
 
     public function toggle(Article $article)
     {
-        $article->update(['enabled' => !$article->enabled]);
+        $article->update(['enabled' => ! $article->enabled]);
 
         return redirect()->route('admin.articles.index')
             ->with('success', 'Article status updated successfully.');

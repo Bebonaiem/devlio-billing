@@ -11,6 +11,7 @@ use Illuminate\Console\Command;
 class FetchTicketEmails extends Command
 {
     protected $signature = 'app:fetch-emails';
+
     protected $description = 'Fetch ticket emails via IMAP and create ticket messages';
 
     public function handle(): int
@@ -35,7 +36,7 @@ class FetchTicketEmails extends Command
         $mailbox = @imap_open("{mail.{$host}:{$port}/imap/ssl}INBOX", $email, $password);
 
         if (! $mailbox) {
-            $this->error('Failed to connect to IMAP server: ' . imap_last_error());
+            $this->error('Failed to connect to IMAP server: '.imap_last_error());
 
             return Command::FAILURE;
         }
@@ -130,7 +131,7 @@ class FetchTicketEmails extends Command
 
     private function resolveUser(object $header, Ticket $ticket): ?User
     {
-        $fromEmail = strtolower(trim($header->from[0]->mailbox . '@' . $header->from[0]->host));
+        $fromEmail = strtolower(trim($header->from[0]->mailbox.'@'.$header->from[0]->host));
 
         if ($ticket->user && strtolower($ticket->user->email) === $fromEmail) {
             return $ticket->user;

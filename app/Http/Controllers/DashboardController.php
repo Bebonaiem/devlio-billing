@@ -9,10 +9,9 @@ use App\Models\InvoiceTransaction;
 use App\Models\Service;
 use App\Models\Ticket;
 use App\Models\TicketMessage;
-use App\Models\User;
 use App\Services\CreditService;
 use App\Services\InvoiceService;
-use App\Services\ServiceService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -34,7 +33,7 @@ class DashboardController extends Controller
             'pending_invoices' => Invoice::where('user_id', $user->id)->where('status', 'pending')->count(),
             'open_tickets' => Ticket::where('user_id', $user->id)->whereIn('status', ['open', 'awaiting_reply'])->count(),
             'total_spent' => InvoiceTransaction::where('is_credit_transaction', false)
-                ->whereHas('invoice', fn($q) => $q->where('user_id', $user->id)->where('status', 'paid'))
+                ->whereHas('invoice', fn ($q) => $q->where('user_id', $user->id)->where('status', 'paid'))
                 ->sum('amount'),
         ];
 
@@ -68,11 +67,11 @@ class DashboardController extends Controller
         }
 
         foreach ($recentInvoices as $invoice) {
-            $totals = app(\App\Services\InvoiceService::class)->calculateTotal($invoice);
+            $totals = app(InvoiceService::class)->calculateTotal($invoice);
             $activity->push([
                 'type' => 'invoice',
                 'icon' => 'invoice',
-                'title' => 'Invoice ' . $invoice->number . ' - $' . number_format($totals['total'], 2),
+                'title' => 'Invoice '.$invoice->number.' - $'.number_format($totals['total'], 2),
                 'status' => $invoice->status,
                 'date' => $invoice->created_at,
             ]);
@@ -82,7 +81,7 @@ class DashboardController extends Controller
             $activity->push([
                 'type' => 'ticket',
                 'icon' => 'support',
-                'title' => 'Ticket: ' . $ticket->subject,
+                'title' => 'Ticket: '.$ticket->subject,
                 'status' => $ticket->status,
                 'date' => $ticket->created_at,
             ]);
@@ -133,23 +132,23 @@ class DashboardController extends Controller
         }
 
         $invoice->load(['items', 'transactions', 'currency', 'snapshot']);
-        $totals = app(\App\Services\InvoiceService::class)->calculateTotal($invoice);
+        $totals = app(InvoiceService::class)->calculateTotal($invoice);
 
         return view('dashboard.invoice-detail', compact('invoice', 'totals'));
     }
 
     public function downloadPdf(Invoice $invoice)
     {
-        if ($invoice->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+        if ($invoice->user_id !== Auth::id() && ! Auth::user()->isAdmin()) {
             abort(403);
         }
 
         $invoice->load(['items', 'user', 'currency', 'snapshot']);
-        $totals = app(\App\Services\InvoiceService::class)->calculateTotal($invoice);
+        $totals = app(InvoiceService::class)->calculateTotal($invoice);
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('invoices.pdf', compact('invoice', 'totals'));
+        $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'totals'));
 
-        return $pdf->download('invoice-' . $invoice->number . '.pdf');
+        return $pdf->download('invoice-'.$invoice->number.'.pdf');
     }
 
     public function tickets()
@@ -165,6 +164,7 @@ class DashboardController extends Controller
     public function createTicket()
     {
         $services = Service::where('user_id', Auth::id())->whereIn('status', ['active', 'suspended'])->get();
+
         return view('dashboard.tickets.create', compact('services'));
     }
 
@@ -221,7 +221,7 @@ class DashboardController extends Controller
             [
                 'quantity' => 1,
                 'price' => $amount,
-                'description' => "Credit Deposit ({$currencyCode} " . number_format($amount, 2) . ')',
+                'description' => "Credit Deposit ({$currencyCode} ".number_format($amount, 2).')',
             ],
         ], $currencyCode);
 
@@ -242,7 +242,7 @@ class DashboardController extends Controller
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . Auth::id(),
+            'email' => 'required|email|max:255|unique:users,email,'.Auth::id(),
         ]);
 
         Auth::user()->update($validated);
@@ -259,7 +259,7 @@ class DashboardController extends Controller
 
         $user = Auth::user();
 
-        if (!Hash::check($validated['current_password'], $user->password)) {
+        if (! Hash::check($validated['current_password'], $user->password)) {
             return back()->withErrors(['current_password' => 'The current password is incorrect.']);
         }
 

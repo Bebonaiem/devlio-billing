@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Currency;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class CurrencyService
@@ -19,7 +20,7 @@ class CurrencyService
         return Currency::where('code', $code)->first();
     }
 
-    public function getEnabled(): \Illuminate\Database\Eloquent\Collection
+    public function getEnabled(): Collection
     {
         return Currency::where('enabled', true)->get();
     }
@@ -29,12 +30,12 @@ class CurrencyService
         $currency = $this->getByCode($currencyCode);
 
         if (! $currency) {
-            return number_format($amount, 2, '.', '') . ' ' . $currencyCode;
+            return number_format($amount, 2, '.', '').' '.$currencyCode;
         }
 
         $formatted = number_format($amount, 2, '.', '');
 
-        return $currency->prefix . $formatted . $currency->suffix;
+        return $currency->prefix.$formatted.$currency->suffix;
     }
 
     public function convert(float $amount, string $from, string $to): float

@@ -10,6 +10,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class DashboardController extends Controller
 {
@@ -75,13 +76,15 @@ class DashboardController extends Controller
     public function users()
     {
         $users = User::withCount('services', 'invoices')->with('credits')->latest()->paginate(20);
+
         return view('admin.users', compact('users'));
     }
 
     public function userDetail(User $user)
     {
         $user->load(['services.product', 'services.plan', 'invoices', 'tickets', 'credits']);
-        $roles = \Spatie\Permission\Models\Role::all();
+        $roles = Role::all();
+
         return view('admin.user-detail', compact('user', 'roles'));
     }
 
@@ -90,7 +93,7 @@ class DashboardController extends Controller
         $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
             'role' => 'nullable|exists:roles,name',
         ]);
 

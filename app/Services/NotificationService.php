@@ -16,8 +16,8 @@ use App\Models\NotificationTemplate;
 use App\Models\Service;
 use App\Models\Ticket;
 use App\Models\User;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class NotificationService
 {
@@ -65,7 +65,8 @@ class NotificationService
 
             return $success;
         } catch (\Exception $e) {
-            Log::error("Notification send failed for user {$user->id} with template {$templateKey}: " . $e->getMessage());
+            Log::error("Notification send failed for user {$user->id} with template {$templateKey}: ".$e->getMessage());
+
             return false;
         }
     }
@@ -87,23 +88,23 @@ class NotificationService
     {
         return match ($key) {
             'invoice.created' => new InvoiceMail(
-                $data['invoice'] ?? new Invoice(),
+                $data['invoice'] ?? new Invoice,
                 $user
             ),
             'service.activated' => new ServiceActivatedMail(
-                $data['service'] ?? new Service(),
+                $data['service'] ?? new Service,
                 $user
             ),
             'service.suspended' => new ServiceSuspendedMail(
-                $data['service'] ?? new Service(),
+                $data['service'] ?? new Service,
                 $user
             ),
             'service.terminated' => new ServiceTerminatedMail(
-                $data['service'] ?? new Service(),
+                $data['service'] ?? new Service,
                 $user
             ),
             'ticket.reply' => new TicketReplyMail(
-                $data['ticket'] ?? new Ticket(),
+                $data['ticket'] ?? new Ticket,
                 $user,
                 $data['message'] ?? ''
             ),

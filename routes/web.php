@@ -1,26 +1,26 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\CurrencyController as AdminCurrencyController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\DeployController as AdminDeployController;
 use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ServerController as AdminServerController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\UpgradeController as AdminUpgradeController;
-use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
-use App\Http\Controllers\Admin\DeployController as AdminDeployController;
-use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
@@ -29,6 +29,7 @@ use App\Http\Controllers\StorefrontController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\Webhook\PayPalController;
 use App\Http\Controllers\Webhook\StripeController;
+use App\Services\PterodactylService;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StorefrontController::class, 'index'])->name('storefront');
@@ -181,10 +182,10 @@ Route::middleware('auth')->group(function () {
         Route::post('articles/{article}/toggle', [AdminArticleController::class, 'toggle'])->name('articles.toggle');
         Route::post('currencies/{currency}/default', [AdminCurrencyController::class, 'setDefault'])->name('currencies.setDefault');
 
-        Route::get('pterodactyl/nests/{nest}/eggs', function (int $nest, \App\Services\PterodactylService $pterodactyl) {
+        Route::get('pterodactyl/nests/{nest}/eggs', function (int $nest, PterodactylService $pterodactyl) {
             try {
                 return response()->json($pterodactyl->getEggs($nest));
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return response()->json([]);
             }
         })->name('pterodactyl.eggs');

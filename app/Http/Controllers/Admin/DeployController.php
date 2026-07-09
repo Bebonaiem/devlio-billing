@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
 
 class DeployController extends Controller
@@ -23,6 +22,7 @@ class DeployController extends Controller
                 'output' => session('deploy_output'),
             ];
         }
+
         return view('admin.deploy.index', compact('deployResult'));
     }
 
@@ -39,14 +39,18 @@ class DeployController extends Controller
 
         foreach ($commands as $cmd) {
             $result = Process::run($cmd);
-            $output .= "> $cmd\n" . $result->output() . $result->errorOutput() . "\n";
-            if (!$result->successful()) $failed = true;
+            $output .= "> $cmd\n".$result->output().$result->errorOutput()."\n";
+            if (! $result->successful()) {
+                $failed = true;
+            }
         }
 
         if (PHP_OS_FAMILY !== 'Windows') {
             $chown = Process::run("cd $baseDir && chown -R www-data:www-data storage bootstrap/cache 2>&1");
-            $output .= "> chown storage bootstrap/cache\n" . $chown->output() . $chown->errorOutput() . "\n";
-            if (!$chown->successful()) $failed = true;
+            $output .= "> chown storage bootstrap/cache\n".$chown->output().$chown->errorOutput()."\n";
+            if (! $chown->successful()) {
+                $failed = true;
+            }
         }
 
         $status = $failed ? 'error' : 'success';

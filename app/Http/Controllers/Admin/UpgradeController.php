@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\InvoiceTransaction;
 use App\Models\ServiceUpgrade;
 use App\Services\InvoiceService;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,7 @@ class UpgradeController extends Controller
     public function show(ServiceUpgrade $upgrade)
     {
         $upgrade->load(['service.product', 'service.plan', 'service.user', 'plan', 'product', 'invoice']);
+
         return view('admin.upgrades.show', compact('upgrade'));
     }
 
@@ -37,7 +39,7 @@ class UpgradeController extends Controller
             }
 
             $service = $upgrade->service;
-            if (!$service) {
+            if (! $service) {
                 return back()->with('error', 'Service not found.');
             }
 
@@ -59,18 +61,18 @@ class UpgradeController extends Controller
                     [
                         'quantity' => 1,
                         'price' => $priceDiff,
-                        'description' => 'Upgrade: ' . ($service->product->name ?? '') . ' → ' . ($newPlan->name ?? ''),
+                        'description' => 'Upgrade: '.($service->product->name ?? '').' → '.($newPlan->name ?? ''),
                         'reference_id' => $service->id,
                         'reference_type' => $service::class,
                     ],
                 ], $service->currency_code);
 
-                $transaction = \App\Models\InvoiceTransaction::create([
+                $transaction = InvoiceTransaction::create([
                     'invoice_id' => $invoice->id,
                     'gateway_id' => null,
                     'amount' => $priceDiff,
                     'fee' => 0,
-                    'transaction_id' => 'UPGRADE-' . strtoupper(uniqid()),
+                    'transaction_id' => 'UPGRADE-'.strtoupper(uniqid()),
                     'status' => 'succeeded',
                     'is_credit_transaction' => false,
                 ]);

@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Coupon;
 use App\Models\Product;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Collection;
 
 class CouponService
 {
@@ -68,7 +68,7 @@ class CouponService
         ];
     }
 
-    public function getValidCouponsForProduct(Product $product, User $user): \Illuminate\Database\Eloquent\Collection
+    public function getValidCouponsForProduct(Product $product, User $user): Collection
     {
         return Coupon::where(function ($query) use ($product) {
             $query->where('applies_to', 'all')
@@ -81,7 +81,7 @@ class CouponService
         })->where(function ($query) {
             $query->whereNull('expires_at')
                 ->orWhere('expires_at', '>=', now());
-        })->where(function ($query) use ($user) {
+        })->where(function ($query) {
             $query->whereNull('max_uses')
                 ->orWhereRaw('(SELECT COUNT(*) FROM services WHERE services.coupon_id = coupons.id) < coupons.max_uses');
         })->where(function ($query) use ($user) {

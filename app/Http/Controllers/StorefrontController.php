@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
-use App\Models\ConfigOption;
 use App\Models\Currency;
 use App\Models\Product;
-use Illuminate\Http\Request;
 
 class StorefrontController extends Controller
 {

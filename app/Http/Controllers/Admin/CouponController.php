@@ -17,12 +17,14 @@ class CouponController extends Controller
     public function index()
     {
         $coupons = Coupon::withCount('services')->orderBy('created_at', 'desc')->paginate(20);
+
         return view('admin.coupons.index', compact('coupons'));
     }
 
     public function create()
     {
         $products = Product::where('enabled', true)->orderBy('name')->get();
+
         return view('admin.coupons.create', compact('products'));
     }
 
@@ -54,7 +56,7 @@ class CouponController extends Controller
             'applies_to' => $data['applies_to'],
         ]);
 
-        if (!empty($data['products']) && $data['applies_to'] === 'specific') {
+        if (! empty($data['products']) && $data['applies_to'] === 'specific') {
             $coupon->products()->sync($data['products']);
         }
 
@@ -66,13 +68,14 @@ class CouponController extends Controller
     {
         $products = Product::where('enabled', true)->orderBy('name')->get();
         $coupon->load('products');
+
         return view('admin.coupons.edit', compact('coupon', 'products'));
     }
 
     public function update(Request $request, Coupon $coupon)
     {
         $data = $request->validate([
-            'code' => 'required|string|max:255|unique:coupons,code,' . $coupon->id,
+            'code' => 'required|string|max:255|unique:coupons,code,'.$coupon->id,
             'type' => 'required|in:percentage,fixed',
             'value' => 'required|numeric|min:0',
             'max_uses' => 'nullable|integer|min:0',

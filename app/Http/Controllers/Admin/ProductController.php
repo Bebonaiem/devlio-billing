@@ -9,8 +9,8 @@ use App\Models\Currency;
 use App\Models\Plan;
 use App\Models\Price;
 use App\Models\Product;
-use Illuminate\Http\Request;
 use App\Services\PterodactylService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -36,6 +36,7 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::where('enabled', true)->orderBy('name')->get();
+
         return view('admin.products.create', compact('categories'));
     }
 
@@ -68,6 +69,7 @@ class ProductController extends Controller
     {
         $categories = Category::where('enabled', true)->orderBy('name')->get();
         $product->load('plans.prices', 'configOptions');
+
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
@@ -75,7 +77,7 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:products,slug,' . $product->id,
+            'slug' => 'nullable|string|max:255|unique:products,slug,'.$product->id,
             'description' => 'nullable|string',
             'category_id' => 'nullable|exists:categories,id',
             'image' => 'nullable|string|max:255',
@@ -99,6 +101,7 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $product->delete();
+
         return redirect()->route('admin.products.index')
             ->with('success', 'Product deleted successfully.');
     }
@@ -162,7 +165,7 @@ class ProductController extends Controller
             'priceable_type' => Product::class,
         ]);
 
-        if (!empty($validated['prices'])) {
+        if (! empty($validated['prices'])) {
             foreach ($validated['prices'] as $priceData) {
                 Price::create([
                     'plan_id' => $plan->id,
@@ -218,12 +221,12 @@ class ProductController extends Controller
             'allocations' => $validated['allocations'] ?? 1,
         ]);
 
-        if (!empty($validated['prices'])) {
+        if (! empty($validated['prices'])) {
             $existingPriceIds = collect($validated['prices'])->pluck('id')->filter()->toArray();
             $plan->prices()->whereNotIn('id', $existingPriceIds)->delete();
 
             foreach ($validated['prices'] as $priceData) {
-                if (!empty($priceData['id'])) {
+                if (! empty($priceData['id'])) {
                     Price::where('id', $priceData['id'])->update([
                         'currency_code' => $priceData['currency_code'],
                         'price' => $priceData['price'],
@@ -269,6 +272,7 @@ class ProductController extends Controller
     public function categories()
     {
         $categories = Category::withCount('products')->orderBy('order')->get();
+
         return view('admin.products.categories', compact('categories'));
     }
 
@@ -297,7 +301,7 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:categories,slug,' . $category->id,
+            'slug' => 'nullable|string|max:255|unique:categories,slug,'.$category->id,
             'description' => 'nullable|string',
             'parent_id' => 'nullable|exists:categories,id',
             'image' => 'nullable|string|max:255',
@@ -317,6 +321,7 @@ class ProductController extends Controller
     public function destroyCategory(Category $category)
     {
         $category->delete();
+
         return back()->with('success', 'Category deleted successfully.');
     }
 }

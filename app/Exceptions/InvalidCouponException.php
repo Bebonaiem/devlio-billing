@@ -2,6 +2,4 @@
 
 namespace App\Exceptions;
 
-class InvalidCouponException extends CheckoutException
-{
-}
+class InvalidCouponException extends CheckoutException {}

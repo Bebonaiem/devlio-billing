@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\InvoiceTransaction;
 use App\Services\InvoiceService;
-use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
@@ -41,7 +40,7 @@ class InvoiceController extends Controller
 
         $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'totals'));
 
-        return $pdf->download('invoice-' . $invoice->number . '.pdf');
+        return $pdf->download('invoice-'.$invoice->number.'.pdf');
     }
 
     public function markPaid(Invoice $invoice)
@@ -53,7 +52,7 @@ class InvoiceController extends Controller
             'gateway_id' => null,
             'amount' => $totals['total'],
             'fee' => 0,
-            'transaction_id' => 'MANUAL-' . strtoupper(uniqid()),
+            'transaction_id' => 'MANUAL-'.strtoupper(uniqid()),
             'status' => 'succeeded',
             'is_credit_transaction' => false,
         ]);

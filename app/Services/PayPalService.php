@@ -3,15 +3,17 @@
 namespace App\Services;
 
 use App\Models\Invoice;
-use App\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class PayPalService
 {
     private ?string $clientId = null;
+
     private ?string $clientSecret = null;
+
     private string $baseUrl = '';
+
     private ?string $accessToken = null;
 
     public function __construct()
@@ -31,27 +33,29 @@ class PayPalService
 
         $response = Http::withBasicAuth($this->clientId ?? '', $this->clientSecret ?? '')
             ->asForm()
-            ->post($this->baseUrl . '/v1/oauth2/token', [
+            ->post($this->baseUrl.'/v1/oauth2/token', [
                 'grant_type' => 'client_credentials',
             ]);
 
         if ($response->successful()) {
             $this->accessToken = $response->json('access_token');
+
             return $this->accessToken;
         }
 
         Log::error('Failed to get PayPal access token', ['response' => $response->body()]);
+
         return null;
     }
 
     private function apiRequest(string $method, string $endpoint, array $data = []): array
     {
         $token = $this->getAccessToken();
-        if (!$token) {
+        if (! $token) {
             return ['error' => 'Failed to authenticate with PayPal'];
         }
 
-        $url = $this->baseUrl . '/' . ltrim($endpoint, '/');
+        $url = $this->baseUrl.'/'.ltrim($endpoint, '/');
 
         $response = Http::withToken($token)
             ->withHeader('Content-Type', 'application/json')
@@ -81,7 +85,7 @@ class PayPalService
             'intent' => 'CAPTURE',
             'purchase_units' => [[
                 'reference_id' => (string) $invoice->id,
-                'description' => 'Invoice #' . $invoice->number,
+                'description' => 'Invoice #'.$invoice->number,
                 'amount' => [
                     'currency_code' => $invoice->currency_code ?? 'USD',
                     'value' => number_format($amount, 2, '.', ''),
@@ -105,6 +109,7 @@ class PayPalService
                     break;
                 }
             }
+
             return [
                 'id' => $result['id'],
                 'approval_url' => $approvalUrl,
@@ -127,7 +132,7 @@ class PayPalService
     public function verifyWebhookHeaders(array $headers, string $body): bool
     {
         $webhookId = config('services.paypal.webhook_id');
-        if (!$webhookId) {
+        if (! $webhookId) {
             return false;
         }
 
@@ -137,7 +142,7 @@ class PayPalService
         $transmissionSig = $headers['paypal-transmission-sig'][0] ?? null;
         $transmissionTime = $headers['paypal-transmission-time'][0] ?? null;
 
-        if (!$authAlgo || !$certUrl || !$transmissionId || !$transmissionSig || !$transmissionTime) {
+        if (! $authAlgo || ! $certUrl || ! $transmissionId || ! $transmissionSig || ! $transmissionTime) {
             return false;
         }
 

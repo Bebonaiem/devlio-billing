@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AffiliateCommission;
 use App\Models\InvoiceTransaction;
-use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {

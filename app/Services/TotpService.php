@@ -5,8 +5,11 @@ namespace App\Services;
 class TotpService
 {
     private const SECRET_LENGTH = 16;
+
     private const TIME_STEP = 30;
+
     private const DIGITS = 6;
+
     private const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
 
     public function generateSecret(): string
@@ -58,7 +61,7 @@ class TotpService
 
     private function generateCodeFromTime(string $secret, int $timeCounter): string
     {
-        $timeBytes = pack('N*', 0) . pack('N*', $timeCounter);
+        $timeBytes = pack('N*', 0).pack('N*', $timeCounter);
         $secretBytes = $this->base32Decode($secret);
 
         $hmac = hash_hmac('sha1', $timeBytes, $secretBytes, true);

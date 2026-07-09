@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Server;
 use App\Models\User;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
@@ -11,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 class PterodactylService
 {
     private string $baseUrl;
+
     private string $apiKey;
 
     public function __construct()
@@ -21,10 +21,10 @@ class PterodactylService
 
     private function applicationRequest(string $method, string $endpoint, array $data = []): Response
     {
-        $url = $this->baseUrl . '/api/application/' . ltrim($endpoint, '/');
+        $url = $this->baseUrl.'/api/application/'.ltrim($endpoint, '/');
 
         return Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->apiKey,
+            'Authorization' => 'Bearer '.$this->apiKey,
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
         ])->$method($url, $data);
@@ -36,6 +36,7 @@ class PterodactylService
             return $this->applicationRequest($method, $endpoint, $data);
         } catch (\Exception $e) {
             report($e);
+
             return null;
         }
     }
@@ -43,13 +44,14 @@ class PterodactylService
     public function testConnection(): bool
     {
         $response = $this->safeRequest('get', '/users?per_page=1');
+
         return $response?->successful() ?? false;
     }
 
     public function createUser(User $user): ?string
     {
         $response = $this->safeRequest('post', '/users', [
-            'username' => strtolower(preg_replace('/[^a-zA-Z0-9_-]/', '', $user->name)) . '_' . $user->id,
+            'username' => strtolower(preg_replace('/[^a-zA-Z0-9_-]/', '', $user->name)).'_'.$user->id,
             'email' => $user->email,
             'first_name' => explode(' ', $user->name, 2)[0] ?? $user->name,
             'last_name' => explode(' ', $user->name, 2)[1] ?? '',
@@ -66,6 +68,7 @@ class PterodactylService
                     'pterodactyl_user_id' => $pterodactylId,
                     'pterodactyl_api_key' => $apiKey,
                 ]);
+
                 return $pterodactylId;
             }
         }
@@ -81,12 +84,13 @@ class PterodactylService
     public function createClientApiKey(int $pterodactylUserId, User $user): ?string
     {
         $response = $this->safeRequest('post', "/users/{$pterodactylUserId}/api-keys", [
-            'description' => 'Client API key for ' . ($user->email ?? $user->id),
+            'description' => 'Client API key for '.($user->email ?? $user->id),
             'allowed_ips' => ['*'],
         ]);
 
         if ($response && $response->successful()) {
             $attributes = $response->json('attributes') ?? [];
+
             return $attributes['token'] ?? null;
         }
 
@@ -97,9 +101,9 @@ class PterodactylService
     {
         $pterodactylUserId = $user->pterodactyl_user_id;
 
-        if (!$pterodactylUserId) {
+        if (! $pterodactylUserId) {
             $pterodactylUserId = $this->createUser($user);
-            if (!$pterodactylUserId) {
+            if (! $pterodactylUserId) {
                 return null;
             }
         }
@@ -146,6 +150,7 @@ class PterodactylService
 
         if ($response && $response->successful()) {
             $attributes = $response->json('attributes') ?? $response->json('data.attributes');
+
             return [
                 'id' => $attributes['id'] ?? null,
                 'identifier' => $attributes['identifier'] ?? null,
@@ -164,18 +169,21 @@ class PterodactylService
     public function suspendServer(string $serverId): bool
     {
         $response = $this->safeRequest('post', "/servers/{$serverId}/suspend");
+
         return $response?->successful() ?? false;
     }
 
     public function unsuspendServer(string $serverId): bool
     {
         $response = $this->safeRequest('post', "/servers/{$serverId}/unsuspend");
+
         return $response?->successful() ?? false;
     }
 
     public function terminateServer(string $serverId): bool
     {
         $response = $this->safeRequest('delete', "/servers/{$serverId}");
+
         return $response?->successful() ?? false;
     }
 
@@ -193,36 +201,42 @@ class PterodactylService
     public function getNests(): array
     {
         $response = $this->safeRequest('get', '/nests');
+
         return $response?->successful() ? ($response->json('data') ?? []) : [];
     }
 
     public function getEggs(int $nestId): array
     {
         $response = $this->safeRequest('get', "/nests/{$nestId}/eggs");
+
         return $response?->successful() ? ($response->json('data') ?? []) : [];
     }
 
     public function getEggDetails(int $nestId, int $eggId): ?array
     {
         $response = $this->safeRequest('get', "/nests/{$nestId}/eggs/{$eggId}");
+
         return $response?->successful() ? ($response->json('attributes') ?? $response->json('data.attributes')) : null;
     }
 
     public function getLocations(): array
     {
         $response = $this->safeRequest('get', '/locations');
+
         return $response?->successful() ? ($response->json('data') ?? []) : [];
     }
 
     public function getNodes(): array
     {
         $response = $this->safeRequest('get', '/nodes');
+
         return $response?->successful() ? ($response->json('data') ?? []) : [];
     }
 
     public function getNodeAllocations(int $nodeId): array
     {
         $response = $this->safeRequest('get', "/nodes/{$nodeId}/allocations");
+
         return $response?->successful() ? ($response->json('data') ?? []) : [];
     }
 
@@ -255,15 +269,15 @@ class PterodactylService
     {
         $apiKey = $user->pterodactyl_api_key;
 
-        if (!$apiKey) {
+        if (! $apiKey) {
             return null;
         }
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $apiKey,
+                'Authorization' => 'Bearer '.$apiKey,
                 'Accept' => 'application/json',
-            ])->get($this->baseUrl . "/api/client/servers/{$serverIdentifier}/resources");
+            ])->get($this->baseUrl."/api/client/servers/{$serverIdentifier}/resources");
 
             if ($response->successful()) {
                 return $response->json('attributes');

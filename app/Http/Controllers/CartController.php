@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\CartItem;
-use App\Models\ConfigOption;
-use App\Models\Plan;
+use App\Models\Coupon;
 use App\Models\Currency;
+use App\Models\Plan;
+use App\Models\Service;
+use App\Services\CouponService;
+use App\Services\TaxService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -14,7 +17,7 @@ use Illuminate\Support\Str;
 class CartController extends Controller
 {
     public function __construct(
-        private readonly \App\Services\TaxService $tax,
+        private readonly TaxService $tax,
     ) {
         $this->middleware('auth');
     }
@@ -79,7 +82,7 @@ class CartController extends Controller
         $product = $plan->priceable;
         $currencyCode = session('currency', config('billing.default_currency', 'USD'));
 
-        if (!$product || !$product->enabled) {
+        if (! $product || ! $product->enabled) {
             return back()->with('error', 'This product is no longer available.');
         }
 
@@ -88,7 +91,7 @@ class CartController extends Controller
         }
 
         if ($product->per_user_limit !== null) {
-            $existingCount = \App\Models\Service::where('user_id', $user->id)
+            $existingCount = Service::where('user_id', $user->id)
                 ->where('product_id', $product->id)
                 ->count();
 
@@ -110,7 +113,7 @@ class CartController extends Controller
             ->first(fn ($item) => $item->config_options == ($validated['config_options'] ?? []));
 
         if ($existingItem) {
-            if (!$product->allow_quantity) {
+            if (! $product->allow_quantity) {
                 return back()->with('error', 'Only one of this item is allowed.');
             }
             $existingItem->increment('quantity', $validated['quantity'] ?? 1);
@@ -183,17 +186,17 @@ class CartController extends Controller
             ->where('currency_code', $currencyCode)
             ->first();
 
-        if (!$cart || $cart->items->isEmpty()) {
+        if (! $cart || $cart->items->isEmpty()) {
             return back()->with('error', 'Your cart is empty.');
         }
 
-        $coupon = \App\Models\Coupon::where('code', $validated['code'])->first();
+        $coupon = Coupon::where('code', $validated['code'])->first();
 
-        if (!$coupon || !$coupon->isActive()) {
+        if (! $coupon || ! $coupon->isActive()) {
             return back()->with('error', 'Invalid or expired coupon code.');
         }
 
-        $couponService = app(\App\Services\CouponService::class);
+        $couponService = app(CouponService::class);
         $couponValid = false;
         foreach ($cart->items as $cartItem) {
             if ($couponService->validate($coupon, $user, $cartItem->product)) {

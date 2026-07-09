@@ -8,12 +8,13 @@ use App\Models\Invoice;
 use App\Models\InvoiceTransaction;
 use App\Services\CreditService;
 use App\Services\InvoiceService;
+use App\Services\PayPalService;
 use Illuminate\Http\Request;
 
 class PayPalController extends Controller
 {
     public function __construct(
-        private readonly \App\Services\PayPalService $paypal,
+        private readonly PayPalService $paypal,
         private readonly InvoiceService $invoiceService,
     ) {
         $this->gatewayId = Extension::where('extension', 'paypal')->value('id');
@@ -28,7 +29,7 @@ class PayPalController extends Controller
             $request->getContent()
         );
 
-        if (!$verified) {
+        if (! $verified) {
             return response()->json(['error' => 'Invalid signature'], 400);
         }
 
@@ -58,15 +59,17 @@ class PayPalController extends Controller
         $purchaseUnits = $resource['purchase_units'] ?? [];
         foreach ($purchaseUnits as $unit) {
             $invoiceId = $unit['reference_id'] ?? null;
-            if ($invoiceId) break;
+            if ($invoiceId) {
+                break;
+            }
         }
 
-        if (!$invoiceId) {
+        if (! $invoiceId) {
             return response()->json(['error' => 'No invoice reference'], 400);
         }
 
         $invoice = Invoice::find($invoiceId);
-        if (!$invoice || $invoice->isPaid()) {
+        if (! $invoice || $invoice->isPaid()) {
             return response()->json(['status' => 'already_paid']);
         }
 

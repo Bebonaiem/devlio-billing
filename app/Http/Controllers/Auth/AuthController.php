@@ -8,8 +8,12 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
 {
@@ -53,19 +57,19 @@ class AuthController extends Controller
         $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:' . User::class],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
-            'name' => $request->first_name . ' ' . $request->last_name,
+            'name' => $request->first_name.' '.$request->last_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
 
-        if (\Spatie\Permission\Models\Role::where('name', 'customer')->exists()) {
+        if (Role::where('name', 'customer')->exists()) {
             $user->assignRole('customer');
         }
 
@@ -85,19 +89,19 @@ class AuthController extends Controller
         $request->validate(['email' => 'required|email']);
 
         $user = User::where('email', $request->email)->first();
-        if (!$user) {
+        if (! $user) {
             return back()->withErrors(['email' => 'No account found with this email.']);
         }
 
-        $token = \Illuminate\Support\Str::random(60);
-        \Illuminate\Support\Facades\DB::table('password_reset_tokens')->updateOrInsert(
+        $token = Str::random(60);
+        DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $request->email],
             ['email' => $request->email, 'token' => bcrypt($token), 'created_at' => now()]
         );
 
-        $link = url('/password/reset/' . $token);
+        $link = url('/password/reset/'.$token);
 
-        \Illuminate\Support\Facades\Mail::raw("Click here to reset your password: $link", function ($message) use ($request) {
+        Mail::raw("Click here to reset your password: $link", function ($message) use ($request) {
             $message->to($request->email)->subject('Password Reset');
         });
 
@@ -117,10 +121,10 @@ class AuthController extends Controller
             'token' => 'required',
         ]);
 
-        $record = \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+        $record = DB::table('password_reset_tokens')
             ->where('email', $request->email)->first();
 
-        if (!$record || !\Illuminate\Support\Facades\Hash::check($request->token, $record->token)) {
+        if (! $record || ! Hash::check($request->token, $record->token)) {
             return back()->withErrors(['email' => 'Invalid token.']);
         }
 
@@ -129,7 +133,7 @@ class AuthController extends Controller
             $user->update(['password' => bcrypt($request->password)]);
         }
 
-        \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+        DB::table('password_reset_tokens')
             ->where('email', $request->email)->delete();
 
         return redirect('/login')->with('success', 'Password reset successfully.');
@@ -140,6 +144,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/');
     }
 }

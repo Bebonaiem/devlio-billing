@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Spatie\Permission\Models\Role;
 
 class SocialAuthController extends Controller
 {
@@ -16,7 +17,7 @@ class SocialAuthController extends Controller
 
     public function redirect(string $provider): RedirectResponse
     {
-        if (!in_array($provider, $this->providers)) {
+        if (! in_array($provider, $this->providers)) {
             abort(404);
         }
 
@@ -25,7 +26,7 @@ class SocialAuthController extends Controller
 
     public function callback(string $provider): RedirectResponse
     {
-        if (!in_array($provider, $this->providers)) {
+        if (! in_array($provider, $this->providers)) {
             abort(404);
         }
 
@@ -33,7 +34,7 @@ class SocialAuthController extends Controller
             $socialUser = Socialite::driver($provider)->user();
         } catch (\Exception $e) {
             return redirect('/login')->withErrors([
-                'email' => 'Unable to authenticate with ' . ucfirst($provider) . '. Please try again.',
+                'email' => 'Unable to authenticate with '.ucfirst($provider).'. Please try again.',
             ]);
         }
 
@@ -62,7 +63,7 @@ class SocialAuthController extends Controller
             'email_verified_at' => now(),
         ]);
 
-        if (\Spatie\Permission\Models\Role::where('name', 'customer')->exists()) {
+        if (Role::where('name', 'customer')->exists()) {
             $user->assignRole('customer');
         }
 

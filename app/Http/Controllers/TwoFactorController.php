@@ -57,7 +57,7 @@ class TwoFactorController extends Controller
         $user = Auth::user();
         $secret = $user->tfa_secret;
 
-        if (!$secret) {
+        if (! $secret) {
             $secret = $this->totpService->generateSecret();
             session(['pending_tfa_secret' => $secret]);
         }
@@ -73,7 +73,7 @@ class TwoFactorController extends Controller
             'secret' => $secret,
             'qrCodeUrl' => $qrCodeUrl,
             'formattedSecret' => $this->totpService->formatSecret($secret),
-            'isEnabled' => !empty($user->tfa_secret),
+            'isEnabled' => ! empty($user->tfa_secret),
         ]);
     }
 
@@ -87,7 +87,7 @@ class TwoFactorController extends Controller
         $code = $validated['code'];
         $secret = $validated['secret'];
 
-        if (!$this->totpService->verifyCode($secret, $code)) {
+        if (! $this->totpService->verifyCode($secret, $code)) {
             return back()->withErrors([
                 'code' => 'The verification code is invalid. Please try again.',
             ]);
@@ -107,13 +107,13 @@ class TwoFactorController extends Controller
 
         $user = Auth::user();
 
-        if (!$user->tfa_secret) {
+        if (! $user->tfa_secret) {
             return back()->withErrors([
                 'code' => 'Two-factor authentication is not enabled.',
             ]);
         }
 
-        if (!$this->totpService->verifyCode($user->tfa_secret, $validated['code'])) {
+        if (! $this->totpService->verifyCode($user->tfa_secret, $validated['code'])) {
             return back()->withErrors([
                 'code' => 'The verification code is invalid. Please try again.',
             ]);
