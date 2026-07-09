@@ -2,141 +2,143 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Invoice {{ $invoice->number }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice #{{ $invoice->number }}</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 13px; line-height: 1.5; }
-        .invoice-container { width: 100%; max-width: 800px; margin: 0 auto; padding: 40px 50px; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 3px solid #1a1a2e; }
-        .company-info h1 { font-size: 28px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
-        .company-info p { font-size: 12px; color: #555; line-height: 1.6; }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 12px; color: #333; line-height: 1.5; }
+        .invoice-container { max-width: 800px; margin: 0 auto; padding: 30px; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #4f46e5; padding-bottom: 20px; }
+        .company-info { flex: 1; }
+        .company-name { font-size: 24px; font-weight: bold; color: #4f46e5; margin-bottom: 5px; }
+        .company-details { color: #666; font-size: 11px; }
         .invoice-title { text-align: right; }
-        .invoice-title h2 { font-size: 36px; font-weight: 700; color: #1a1a2e; text-transform: uppercase; letter-spacing: 2px; }
-        .invoice-title .invoice-number { font-size: 14px; color: #555; margin-top: 4px; }
-        .meta-section { display: flex; justify-content: space-between; margin-bottom: 35px; }
-        .meta-box { width: 48%; }
-        .meta-box h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 10px; font-weight: 600; }
-        .meta-box p { font-size: 13px; color: #333; line-height: 1.7; }
-        .meta-box .label { font-weight: 600; color: #1a1a2e; }
-        .status-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 6px; }
-        .status-paid { background: #d4edda; color: #155724; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-overdue { background: #f8d7da; color: #721c24; }
-        .status-cancelled { background: #e2e3e5; color: #383d41; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        thead th { background: #1a1a2e; color: #fff; padding: 12px 16px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        thead th:last-child { text-align: right; }
-        thead th.text-center { text-align: center; }
-        tbody td { padding: 12px 16px; border-bottom: 1px solid #eee; font-size: 13px; color: #333; }
-        tbody td:last-child { text-align: right; font-weight: 600; }
-        tbody td.text-center { text-align: center; }
-        tbody tr:nth-child(even) { background: #f8f9fa; }
-        .totals-section { display: flex; justify-content: flex-end; margin-bottom: 40px; }
-        .totals-table { width: 300px; }
-        .totals-table .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; color: #555; }
-        .totals-table .row.total { border-top: 2px solid #1a1a2e; padding-top: 12px; margin-top: 4px; font-size: 18px; font-weight: 700; color: #1a1a2e; }
-        .footer { text-align: center; padding-top: 30px; border-top: 1px solid #eee; color: #888; font-size: 11px; }
-        .footer p { margin-bottom: 4px; }
+        .invoice-title h1 { font-size: 28px; color: #4f46e5; text-transform: uppercase; }
+        .invoice-number { font-size: 14px; color: #666; margin-top: 5px; }
+        .invoice-meta { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .meta-box { flex: 1; padding: 15px; background: #f8fafc; border-radius: 8px; margin-right: 15px; }
+        .meta-box:last-child { margin-right: 0; }
+        .meta-label { font-size: 10px; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.5px; margin-bottom: 5px; }
+        .meta-value { font-size: 13px; font-weight: 600; }
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        .items-table th { background: #4f46e5; color: white; padding: 12px 15px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .items-table th:last-child { text-align: right; }
+        .items-table td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; }
+        .items-table td:last-child { text-align: right; font-weight: 600; }
+        .items-table tr:nth-child(even) { background: #f8fafc; }
+        .totals { display: flex; justify-content: flex-end; margin-bottom: 30px; }
+        .totals-box { width: 300px; }
+        .totals-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0; }
+        .totals-row:last-child { border-bottom: none; }
+        .totals-row.total { font-size: 16px; font-weight: bold; color: #4f46e5; border-top: 2px solid #4f46e5; padding-top: 12px; margin-top: 5px; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-paid { background: #d1fae5; color: #065f46; }
+        .status-overdue { background: #fee2e2; color: #991b1b; }
+        .status-cancelled { background: #e5e7eb; color: #374151; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; color: #94a3b8; font-size: 10px; }
+        .payment-info { background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .payment-info h3 { color: #0369a1; font-size: 13px; margin-bottom: 8px; }
+        .payment-info p { font-size: 11px; color: #0c4a6e; }
     </style>
 </head>
 <body>
     <div class="invoice-container">
         <div class="header">
             <div class="company-info">
-                <h1>{{ \App\Models\Setting::get('company_name', config('app.name', 'My Company')) }}</h1>
-                @php
-                    $companyAddress = \App\Models\Setting::get('company_address', '');
-                    $companyEmail = \App\Models\Setting::get('company_email', '');
-                    $companyPhone = \App\Models\Setting::get('company_phone', '');
-                @endphp
-                @if($companyAddress)
-                    <p>{!! nl2br(e($companyAddress)) !!}</p>
-                @endif
-                @if($companyEmail)
-                    <p>{{ $companyEmail }}</p>
-                @endif
-                @if($companyPhone)
-                    <p>{{ $companyPhone }}</p>
-                @endif
+                <div class="company-name">{{ config('settings.company_name', 'Your Company') }}</div>
+                <div class="company-details">
+                    {{ config('settings.company_address', '') }}<br>
+                    {{ config('settings.company_city', '') }}<br>
+                    {{ config('settings.company_country', '') }}<br>
+                    {{ config('settings.company_email', '') }}
+                </div>
             </div>
             <div class="invoice-title">
-                <h2>Invoice</h2>
-                <div class="invoice-number">{{ $invoice->number }}</div>
+                <h1>Invoice</h1>
+                <div class="invoice-number">#{{ $invoice->number }}</div>
+                <div class="status-badge status-{{ $invoice->status }}">{{ ucfirst($invoice->status) }}</div>
             </div>
         </div>
 
-        <div class="meta-section">
+        <div class="invoice-meta">
             <div class="meta-box">
-                <h3>Bill To</h3>
-                @if($invoice->snapshot && $invoice->snapshot->bill_to)
-                    <p class="label">{{ $invoice->snapshot->bill_to }}</p>
-                @else
-                    <p class="label">{{ $invoice->user->name }}</p>
-                    <p>{{ $invoice->user->email }}</p>
-                @endif
-                @if($invoice->user->first_name || $invoice->user->last_name)
-                    <p>{{ trim($invoice->user->first_name . ' ' . $invoice->user->last_name) }}</p>
-                @endif
+                <div class="meta-label">{{ $invoice->bill_to }}</div>
+                <div class="meta-value">
+                    {{ $invoice->user_name }}<br>
+                    @if(!empty($invoice->user_properties))
+                        @foreach($invoice->user_properties as $key => $value)
+                            {{ $value }}<br>
+                        @endforeach
+                    @endif
+                </div>
             </div>
-            <div class="meta-box" style="text-align: right;">
-                <h3>Invoice Details</h3>
-                <p><span class="label">Date:</span> {{ $invoice->created_at->format('M j, Y') }}</p>
-                @if($invoice->due_at)
-                    <p><span class="label">Due Date:</span> {{ $invoice->due_at->format('M j, Y') }}</p>
-                @endif
-                @if($invoice->currency_code)
-                    <p><span class="label">Currency:</span> {{ $invoice->currency_code }}</p>
-                @endif
-                <p style="margin-top: 6px;">
-                    <span class="label">Status:</span>
-                    <span class="status-badge status-{{ $invoice->status }}">{{ ucfirst($invoice->status) }}</span>
-                </p>
+            <div class="meta-box">
+                <div class="meta-label">Invoice Date</div>
+                <div class="meta-value">{{ $invoice->created_at->format('M d, Y') }}</div>
+            </div>
+            <div class="meta-box">
+                <div class="meta-label">Due Date</div>
+                <div class="meta-value">{{ $invoice->due_at ? $invoice->due_at->format('M d, Y') : 'Upon Receipt' }}</div>
             </div>
         </div>
 
-        <table>
+        @if(!$invoice->isPaid())
+        <div class="payment-info">
+            <h3>Payment Instructions</h3>
+            <p>Please pay this invoice by the due date. You can pay online through your dashboard or contact us for alternative payment methods.</p>
+        </div>
+        @endif
+
+        <table class="items-table">
             <thead>
                 <tr>
-                    <th style="width: 50%;">Description</th>
-                    <th class="text-center" style="width: 15%;">Qty</th>
-                    <th style="width: 17%;">Unit Price</th>
-                    <th style="width: 18%;">Total</th>
+                    <th>Description</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($invoice->items as $item)
-                    <tr>
-                        <td>{{ $item->description }}</td>
-                        <td class="text-center">{{ $item->quantity }}</td>
-                        <td>{{ $invoice->currency ? $invoice->currency->symbol : '$' }}{{ number_format($item->price, 2) }}</td>
-                        <td>{{ $invoice->currency ? $invoice->currency->symbol : '$' }}{{ number_format($item->price * $item->quantity, 2) }}</td>
-                    </tr>
+                <tr>
+                    <td>{{ $item->description }}</td>
+                    <td>{{ $item->quantity }}</td>
+                    <td>{{ $invoice->currency->prefix ?? '' }}{{ number_format($item->price, 2) }}{{ $invoice->currency->suffix ?? '' }}</td>
+                    <td>{{ $invoice->currency->prefix ?? '' }}{{ number_format($item->quantity * $item->price, 2) }}{{ $invoice->currency->suffix ?? '' }}</td>
+                </tr>
                 @endforeach
             </tbody>
         </table>
 
-        <div class="totals-section">
-            <div class="totals-table">
-                <div class="row">
+        <div class="totals">
+            <div class="totals-box">
+                <div class="totals-row">
                     <span>Subtotal</span>
-                    <span>{{ $invoice->currency ? $invoice->currency->symbol : '$' }}{{ number_format($totals['subtotal'], 2) }}</span>
+                    <span>{{ $invoice->currency->prefix ?? '' }}{{ number_format($invoice->total(), 2) }}{{ $invoice->currency->suffix ?? '' }}</span>
                 </div>
-                @if($totals['tax'] > 0)
-                    <div class="row">
-                        <span>{{ $totals['tax_name'] }} ({{ $totals['tax_rate'] }}%)</span>
-                        <span>{{ $invoice->currency ? $invoice->currency->symbol : '$' }}{{ number_format($totals['tax'], 2) }}</span>
-                    </div>
+                @if(($totals['tax_amount'] ?? 0) > 0)
+                <div class="totals-row">
+                    <span>Tax ({{ number_format($totals['tax_rate'] ?? 0, 1) }}%)</span>
+                    <span>{{ $invoice->currency->prefix ?? '' }}{{ number_format($totals['tax_amount'], 2) }}{{ $invoice->currency->suffix ?? '' }}</span>
+                </div>
                 @endif
-                <div class="row total">
-                    <span>Total</span>
-                    <span>{{ $invoice->currency ? $invoice->currency->symbol : '$' }}{{ number_format($totals['total'], 2) }}</span>
+                @if(($totals['discount'] ?? 0) > 0)
+                <div class="totals-row">
+                    <span>Discount</span>
+                    <span>-{{ $invoice->currency->prefix ?? '' }}{{ number_format($totals['discount'], 2) }}{{ $invoice->currency->suffix ?? '' }}</span>
+                </div>
+                @endif
+                <div class="totals-row total">
+                    <span>{{ $invoice->isPaid() ? 'Amount Paid' : 'Amount Due' }}</span>
+                    <span>{{ $invoice->currency->prefix ?? '' }}{{ number_format($totals['total'] ?? $invoice->total(), 2) }}{{ $invoice->currency->suffix ?? '' }}</span>
                 </div>
             </div>
         </div>
 
         <div class="footer">
-            <p>{{ \App\Models\Setting::get('company_name', config('app.name', 'My Company')) }}</p>
-            <p>Thank you for your business.</p>
+            <p>{{ config('settings.invoice_footer', 'Thank you for your business!') }}</p>
+            <p style="margin-top: 5px;">{{ config('settings.company_name', 'Your Company') }} | {{ config('settings.company_email', '') }} | {{ config('settings.company_website', '') }}</p>
         </div>
     </div>
 </body>

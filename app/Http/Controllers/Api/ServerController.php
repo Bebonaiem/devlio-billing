@@ -3,29 +3,30 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Service;
-use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\Server;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ServerController extends Controller
 {
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        $services = Service::where('user_id', request()->user()->id)
-            ->with('product', 'plan')
+        $servers = Server::with(['product', 'service'])
+            ->where('user_id', $request->user()->id)
             ->latest()
-            ->get();
+            ->paginate($request->get('per_page', 15));
 
-        return JsonResource::collection($services);
+        return response()->json($servers);
     }
 
-    public function show(Service $server)
+    public function show(Request $request, Server $server): JsonResponse
     {
-        if ($server->user_id !== request()->user()->id) {
+        if ($server->user_id !== $request->user()->id) {
             abort(403);
         }
 
-        $server->load('product', 'plan.prices', 'configs.configOption', 'configs.configValue');
+        $server->load(['product', 'service', 'service.plan']);
 
-        return new JsonResource($server);
+        return response()->json($server);
     }
 }

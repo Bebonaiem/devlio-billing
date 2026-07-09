@@ -29,6 +29,7 @@ use App\Http\Controllers\StorefrontController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\Webhook\PayPalController;
 use App\Http\Controllers\Webhook\StripeController;
+use App\Http\Controllers\WebPushController;
 use App\Livewire\Cart;
 use App\Livewire\Checkout;
 use App\Livewire\Credits;
@@ -71,6 +72,9 @@ Route::middleware(['guest', 'throttle:10,1'])->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/webpush/subscribe', [WebPushController::class, 'subscribe'])->name('webpush.subscribe');
+    Route::post('/webpush/unsubscribe', [WebPushController::class, 'unsubscribe'])->name('webpush.unsubscribe');
+
     Route::prefix('cart')->name('cart.')->group(function () {
         Route::get('/', Cart::class)->name('index');
         Route::post('/add', [CartController::class, 'add'])->name('add');

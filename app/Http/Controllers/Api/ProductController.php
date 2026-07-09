@@ -4,29 +4,27 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        $products = Product::where('enabled', true)
+        $products = Product::with(['category', 'plans.prices.currency'])
+            ->where('enabled', true)
             ->where('hidden', false)
-            ->with('plans')
-            ->orderBy('name')
-            ->get();
+            ->when($request->category, fn ($q, $category) => $q->where('category_id', $category))
+            ->when($request->search, fn ($q, $search) => $q->where('name', 'like', "%{$search}%"))
+            ->paginate($request->get('per_page', 15));
 
-        return JsonResource::collection($products);
+        return response()->json($products);
     }
 
-    public function show(Product $product)
+    public function show(Product $product): JsonResponse
     {
-        if (! $product->enabled || $product->hidden) {
-            abort(404);
-        }
+        $product->load(['category', 'plans.prices.currency', 'configOptions']);
 
-        $product->load(['plans.prices', 'configOptions', 'category']);
-
-        return new JsonResource($product);
+        return response()->json($product);
     }
 }
