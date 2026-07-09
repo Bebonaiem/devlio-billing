@@ -105,6 +105,7 @@ class PlanController extends Controller
         } catch (\Exception $e) {
             $nests = [];
         }
+        $plan->load('prices');
         return view('admin.plans.edit', compact('plan', 'products', 'currencies', 'nests'));
     }
 

@@ -113,7 +113,23 @@
                 </div>
             </div>
         </div>
-        <p class="text-xs text-dark-500">Prices are managed per currency in the prices section.</p>
+        <div class="border-t border-white/5 pt-4">
+            <h4 class="text-sm font-semibold text-dark-300 mb-3">Prices</h4>
+            <div class="space-y-2">
+                @foreach ($currencies as $i => $currency)
+                    @php $price = $plan->prices->firstWhere('currency_code', $currency->code); @endphp
+                    <div class="flex gap-2 items-center">
+                        <span class="text-sm text-dark-400 w-16">{{ $currency->code }}</span>
+                        <input type="hidden" name="prices[{{ $i }}][currency_code]" value="{{ $currency->code }}">
+                        @if ($price)
+                            <input type="hidden" name="prices[{{ $i }}][id]" value="{{ $price->id }}">
+                        @endif
+                        <input type="number" step="0.01" min="0" name="prices[{{ $i }}][price]" placeholder="Price" value="{{ old('prices.' . $i . '.price', $price->price ?? '') }}" class="flex-1 px-3 py-2 rounded-xl input-field text-white text-sm">
+                        <input type="number" step="0.01" min="0" name="prices[{{ $i }}][setup_fee]" placeholder="Setup Fee" value="{{ old('prices.' . $i . '.setup_fee', $price->setup_fee ?? 0) }}" class="flex-1 px-3 py-2 rounded-xl input-field text-white text-sm">
+                    </div>
+                @endforeach
+            </div>
+        </div>
         <button type="submit" class="w-full py-3 px-4 btn-primary text-white font-medium rounded-xl text-sm">Update Plan</button>
     </form>
 </div>
