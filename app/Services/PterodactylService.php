@@ -30,26 +30,25 @@ class PterodactylService
         ])->$method($url, $data);
     }
 
-    private function clientRequest(string $method, string $endpoint, array $data = []): Response
+    private function safeRequest(string $method, string $endpoint, array $data = []): ?Response
     {
-        $url = $this->baseUrl . '/api/client/' . ltrim($endpoint, '/');
-
-        return Http::withHeaders([
-            'Authorization' => 'Bearer ' . $this->apiKey,
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json',
-        ])->$method($url, $data);
+        try {
+            return $this->applicationRequest($method, $endpoint, $data);
+        } catch (\Exception $e) {
+            report($e);
+            return null;
+        }
     }
 
     public function testConnection(): bool
     {
-        $response = $this->applicationRequest('get', '/users?per_page=1');
-        return $response->successful();
+        $response = $this->safeRequest('get', '/users?per_page=1');
+        return $response?->successful() ?? false;
     }
 
     public function createUser(User $user): ?string
     {
-        $response = $this->applicationRequest('post', '/users', [
+        $response = $this->safeRequest('post', '/users', [
             'username' => strtolower(preg_replace('/[^a-zA-Z0-9_-]/', '', $user->name)) . '_' . $user->id,
             'email' => $user->email,
             'first_name' => explode(' ', $user->name, 2)[0] ?? $user->name,
@@ -57,9 +56,8 @@ class PterodactylService
             'password' => bin2hex(random_bytes(16)),
         ]);
 
-        if ($response->successful()) {
+        if ($response && $response->successful()) {
             $pterodactylId = $response->json('attributes.id');
-            // Generate a client API key for this user
             $apiKey = $this->createClientApiKey($pterodactylId, $user);
             $user->update([
                 'pterodactyl_user_id' => $pterodactylId,
@@ -70,7 +68,7 @@ class PterodactylService
 
         Log::error('Failed to create Pterodactyl user', [
             'user_id' => $user->id,
-            'response' => $response->body(),
+            'response' => $response?->body() ?? 'No response',
         ]);
 
         return null;
@@ -78,9 +76,6 @@ class PterodactylService
 
     public function createClientApiKey(int $pterodactylUserId, User $user): ?string
     {
-        // Note: Creating client API keys requires the Pterodactyl addon or direct DB access.
-        // For now, we use the application API key for admin operations.
-        // This is a simplified approach - in production, use the addon endpoint.
         return null;
     }
 
@@ -95,7 +90,7 @@ class PterodactylService
             }
         }
 
-        $response = $this->applicationRequest('post', '/servers', [
+        $response = $this->safeRequest('post', '/servers', [
             'name' => $data['name'],
             'user' => (int) $pterodactylUserId,
             'egg' => (int) $data['egg_id'],
@@ -119,7 +114,7 @@ class PterodactylService
             ],
         ]);
 
-        if ($response->successful()) {
+        if ($response && $response->successful()) {
             $attributes = $response->json('attributes');
             return [
                 'id' => $attributes['id'],
@@ -130,7 +125,7 @@ class PterodactylService
 
         Log::error('Failed to create Pterodactyl server', [
             'user_id' => $user->id,
-            'response' => $response->body(),
+            'response' => $response?->body() ?? 'No response',
         ]);
 
         return null;
@@ -138,27 +133,27 @@ class PterodactylService
 
     public function suspendServer(string $serverId): bool
     {
-        $response = $this->applicationRequest('post', "/servers/{$serverId}/suspend");
-        return $response->successful();
+        $response = $this->safeRequest('post', "/servers/{$serverId}/suspend");
+        return $response?->successful() ?? false;
     }
 
     public function unsuspendServer(string $serverId): bool
     {
-        $response = $this->applicationRequest('post', "/servers/{$serverId}/unsuspend");
-        return $response->successful();
+        $response = $this->safeRequest('post', "/servers/{$serverId}/unsuspend");
+        return $response?->successful() ?? false;
     }
 
     public function terminateServer(string $serverId): bool
     {
-        $response = $this->applicationRequest('delete', "/servers/{$serverId}");
-        return $response->successful();
+        $response = $this->safeRequest('delete', "/servers/{$serverId}");
+        return $response?->successful() ?? false;
     }
 
     public function getServerDetails(string $serverId): ?array
     {
-        $response = $this->applicationRequest('get', "/servers/{$serverId}");
+        $response = $this->safeRequest('get', "/servers/{$serverId}");
 
-        if ($response->successful()) {
+        if ($response && $response->successful()) {
             return $response->json('attributes');
         }
 
@@ -167,51 +162,55 @@ class PterodactylService
 
     public function getNests(): array
     {
-        $response = $this->applicationRequest('get', '/nests');
-        return $response->successful() ? ($response->json('data') ?? []) : [];
+        $response = $this->safeRequest('get', '/nests');
+        return $response?->successful() ? ($response->json('data') ?? []) : [];
     }
 
     public function getEggs(int $nestId): array
     {
-        $response = $this->applicationRequest('get', "/nests/{$nestId}/eggs");
-        return $response->successful() ? ($response->json('data') ?? []) : [];
+        $response = $this->safeRequest('get', "/nests/{$nestId}/eggs");
+        return $response?->successful() ? ($response->json('data') ?? []) : [];
     }
 
     public function getEggDetails(int $nestId, int $eggId): ?array
     {
-        $response = $this->applicationRequest('get', "/nests/{$nestId}/eggs/{$eggId}");
-        return $response->successful() ? $response->json('attributes') : null;
+        $response = $this->safeRequest('get', "/nests/{$nestId}/eggs/{$eggId}");
+        return $response?->successful() ? $response->json('attributes') : null;
     }
 
     public function getLocations(): array
     {
-        $response = $this->applicationRequest('get', '/locations');
-        return $response->successful() ? ($response->json('data') ?? []) : [];
+        $response = $this->safeRequest('get', '/locations');
+        return $response?->successful() ? ($response->json('data') ?? []) : [];
     }
 
     public function getNodes(): array
     {
-        $response = $this->applicationRequest('get', '/nodes');
-        return $response->successful() ? ($response->json('data') ?? []) : [];
+        $response = $this->safeRequest('get', '/nodes');
+        return $response?->successful() ? ($response->json('data') ?? []) : [];
     }
 
     public function getNodeAllocations(int $nodeId): array
     {
-        $response = $this->applicationRequest('get', "/nodes/{$nodeId}/allocations");
-        return $response->successful() ? ($response->json('data') ?? []) : [];
+        $response = $this->safeRequest('get', "/nodes/{$nodeId}/allocations");
+        return $response?->successful() ? ($response->json('data') ?? []) : [];
     }
 
     public function getServerResources(string $serverIdentifier, User $user): ?array
     {
-        $apiKey = $user->pterodactyl_api_key ?? $this->apiKey;
+        try {
+            $apiKey = $user->pterodactyl_api_key ?? $this->apiKey;
 
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . $apiKey,
-            'Accept' => 'application/json',
-        ])->get($this->baseUrl . "/api/client/servers/{$serverIdentifier}/resources");
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Accept' => 'application/json',
+            ])->get($this->baseUrl . "/api/client/servers/{$serverIdentifier}/resources");
 
-        if ($response->successful()) {
-            return $response->json('attributes');
+            if ($response->successful()) {
+                return $response->json('attributes');
+            }
+        } catch (\Exception $e) {
+            report($e);
         }
 
         return null;
