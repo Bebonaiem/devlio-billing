@@ -20,7 +20,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: [
             'webhook/*',
-            'admin/deploy',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

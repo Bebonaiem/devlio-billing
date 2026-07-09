@@ -55,6 +55,7 @@
 @push('scripts')
 <script>
 document.getElementById('deployBtn')?.addEventListener('click', function() {
+    if (!confirm('Pull latest code from GitHub and run migrations?')) return;
     const btn = this;
     const spinner = document.getElementById('deploySpinner');
     const text = document.getElementById('deployText');
@@ -71,7 +72,7 @@ document.getElementById('deployBtn')?.addEventListener('click', function() {
     outputCard.classList.remove('hidden');
     output.textContent = '';
 
-    fetch(btn.dataset.deployUrl, { method: 'POST', headers: { 'Accept': 'application/json' } })
+    fetch(btn.dataset.deployUrl, { method: 'GET', headers: { 'Accept': 'application/json' } })
         .then(r => r.text().then(text => { try { return JSON.parse(text); } catch(e) { throw new Error(text.substring(0, 200)); } }))
         .then(data => {
             output.textContent = data.output;
