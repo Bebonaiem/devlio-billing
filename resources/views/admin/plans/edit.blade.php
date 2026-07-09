@@ -17,7 +17,7 @@
             }
         }
     }">
-        @csrf @method('PUT')
+        @csrf @method('PATCH')
         <div class="grid md:grid-cols-2 gap-4">
             <div>
                 <label class="block text-sm font-medium text-dark-300 mb-2">Product</label>
