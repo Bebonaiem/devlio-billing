@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\UpgradeController as AdminUpgradeController;
+use App\Http\Controllers\Admin\DeployController as AdminDeployController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
@@ -164,6 +165,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/upgrades/{upgrade}/approve', [AdminUpgradeController::class, 'approve'])->name('upgrades.approve');
         Route::post('/upgrades/{upgrade}/deny', [AdminUpgradeController::class, 'deny'])->name('upgrades.deny');
         Route::delete('/upgrades/{upgrade}', [AdminUpgradeController::class, 'destroy'])->name('upgrades.destroy');
+
+        Route::get('/deploy', [AdminDeployController::class, 'index'])->name('deploy.index');
+        Route::post('/deploy', [AdminDeployController::class, 'run'])->name('deploy.run');
     });
 });
 
