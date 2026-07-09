@@ -1,4 +1,4 @@
-ï»¿<?php
+¿<?php
 namespace App\Helpers;
 
 use App\Exceptions\InvalidCouponException;

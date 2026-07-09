@@ -1,4 +1,4 @@
-ï»¿<?php
+¿<?php
 namespace App\Models;
 
 class ServerExtension extends Extension

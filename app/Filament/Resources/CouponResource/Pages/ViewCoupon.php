@@ -1,4 +1,4 @@
-ï»¿<?php
+¿<?php
 namespace App\Filament\Resources\CouponResource\Pages;
 
 use App\Filament\Resources\CouponResource;

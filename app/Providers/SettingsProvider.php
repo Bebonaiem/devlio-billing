@@ -1,4 +1,4 @@
-ï»¿<?php
+¿<?php
 namespace App\Providers;
 
 use App\Models\Setting;

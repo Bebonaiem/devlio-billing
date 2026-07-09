@@ -1,4 +1,4 @@
-ï»¿<?php
+¿<?php
 namespace App\Console\Commands;
 
 use App\Models\Setting;

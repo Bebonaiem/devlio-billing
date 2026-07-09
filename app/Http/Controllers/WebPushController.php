@@ -1,4 +1,4 @@
-ï»¿<?php
+¿<?php
 namespace App\Http\Controllers;
 
 use App\Services\WebPushService;

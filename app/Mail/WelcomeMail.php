@@ -1,4 +1,4 @@
-ï»¿<?php
+¿<?php
 namespace App\Mail;
 
 use App\Models\User;
