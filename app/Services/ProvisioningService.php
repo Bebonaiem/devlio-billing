@@ -30,6 +30,7 @@ class ProvisioningService
 
         $result = $this->pterodactyl->createServer($user, [
             'name' => ($product->name ?? 'Server') . ' - ' . $user->name,
+            'nest_id' => $plan->nest_id ?? 1,
             'egg_id' => $plan->egg_id ?? 1,
             'memory' => $plan->memory ?? 1024,
             'swap' => $plan->swap ?? 0,

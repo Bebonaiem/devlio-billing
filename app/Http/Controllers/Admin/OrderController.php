@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\ServiceService;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly ServiceService $serviceService,
+    ) {
         $this->middleware('auth');
     }
 
@@ -31,10 +33,7 @@ class OrderController extends Controller
     public function suspend(Order $order)
     {
         foreach ($order->services as $service) {
-            $service->update(['status' => 'suspended']);
-            if ($service->server) {
-                $service->server->update(['status' => 'suspended']);
-            }
+            $this->serviceService->suspendService($service);
         }
 
         return back()->with('success', 'Order services suspended successfully.');
@@ -43,10 +42,7 @@ class OrderController extends Controller
     public function unsuspend(Order $order)
     {
         foreach ($order->services as $service) {
-            $service->update(['status' => 'active']);
-            if ($service->server) {
-                $service->server->update(['status' => 'active']);
-            }
+            $this->serviceService->unsuspendService($service);
         }
 
         return back()->with('success', 'Order services unsuspended successfully.');
@@ -55,10 +51,7 @@ class OrderController extends Controller
     public function terminate(Order $order)
     {
         foreach ($order->services as $service) {
-            $service->update(['status' => 'terminated']);
-            if ($service->server) {
-                $service->server->update(['status' => 'terminated']);
-            }
+            $this->serviceService->terminateService($service);
         }
 
         return back()->with('success', 'Order services terminated successfully.');

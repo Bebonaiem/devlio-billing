@@ -40,14 +40,15 @@ class SocialAuthController extends Controller
         $existingUser = User::where('email', $socialUser->getEmail())->first();
 
         if ($existingUser) {
-            $existingUser->update([
-                'provider' => $provider,
-                'provider_id' => $socialUser->getId(),
+            if ($existingUser->provider === $provider) {
+                Auth::login($existingUser, false);
+
+                return redirect()->intended(route('dashboard.index'));
+            }
+
+            return redirect()->route('login')->withErrors([
+                'email' => 'This email is already registered. Please sign in with your password.',
             ]);
-
-            Auth::login($existingUser, true);
-
-            return redirect()->intended(route('dashboard.index'));
         }
 
         $user = User::create([
@@ -65,7 +66,7 @@ class SocialAuthController extends Controller
             $user->assignRole('customer');
         }
 
-        Auth::login($user, true);
+        Auth::login($user, false);
 
         return redirect()->intended(route('dashboard.index'));
     }

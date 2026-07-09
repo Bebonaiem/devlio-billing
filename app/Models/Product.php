@@ -55,7 +55,7 @@ class Product extends Model
         return $this->hasMany(Service::class);
     }
 
-    public function orderItems(): HasMany
+    public function cartItems(): HasMany
     {
         return $this->hasMany(CartItem::class);
     }

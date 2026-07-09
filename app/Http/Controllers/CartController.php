@@ -13,8 +13,9 @@ use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct(
+        private readonly \App\Services\TaxService $tax,
+    ) {
         $this->middleware('auth');
     }
 
@@ -54,11 +55,14 @@ class CartController extends Controller
             }
         }
 
-        $total = max(0, $subtotal - $discount);
+        $discountedSubtotal = max(0, $subtotal - $discount);
+        $taxResult = $this->tax->calculate($discountedSubtotal, $this->tax->getUserCountry($user));
+        $tax = $taxResult['tax_amount'];
+        $total = round($discountedSubtotal + $tax, 2);
 
         $currency = Currency::where('code', $currencyCode)->first();
 
-        return view('cart.index', compact('cart', 'items', 'subtotal', 'discount', 'total', 'currency'));
+        return view('cart.index', compact('cart', 'items', 'subtotal', 'discount', 'tax', 'total', 'currency'));
     }
 
     public function add(Request $request)
@@ -190,7 +194,14 @@ class CartController extends Controller
         }
 
         $couponService = app(\App\Services\CouponService::class);
-        if (!$couponService->validate($coupon, $user)) {
+        $couponValid = false;
+        foreach ($cart->items as $cartItem) {
+            if ($couponService->validate($coupon, $user, $cartItem->product)) {
+                $couponValid = true;
+                break;
+            }
+        }
+        if (! $couponValid) {
             return back()->with('error', 'Coupon code cannot be applied.');
         }
 

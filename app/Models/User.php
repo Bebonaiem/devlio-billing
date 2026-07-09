@@ -26,7 +26,6 @@ class User extends Authenticatable
         'pterodactyl_user_id',
         'pterodactyl_api_key',
         'tfa_secret',
-        'role_id',
         'email_verified',
         'affiliate_code',
         'referred_by',

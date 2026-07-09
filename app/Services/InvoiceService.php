@@ -18,12 +18,13 @@ class InvoiceService
         private readonly CurrencyService $currency,
     ) {}
 
-    public function createInvoice(User $user, array $items, string $currencyCode): Invoice
+    public function createInvoice(User $user, array $items, string $currencyCode, ?int $orderId = null): Invoice
     {
-        return DB::transaction(function () use ($user, $items, $currencyCode) {
+        return DB::transaction(function () use ($user, $items, $currencyCode, $orderId) {
             $invoice = Invoice::create([
                 'number' => $this->generateNumber(),
                 'user_id' => $user->id,
+                'order_id' => $orderId,
                 'currency_code' => $currencyCode,
                 'status' => 'pending',
                 'due_at' => now()->addDays(config('billing.invoice_due_days', 7)),
@@ -80,13 +81,15 @@ class InvoiceService
                     $service = Service::find($item->reference_id);
 
                     if ($service) {
-                        if ($service->status === 'pending') {
-                            $service->update(['status' => 'active']);
-                            $this->dispatchProvisioning($service);
-                        } elseif ($service->status === 'suspended') {
-                            $service->update(['status' => 'active']);
-                            $this->dispatchUnsuspend($service);
-                        }
+                    if ($service->status === 'pending') {
+                        $service->update(['status' => 'active']);
+                        $this->dispatchProvisioning($service);
+                    } elseif ($service->status === 'suspended') {
+                        $service->update(['status' => 'active']);
+                        $this->dispatchUnsuspend($service);
+                    } elseif ($service->status === 'active') {
+                        app(\App\Services\ServiceService::class)->renewService($service, (float) $service->price);
+                    }
                     }
                 }
             }
@@ -124,7 +127,7 @@ class InvoiceService
                 'reference_id' => $service->id,
                 'reference_type' => Service::class,
             ],
-        ], $service->currency_code);
+        ], $service->currency_code, $service->order_id);
     }
 
     public function markCancelled(Invoice $invoice): void

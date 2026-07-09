@@ -48,15 +48,15 @@ class CheckoutService
                 $totalAmount += $result['subtotal'];
             }
 
-            $taxResult = $this->tax->calculate($totalAmount, $this->tax->getUserCountry($user));
-            $totalAmount = round($totalAmount + $taxResult['tax_amount'], 2);
-
             $discount = 0.0;
             if ($cart->coupon) {
                 $discountResult = $this->coupon->apply($cart->coupon, $totalAmount);
                 $discount = $discountResult['discount'];
                 $totalAmount = $discountResult['total'];
             }
+
+            $taxResult = $this->tax->calculate($totalAmount, $this->tax->getUserCountry($user));
+            $totalAmount = round($totalAmount + $taxResult['tax_amount'], 2);
 
             $invoice = null;
             if ($totalAmount > 0) {
@@ -66,6 +66,7 @@ class CheckoutService
                     $invoiceItems,
                     $taxResult,
                     $discount,
+                    $cart->coupon?->code,
                     $cart->currency_code
                 );
             }
@@ -124,7 +125,14 @@ class CheckoutService
         }
 
         if ($cart->coupon) {
-            if (! $this->coupon->validate($cart->coupon, $user)) {
+            $couponValid = false;
+            foreach ($cart->items as $cartItem) {
+                if ($this->coupon->validate($cart->coupon, $user, $cartItem->product)) {
+                    $couponValid = true;
+                    break;
+                }
+            }
+            if (! $couponValid) {
                 throw new \App\Exceptions\InvalidCouponException('Invalid coupon code');
             }
         }
@@ -230,6 +238,7 @@ class CheckoutService
         array $invoiceItems,
         array $taxResult,
         float $discount,
+        ?string $couponCode,
         string $currencyCode
     ): Invoice {
         $subtotal = array_sum(array_map(fn ($item) => $item['price'] * ($item['quantity'] ?? 1), $invoiceItems));
@@ -237,6 +246,7 @@ class CheckoutService
         $invoice = Invoice::create([
             'number' => $this->invoice->generateNumber(),
             'user_id' => $user->id,
+            'order_id' => $order->id,
             'currency_code' => $currencyCode,
             'status' => 'pending',
             'due_at' => now()->addDays(config('billing.invoice_due_days', 7)),
@@ -250,6 +260,17 @@ class CheckoutService
                 'description' => $item['description'] ?? '',
                 'reference_id' => $item['reference_id'] ?? null,
                 'reference_type' => $item['reference_type'] ?? null,
+            ]);
+        }
+
+        if ($discount > 0) {
+            InvoiceItem::create([
+                'invoice_id' => $invoice->id,
+                'quantity' => 1,
+                'price' => -$discount,
+                'description' => 'Discount' . ($couponCode ? ' (' . $couponCode . ')' : ''),
+                'reference_id' => null,
+                'reference_type' => null,
             ]);
         }
 

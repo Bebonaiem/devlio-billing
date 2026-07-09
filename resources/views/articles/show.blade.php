@@ -26,7 +26,7 @@
 
     <div class="glass rounded-2xl p-6 sm:p-8 animate-slide-up">
         <div class="prose prose-invert prose-lg max-w-none">
-            {!! $article->body !!}
+            {!! strip_tags($article->body, '<p><br><b><i><u><strong><em><ul><ol><li><a><h1><h2><h3><h4><span><blockquote><code><pre><img>') !!}
         </div>
     </div>
 </div>

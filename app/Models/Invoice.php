@@ -12,6 +12,7 @@ class Invoice extends Model
     protected $fillable = [
         'number',
         'user_id',
+        'order_id',
         'currency_code',
         'due_at',
         'status',
@@ -61,8 +62,12 @@ class Invoice extends Model
 
     public function total(): float
     {
-        return (float) $this->items->sum(function (InvoiceItem $item) {
+        $subtotal = (float) $this->items->sum(function (InvoiceItem $item) {
             return $item->quantity * $item->price;
         });
+
+        $tax = app(\App\Services\TaxService::class)->calculateForUser($subtotal, $this->user);
+
+        return round($subtotal + $tax['tax_amount'], 2);
     }
 }

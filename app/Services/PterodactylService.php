@@ -80,6 +80,16 @@ class PterodactylService
 
     public function createClientApiKey(int $pterodactylUserId, User $user): ?string
     {
+        $response = $this->safeRequest('post', "/users/{$pterodactylUserId}/api-keys", [
+            'description' => 'Client API key for ' . ($user->email ?? $user->id),
+            'allowed_ips' => ['*'],
+        ]);
+
+        if ($response && $response->successful()) {
+            $attributes = $response->json('attributes') ?? [];
+            return $attributes['token'] ?? null;
+        }
+
         return null;
     }
 
@@ -92,6 +102,22 @@ class PterodactylService
             if (!$pterodactylUserId) {
                 return null;
             }
+        }
+
+        if (empty($data['docker_image']) || empty($data['startup'])) {
+            $nestId = (int) ($data['nest_id'] ?? 1);
+            $eggId = (int) ($data['egg_id'] ?? 1);
+            $egg = $this->getEggDetails($nestId, $eggId);
+
+            if ($egg) {
+                $data['docker_image'] = $data['docker_image'] ?? ($egg['docker_image'] ?? null);
+                $data['startup'] = $data['startup'] ?? ($egg['startup'] ?? null);
+            }
+        }
+
+        $allocationId = (int) ($data['allocation_id'] ?? 0);
+        if ($allocationId <= 0) {
+            $allocationId = $this->getFreeAllocationId() ?? 0;
         }
 
         $response = $this->safeRequest('post', '/servers', [
@@ -114,7 +140,7 @@ class PterodactylService
                 'allocations' => (int) ($data['allocations'] ?? 1),
             ],
             'allocation' => [
-                'default' => (int) $data['allocation_id'],
+                'default' => $allocationId,
             ],
         ]);
 
@@ -198,6 +224,31 @@ class PterodactylService
     {
         $response = $this->safeRequest('get', "/nodes/{$nodeId}/allocations");
         return $response?->successful() ? ($response->json('data') ?? []) : [];
+    }
+
+    private function getFreeAllocationId(): ?int
+    {
+        $nodes = $this->getNodes();
+
+        foreach ($nodes as $node) {
+            $nodeId = $node['attributes']['id'] ?? ($node['id'] ?? null);
+
+            if (! $nodeId) {
+                continue;
+            }
+
+            $allocations = $this->getNodeAllocations($nodeId);
+
+            foreach ($allocations as $allocation) {
+                $attrs = $allocation['attributes'] ?? $allocation;
+
+                if (empty($attrs['server_id'])) {
+                    return (int) ($attrs['id'] ?? null);
+                }
+            }
+        }
+
+        return null;
     }
 
     public function getServerResources(string $serverIdentifier, User $user): ?array

@@ -41,7 +41,7 @@ Route::get('/help/{slug}', [ArticleController::class, 'show'])->name('articles.s
 Route::get('/products/{slug}', [StorefrontController::class, 'category'])->name('storefront.category');
 Route::get('/product/{slug}', [StorefrontController::class, 'product'])->name('storefront.product');
 
-Route::middleware('guest')->group(function () {
+Route::middleware(['guest', 'throttle:10,1'])->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
@@ -53,6 +53,9 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/auth/{provider}', [SocialAuthController::class, 'redirect'])->name('social.redirect');
     Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->name('social.callback');
+
+    Route::get('/2fa/challenge', [TwoFactorController::class, 'challenge'])->name('2fa.challenge');
+    Route::post('/2fa/challenge', [TwoFactorController::class, 'verify'])->name('2fa.verify');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

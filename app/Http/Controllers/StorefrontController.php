@@ -64,7 +64,8 @@ class StorefrontController extends Controller
             'category',
         ]);
 
-        $defaultCurrency = Currency::where('enabled', true)->first();
+        $defaultCurrency = Currency::where('code', config('billing.currency', 'USD'))->first()
+            ?? Currency::where('enabled', true)->first();
         $currencies = Currency::where('enabled', true)->get();
 
         return view('storefront.product', compact('product', 'defaultCurrency', 'currencies'));

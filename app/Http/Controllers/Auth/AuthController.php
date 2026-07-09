@@ -25,12 +25,22 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-            return redirect()->intended(route('dashboard.index'));
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (! $user || ! Auth::getProvider()->validateCredentials($user, $credentials)) {
+            return back()->withErrors(['email' => 'Invalid credentials.'])->onlyInput('email');
         }
 
-        return back()->withErrors(['email' => 'Invalid credentials.'])->onlyInput('email');
+        if ($user->tfa_secret) {
+            session(['tfa_user_id' => $user->id]);
+
+            return redirect()->route('2fa.challenge');
+        }
+
+        Auth::login($user, $request->boolean('remember'));
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('dashboard.index'));
     }
 
     public function showRegister()

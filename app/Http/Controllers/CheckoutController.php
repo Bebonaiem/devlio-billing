@@ -30,6 +30,7 @@ class CheckoutController extends Controller
         private readonly CheckoutService $checkout,
         private readonly CurrencyService $currency,
         private readonly CreditService $credit,
+        private readonly \App\Services\TaxService $tax,
     ) {
         $this->middleware('auth');
     }
@@ -68,14 +69,17 @@ class CheckoutController extends Controller
             }
         }
 
-        $total = max(0, $subtotal - $discount);
+        $discountedSubtotal = max(0, $subtotal - $discount);
+        $taxResult = $this->tax->calculate($discountedSubtotal, $this->tax->getUserCountry($user));
+        $tax = $taxResult['tax_amount'];
+        $total = round($discountedSubtotal + $tax, 2);
 
         $creditBalance = $this->credit->getBalance($user, $currencyCode);
         $currency = Currency::where('code', $currencyCode)->first();
         $paymentGateways = Extension::where('type', 'gateway')->where('enabled', true)->get();
 
         return view('checkout.index', compact(
-            'cart', 'subtotal', 'discount', 'total', 'creditBalance', 'currency', 'paymentGateways'
+            'cart', 'subtotal', 'discount', 'tax', 'total', 'creditBalance', 'currency', 'paymentGateways'
         ));
     }
 
