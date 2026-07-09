@@ -88,11 +88,12 @@
     </div>
 
     <div class="glass rounded-2xl p-6 sm:p-8">
-        <h2 class="text-lg font-display font-bold text-white mb-6">Transactions ({{ $user->transactions->count() }})</h2>
-        @forelse ($user->transactions->take(10) as $txn)
+        <h2 class="text-lg font-display font-bold text-white mb-6">Transactions</h2>
+        @php $userTransactions = $user->invoices->flatMap->transactions->sortByDesc('created_at')->take(10); @endphp
+        @forelse ($userTransactions as $txn)
             <div class="flex justify-between items-center py-3 border-b border-white/5 last:border-0">
-                <span class="text-sm text-dark-300">{{ $txn->gateway }} <span class="text-dark-500">{{ $txn->created_at->format('M d') }}</span></span>
-                <span class="{{ $txn->status === 'completed' ? 'text-green-400' : 'text-red-400' }} text-sm">${{ number_format($txn->amount, 2) }} ({{ $txn->status }})</span>
+                <span class="text-sm text-dark-300">{{ $txn->gateway->name ?? $txn->gateway }} <span class="text-dark-500">{{ $txn->created_at->format('M d') }}</span></span>
+                <span class="{{ $txn->status === 'succeeded' ? 'text-green-400' : ($txn->status === 'failed' ? 'text-red-400' : 'text-yellow-400') }} text-sm">${{ number_format($txn->amount, 2) }} ({{ $txn->status }})</span>
             </div>
         @empty
             <p class="text-dark-500 text-sm">No transactions.</p>
