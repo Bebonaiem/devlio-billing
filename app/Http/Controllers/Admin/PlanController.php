@@ -7,6 +7,7 @@ use App\Models\Plan;
 use App\Models\Product;
 use App\Models\Price;
 use App\Models\Currency;
+use App\Services\PterodactylService;
 use Illuminate\Http\Request;
 
 class PlanController extends Controller
@@ -22,11 +23,12 @@ class PlanController extends Controller
         return view('admin.plans.index', compact('plans'));
     }
 
-    public function create()
+    public function create(PterodactylService $pterodactyl)
     {
         $products = Product::where('enabled', true)->get();
         $currencies = Currency::where('enabled', true)->get();
-        return view('admin.plans.create', compact('products', 'currencies'));
+        $nests = $pterodactyl->getNests();
+        return view('admin.plans.create', compact('products', 'currencies', 'nests'));
     }
 
     public function store(Request $request)
