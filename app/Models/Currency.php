@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Currency extends Model
 {
+    protected $primaryKey = 'code';
+    public $incrementing = false;
+    protected $keyType = 'string';
+
     protected $fillable = [
         'code',
         'name',
