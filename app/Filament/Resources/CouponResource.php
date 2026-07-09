@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Filament\Resources;
 
@@ -14,9 +14,9 @@ class CouponResource extends Resource
 {
     protected static ?string $model = Coupon::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-ticket';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-ticket';
 
-    protected static ?string $navigationGroup = 'Orders & Billing';
+    protected static string|UnitEnum|null $navigationGroup = 'Orders & Billing';
 
     protected static ?int $navigationSort = 4;
 

@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Filament\Resources;
 
@@ -16,9 +16,9 @@ class ExtensionResource extends Resource
 {
     protected static ?string $model = Extension::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-puzzle-piece';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-puzzle-piece';
 
-    protected static ?string $navigationGroup = 'Servers';
+    protected static string|UnitEnum|null $navigationGroup = 'Servers';
 
     protected static ?int $navigationSort = 2;
 

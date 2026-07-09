@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Filament\Resources;
 
@@ -17,9 +17,9 @@ class ServiceResource extends Resource
 {
     protected static ?string $model = Service::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-server-stack';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-server-stack';
 
-    protected static ?string $navigationGroup = 'Orders & Billing';
+    protected static string|UnitEnum|null $navigationGroup = 'Orders & Billing';
 
     protected static ?int $navigationSort = 2;
 
