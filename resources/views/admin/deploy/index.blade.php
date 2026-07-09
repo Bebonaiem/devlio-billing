@@ -71,8 +71,8 @@ document.getElementById('deployBtn')?.addEventListener('click', function() {
     outputCard.classList.remove('hidden');
     output.textContent = '';
 
-    fetch(btn.dataset.deployUrl, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' } })
-        .then(r => r.json())
+    fetch(btn.dataset.deployUrl, { method: 'POST', headers: { 'Accept': 'application/json' } })
+        .then(r => r.text().then(text => { try { return JSON.parse(text); } catch(e) { throw new Error(text.substring(0, 200)); } }))
         .then(data => {
             output.textContent = data.output;
             if (data.status === 'success') {
