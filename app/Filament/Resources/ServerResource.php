@@ -14,11 +14,17 @@ use Filament\Tables\Table;
 
 class ServerResource extends Resource
 {
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Servers';
+    }
+
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        return 'heroicon-o-server-stack';
+    }
+
     protected static ?string $model = Server::class;
-
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-server-stack';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Servers';
 
     protected static ?int $navigationSort = 1;
 

@@ -14,11 +14,17 @@ use Illuminate\Support\Str;
 
 class UserResource extends Resource
 {
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Users';
+    }
+
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        return 'heroicon-o-users';
+    }
+
     protected static ?string $model = User::class;
-
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Users';
 
     protected static ?int $navigationSort = 1;
 

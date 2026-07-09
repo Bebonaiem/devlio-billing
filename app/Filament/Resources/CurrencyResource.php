@@ -12,11 +12,17 @@ use Filament\Tables\Table;
 
 class CurrencyResource extends Resource
 {
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Settings';
+    }
+
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        return 'heroicon-o-banknotes';
+    }
+
     protected static ?string $model = Currency::class;
-
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Settings';
 
     protected static ?int $navigationSort = 2;
 

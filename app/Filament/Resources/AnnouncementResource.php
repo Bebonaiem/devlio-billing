@@ -11,11 +11,17 @@ use Filament\Tables\Table;
 
 class AnnouncementResource extends Resource
 {
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Settings';
+    }
+
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        return 'heroicon-o-megaphone';
+    }
+
     protected static ?string $model = Announcement::class;
-
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-megaphone';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Settings';
 
     protected static ?int $navigationSort = 5;
 

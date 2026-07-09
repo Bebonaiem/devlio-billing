@@ -11,11 +11,17 @@ use Filament\Tables\Table;
 
 class PlanResource extends Resource
 {
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Catalog';
+    }
+
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        return 'heroicon-o-currency-dollar';
+    }
+
     protected static ?string $model = Plan::class;
-
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Catalog';
 
     protected static ?int $navigationSort = 2;
 

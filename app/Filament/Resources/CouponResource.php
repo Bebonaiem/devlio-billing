@@ -11,11 +11,17 @@ use Filament\Tables\Table;
 
 class CouponResource extends Resource
 {
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Orders & Billing';
+    }
+
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        return 'heroicon-o-ticket';
+    }
+
     protected static ?string $model = Coupon::class;
-
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-ticket';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Orders & Billing';
 
     protected static ?int $navigationSort = 4;
 

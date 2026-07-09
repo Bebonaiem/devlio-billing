@@ -13,11 +13,17 @@ use Filament\Tables\Table;
 
 class ExtensionResource extends Resource
 {
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Servers';
+    }
+
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        return 'heroicon-o-puzzle-piece';
+    }
+
     protected static ?string $model = Extension::class;
-
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-puzzle-piece';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Servers';
 
     protected static ?int $navigationSort = 2;
 

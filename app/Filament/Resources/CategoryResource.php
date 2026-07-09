@@ -11,11 +11,17 @@ use Filament\Tables\Table;
 
 class CategoryResource extends Resource
 {
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Catalog';
+    }
+
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        return 'heroicon-o-folder';
+    }
+
     protected static ?string $model = Category::class;
-
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-folder';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Catalog';
 
     protected static ?int $navigationSort = 0;
 

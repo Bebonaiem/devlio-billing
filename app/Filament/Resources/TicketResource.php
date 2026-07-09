@@ -13,11 +13,17 @@ use Filament\Tables\Table;
 
 class TicketResource extends Resource
 {
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Users';
+    }
+
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        return 'heroicon-o-chat-bubble-left-ellipsis';
+    }
+
     protected static ?string $model = Ticket::class;
-
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-chat-bubble-left-ellipsis';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Users';
 
     protected static ?int $navigationSort = 2;
 

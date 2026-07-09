@@ -14,11 +14,17 @@ use Filament\Tables\Table;
 
 class InvoiceResource extends Resource
 {
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Orders & Billing';
+    }
+
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        return 'heroicon-o-document-text';
+    }
+
     protected static ?string $model = Invoice::class;
-
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Orders & Billing';
 
     protected static ?int $navigationSort = 3;
 
