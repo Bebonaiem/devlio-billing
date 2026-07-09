@@ -70,9 +70,12 @@ class PayPalService
         return ['error' => $response->body()];
     }
 
-    public function createOrder(Invoice $invoice, string $returnUrl, string $cancelUrl): ?array
+    public function createOrder(Invoice $invoice, string $returnUrl, string $cancelUrl, ?float $amount = null): ?array
     {
-        $totals = app(InvoiceService::class)->calculateTotal($invoice);
+        if ($amount === null) {
+            $totals = app(InvoiceService::class)->calculateTotal($invoice);
+            $amount = $totals['total'];
+        }
 
         $result = $this->apiRequest('post', '/v2/checkout/orders', [
             'intent' => 'CAPTURE',
@@ -81,7 +84,7 @@ class PayPalService
                 'description' => 'Invoice #' . $invoice->number,
                 'amount' => [
                     'currency_code' => $invoice->currency_code ?? 'USD',
-                    'value' => number_format($totals['total'], 2, '.', ''),
+                    'value' => number_format($amount, 2, '.', ''),
                 ],
             ]],
             'payment_source' => [
@@ -121,30 +124,33 @@ class PayPalService
         return $this->apiRequest('get', "/v2/checkout/orders/{$orderId}");
     }
 
-    public function verifyWebhook(string $headers, string $body): bool
+    public function verifyWebhookHeaders(array $headers, string $body): bool
     {
         $webhookId = config('services.paypal.webhook_id');
+        if (!$webhookId) {
+            return false;
+        }
+
+        $authAlgo = $headers['paypal-auth-algo'][0] ?? null;
+        $certUrl = $headers['paypal-cert-url'][0] ?? null;
+        $transmissionId = $headers['paypal-transmission-id'][0] ?? null;
+        $transmissionSig = $headers['paypal-transmission-sig'][0] ?? null;
+        $transmissionTime = $headers['paypal-transmission-time'][0] ?? null;
+
+        if (!$authAlgo || !$certUrl || !$transmissionId || !$transmissionSig || !$transmissionTime) {
+            return false;
+        }
 
         $result = $this->apiRequest('post', '/v1/notifications/verify-webhook-signature', [
-            'auth_algo' => $this->extractHeader($headers, 'PAYPAL-AUTH-ALGO'),
-            'cert_url' => $this->extractHeader($headers, 'PAYPAL-CERT-URL'),
-            'transmission_id' => $this->extractHeader($headers, 'PAYPAL-TRANSMISSION-ID'),
-            'transmission_sig' => $this->extractHeader($headers, 'PAYPAL-TRANSMISSION-SIG'),
-            'transmission_time' => $this->extractHeader($headers, 'PAYPAL-TRANSMISSION-TIME'),
+            'auth_algo' => $authAlgo,
+            'cert_url' => $certUrl,
+            'transmission_id' => $transmissionId,
+            'transmission_sig' => $transmissionSig,
+            'transmission_time' => $transmissionTime,
             'webhook_id' => $webhookId,
             'webhook_event' => json_decode($body, true),
         ]);
 
         return ($result['verification_status'] ?? '') === 'SUCCESS';
-    }
-
-    private function extractHeader(string $headers, string $name): ?string
-    {
-        foreach (explode("\n", $headers) as $line) {
-            if (str_starts_with(strtolower($line), strtolower($name))) {
-                return trim(substr($line, strpos($line, ':') + 1));
-            }
-        }
-        return null;
     }
 }

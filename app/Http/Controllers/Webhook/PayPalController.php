@@ -22,8 +22,8 @@ class PayPalController extends Controller
 
     public function handleWebhook(Request $request)
     {
-        $verified = $this->paypal->verifyWebhook(
-            $request->headers->__toString(),
+        $verified = $this->paypal->verifyWebhookHeaders(
+            $request->header(),
             $request->getContent()
         );
 

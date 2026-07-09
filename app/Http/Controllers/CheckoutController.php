@@ -241,7 +241,7 @@ class CheckoutController extends Controller
         $returnUrl = route('checkout.success', ['invoice' => $invoice->id]);
         $cancelUrl = route('checkout.cancel');
 
-        $order = $paypal->createOrder($invoice, $returnUrl, $cancelUrl);
+        $order = $paypal->createOrder($invoice, $returnUrl, $cancelUrl, $amount);
 
         if (!$order || !$order['approval_url']) {
             return back()->with('error', 'Failed to create PayPal order. Please try again.');
