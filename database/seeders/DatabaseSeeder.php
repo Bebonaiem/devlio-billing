@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Extension;
 use App\Models\Setting;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -25,5 +26,22 @@ class DatabaseSeeder extends Seeder
         Setting::firstOrCreate(['key' => 'grace_days'], ['value' => '3']);
         Setting::firstOrCreate(['key' => 'terminate_days'], ['value' => '14']);
         Setting::firstOrCreate(['key' => 'affiliate_rate'], ['value' => '10']);
+
+        // Payment gateways
+        Extension::firstOrCreate(['extension' => 'stripe'], [
+            'name' => 'Stripe',
+            'type' => 'gateway',
+            'enabled' => true,
+        ]);
+        Extension::firstOrCreate(['extension' => 'paypal'], [
+            'name' => 'PayPal',
+            'type' => 'gateway',
+            'enabled' => true,
+        ]);
+        Extension::firstOrCreate(['extension' => 'credit'], [
+            'name' => 'Credit',
+            'type' => 'gateway',
+            'enabled' => true,
+        ]);
     }
 }
