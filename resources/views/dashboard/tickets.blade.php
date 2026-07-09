@@ -23,7 +23,7 @@
                     <thead>
                         <tr class="border-b border-white/5">
                             <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Subject</th>
-                            <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Order</th>
+                            <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Service</th>
                             <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Priority</th>
                             <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Status</th>
                             <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Created</th>
@@ -33,7 +33,7 @@
                         @foreach ($tickets as $ticket)
                             <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
                                 <td class="px-6 py-4 font-medium text-white text-sm">{{ $ticket->subject }}</td>
-                                <td class="px-6 py-4 text-sm text-dark-400">{{ $ticket->order_id ? '#' . $ticket->order_id : 'N/A' }}</td>
+                                <td class="px-6 py-4 text-sm text-dark-400">{{ $ticket->service_id ? '#' . $ticket->service_id : 'N/A' }}</td>
                                 <td class="px-6 py-4 text-sm text-dark-300 capitalize">{{ $ticket->priority }}</td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium

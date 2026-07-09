@@ -99,13 +99,13 @@ class DashboardController extends Controller
 
     public function users()
     {
-        $users = User::withCount('services', 'invoices')->latest()->paginate(20);
+        $users = User::withCount('services', 'invoices')->with('credits')->latest()->paginate(20);
         return view('admin.users', compact('users'));
     }
 
     public function userDetail(User $user)
     {
-        $user->load(['services.product', 'services.plan', 'invoices', 'tickets']);
+        $user->load(['services.product', 'services.plan', 'invoices', 'tickets', 'credits']);
         $roles = \Spatie\Permission\Models\Role::all();
         return view('admin.user-detail', compact('user', 'roles'));
     }

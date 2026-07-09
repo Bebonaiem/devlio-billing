@@ -4,12 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\Invoice;
-use App\Models\Server;
-use App\Models\Transaction;
-use App\Models\Ticket;
-use App\Models\User;
-use App\Services\BillingService;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -21,7 +15,7 @@ class OrderController extends Controller
 
     public function index()
     {
-        $orders = Order::with(['user', 'plan.product', 'server'])
+        $orders = Order::with(['user', 'services'])
             ->latest()
             ->paginate(20);
 
@@ -30,43 +24,54 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['user', 'plan.product', 'server', 'invoices.items', 'transactions']);
+        $order->load(['user', 'services.product', 'services.plan', 'services.server', 'services.invoices.items']);
         return view('admin.orders.show', compact('order'));
     }
 
     public function suspend(Order $order)
     {
-        $order->update(['status' => 'suspended']);
-        if ($order->server) {
-            $order->server->update(['status' => 'suspended']);
+        foreach ($order->services as $service) {
+            $service->update(['status' => 'suspended']);
+            if ($service->server) {
+                $service->server->update(['status' => 'suspended']);
+            }
         }
 
-        return back()->with('success', 'Order suspended successfully.');
+        return back()->with('success', 'Order services suspended successfully.');
     }
 
     public function unsuspend(Order $order)
     {
-        $order->update(['status' => 'active']);
-        if ($order->server) {
-            $order->server->update(['status' => 'active']);
+        foreach ($order->services as $service) {
+            $service->update(['status' => 'active']);
+            if ($service->server) {
+                $service->server->update(['status' => 'active']);
+            }
         }
 
-        return back()->with('success', 'Order unsuspended successfully.');
+        return back()->with('success', 'Order services unsuspended successfully.');
     }
 
     public function terminate(Order $order)
     {
-        $order->update(['status' => 'terminated']);
-        if ($order->server) {
-            $order->server->update(['status' => 'terminated']);
+        foreach ($order->services as $service) {
+            $service->update(['status' => 'terminated']);
+            if ($service->server) {
+                $service->server->update(['status' => 'terminated']);
+            }
         }
 
-        return back()->with('success', 'Order terminated successfully.');
+        return back()->with('success', 'Order services terminated successfully.');
     }
 
     public function destroy(Order $order)
     {
+        foreach ($order->services as $service) {
+            $service->server()?->delete();
+            $service->delete();
+        }
         $order->delete();
+
         return redirect()->route('admin.orders.index')
             ->with('success', 'Order deleted successfully.');
     }

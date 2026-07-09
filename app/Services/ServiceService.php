@@ -16,8 +16,8 @@ class ServiceService
     {
         $service->update(['status' => 'active']);
 
-        if ($service->order && $service->order->server) {
-            $this->provisioning->unsuspend($service->order->server);
+        if ($service->server) {
+            $this->provisioning->unsuspend($service->server);
         }
     }
 
@@ -25,8 +25,8 @@ class ServiceService
     {
         $service->update(['status' => 'suspended']);
 
-        if ($service->order && $service->order->server) {
-            $this->provisioning->suspend($service->order->server);
+        if ($service->server) {
+            $this->provisioning->suspend($service->server);
         }
     }
 
@@ -34,8 +34,8 @@ class ServiceService
     {
         $service->update(['status' => 'active']);
 
-        if ($service->order && $service->order->server) {
-            $this->provisioning->unsuspend($service->order->server);
+        if ($service->server) {
+            $this->provisioning->unsuspend($service->server);
         }
     }
 
@@ -43,8 +43,8 @@ class ServiceService
     {
         $service->update(['status' => 'cancelled']);
 
-        if ($service->order && $service->order->server) {
-            $this->provisioning->terminate($service->order->server);
+        if ($service->server) {
+            $this->provisioning->terminate($service->server);
         }
     }
 

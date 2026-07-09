@@ -63,7 +63,7 @@
                             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
                                 <td class="px-6 py-3 text-sm text-white">#{{ $service->id }}</td>
                                 <td class="px-6 py-3 text-sm text-dark-300">{{ $service->user->name }}</td>
-                                <td class="px-6 py-3 text-sm text-dark-300">{{ $service->product->name ?? ($service->plan->product->name ?? 'N/A') }}</td>
+                                <td class="px-6 py-3 text-sm text-dark-300">{{ $service->product->name ?? ($service->plan->priceable->name ?? 'N/A') }}</td>
                                 <td class="px-6 py-3"><span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium {{ $service->status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : ($service->status === 'suspended' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20') }}">{{ ucfirst($service->status) }}</span></td>
                             </tr>
                         @endforeach
@@ -87,7 +87,7 @@
                         @foreach ($recentTransactions as $txn)
                             <tr class="border-b border-white/5 hover:bg-white/[0.02]">
                                 <td class="px-6 py-3 text-sm text-dark-300">{{ $txn->invoice->user->name ?? $txn->user->name ?? 'N/A' }}</td>
-                                <td class="px-6 py-3 text-sm text-dark-300 capitalize">{{ $txn->gateway->name ?? $txn->gateway }}</td>
+                                <td class="px-6 py-3 text-sm text-dark-300 capitalize">{{ $txn->gateway->name ?? $txn->gateway_id }}</td>
                                 <td class="px-6 py-3 text-sm text-white">${{ number_format($txn->amount, 2) }}</td>
                                 <td class="px-6 py-3 text-sm text-dark-400">{{ $txn->created_at->format('M d') }}</td>
                             </tr>

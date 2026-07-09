@@ -7,6 +7,7 @@ use App\Models\InvoiceItem;
 use App\Models\InvoiceTransaction;
 use App\Models\Order;
 use App\Models\Service;
+use App\Models\ServiceCancellation;
 use App\Models\User;
 
 class BillingService
@@ -77,6 +78,44 @@ class BillingService
         $count = Invoice::where('status', 'pending')
             ->where('due_at', '<', now())
             ->update(['status' => 'overdue']);
+
+        return $count;
+    }
+
+    public function processOverdueSuspensions(): int
+    {
+        $graceDays = config('billing.grace_days', 3);
+        $cutoff = now()->subDays($graceDays);
+
+        $services = Service::where('status', 'active')
+            ->whereHas('invoices', function ($q) {
+                $q->where('status', 'overdue');
+            })
+            ->get();
+
+        $count = 0;
+        foreach ($services as $service) {
+            app(\App\Services\ServiceService::class)->suspendService($service);
+            $count++;
+        }
+
+        return $count;
+    }
+
+    public function processTerminations(): int
+    {
+        $terminateDays = config('billing.terminate_days', 14);
+        $cutoff = now()->subDays($terminateDays);
+
+        $services = Service::where('status', 'suspended')
+            ->where('updated_at', '<=', $cutoff)
+            ->get();
+
+        $count = 0;
+        foreach ($services as $service) {
+            app(\App\Services\ServiceService::class)->terminateService($service);
+            $count++;
+        }
 
         return $count;
     }

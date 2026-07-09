@@ -16,6 +16,16 @@ class Plan extends Model
         'sort',
         'priceable_id',
         'priceable_type',
+        'memory',
+        'cpu',
+        'disk',
+        'swap',
+        'databases',
+        'backups',
+        'allocations',
+        'nest_id',
+        'egg_id',
+        'description',
     ];
 
     protected function casts(): array

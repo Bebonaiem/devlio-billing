@@ -262,9 +262,9 @@ class CheckoutService
                     $this->invoice->markPaid($invoice, $this->createCreditTransaction($invoice));
                 }
 
-                if ($service->order && $service->order->server) {
-                    continue;
-                }
+            if ($service->server) {
+                continue;
+            }
 
                 $this->service->activateService($service);
             }

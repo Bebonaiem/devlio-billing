@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Order;
 use App\Models\Server;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
@@ -13,36 +13,38 @@ class ProvisioningService
         private readonly PterodactylService $pterodactyl,
     ) {}
 
-    public function provision(Order $order): ?Server
+    public function provision(Service $service): ?Server
     {
-        $user = $order->user;
-        $plan = $order->plan;
+        $user = $service->user;
+        $plan = $service->plan;
+        $product = $service->product;
 
         $result = $this->pterodactyl->createServer($user, [
-            'name' => ($plan->product->name ?? 'Game Server') . ' - ' . $user->name,
-            'egg_id' => $plan->egg_id,
-            'memory' => $plan->memory,
-            'swap' => $plan->swap,
-            'disk' => $plan->disk,
-            'cpu' => $plan->cpu,
-            'databases' => $plan->databases,
-            'backups' => $plan->backups,
-            'allocations' => $plan->allocations,
+            'name' => ($product->name ?? 'Server') . ' - ' . $user->name,
+            'egg_id' => $plan?->egg_id ?? 1,
+            'memory' => $plan?->memory ?? 1024,
+            'swap' => $plan?->swap ?? 0,
+            'disk' => $plan?->disk ?? 1024,
+            'cpu' => $plan?->cpu ?? 100,
+            'databases' => $plan?->databases ?? 0,
+            'backups' => $plan?->backups ?? 0,
+            'allocations' => $plan?->allocations ?? 1,
             'environment' => [],
         ]);
 
         if ($result) {
             $server = Server::create([
-                'order_id' => $order->id,
+                'service_id' => $service->id,
+                'order_id' => $service->order_id,
                 'user_id' => $user->id,
                 'pterodactyl_server_id' => $result['id'],
                 'pterodactyl_server_identifier' => $result['identifier'],
-                'name' => $result['name'] ?? ($plan->product->name . ' Server'),
+                'name' => $result['name'] ?? ($product->name . ' Server'),
                 'status' => 'active',
-                'cpu' => $plan->cpu,
-                'memory' => $plan->memory,
-                'disk' => $plan->disk,
-                'node' => $result['node'],
+                'cpu' => $plan?->cpu ?? null,
+                'memory' => $plan?->memory ?? null,
+                'disk' => $plan?->disk ?? null,
+                'node' => $result['node'] ?? null,
             ]);
 
             return $server;

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
@@ -98,6 +99,13 @@ Route::middleware('auth')->group(function () {
         Route::delete('/products/{product}/plans/{plan}', [AdminProductController::class, 'destroyPlan'])->name('products.plans.destroy');
 
         Route::patch('/products/{product}/config-options', [AdminProductController::class, 'updateConfigOptions'])->name('products.config-options.update');
+
+        Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        Route::post('/orders/{order}/suspend', [AdminOrderController::class, 'suspend'])->name('orders.suspend');
+        Route::post('/orders/{order}/unsuspend', [AdminOrderController::class, 'unsuspend'])->name('orders.unsuspend');
+        Route::post('/orders/{order}/terminate', [AdminOrderController::class, 'terminate'])->name('orders.terminate');
+        Route::delete('/orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
 
         Route::get('/services', [AdminServiceController::class, 'index'])->name('services.index');
         Route::get('/services/{service}', [AdminServiceController::class, 'show'])->name('services.show');

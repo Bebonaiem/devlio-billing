@@ -10,7 +10,6 @@ class Coupon extends Model
 {
     protected $fillable = [
         'type',
-        'time',
         'code',
         'value',
         'max_uses',

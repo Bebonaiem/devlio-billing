@@ -9,7 +9,7 @@
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">ID</th>
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Name</th>
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Email</th>
-                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Orders</th>
+                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Services</th>
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Invoices</th>
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Credit</th>
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Joined</th>
@@ -22,9 +22,9 @@
                         <td class="px-6 py-4 text-sm text-dark-400">{{ $user->id }}</td>
                         <td class="px-6 py-4 font-medium text-white text-sm">{{ $user->name }}</td>
                         <td class="px-6 py-4 text-sm text-dark-300">{{ $user->email }}</td>
-                        <td class="px-6 py-4 text-sm text-dark-300">{{ $user->orders_count }}</td>
+                        <td class="px-6 py-4 text-sm text-dark-300">{{ $user->services_count }}</td>
                         <td class="px-6 py-4 text-sm text-dark-300">{{ $user->invoices_count }}</td>
-                        <td class="px-6 py-4 text-sm gradient-text">${{ number_format($user->credit_balance, 2) }}</td>
+                        <td class="px-6 py-4 text-sm gradient-text">${{ number_format($user->credits->first()?->amount ?? 0, 2) }}</td>
                         <td class="px-6 py-4 text-sm text-dark-400">{{ $user->created_at->format('M d, Y') }}</td>
                         <td class="px-6 py-4 text-right">
                             <a href="{{ route('admin.user-detail', $user) }}" class="text-primary-400 hover:text-primary-300 text-sm transition">View</a>

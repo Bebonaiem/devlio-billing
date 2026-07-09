@@ -6,7 +6,7 @@
         <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
             <div>
                 <h2 class="text-lg font-display font-bold text-white mb-1">{{ $ticket->subject }}</h2>
-                <p class="text-sm text-dark-400">by {{ $ticket->user->name }} <span class="text-dark-500">·</span> {{ $ticket->created_at->format('M d, Y H:i') }} @if($ticket->order) <span class="text-dark-500">·</span> Order #{{ $ticket->order_id }} @endif</p>
+                <p class="text-sm text-dark-400">by {{ $ticket->user->name }} <span class="text-dark-500">·</span> {{ $ticket->created_at->format('M d, Y H:i') }} @if($ticket->service) <span class="text-dark-500">·</span> Service #{{ $ticket->service_id }} @endif</p>
             </div>
             <div class="flex items-center gap-2">
                 <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium {{ $ticket->status === 'open' ? 'bg-primary-500/10 text-primary-400 border border-primary-500/20' : 'bg-green-500/10 text-green-400 border border-green-500/20' }}">{{ ucfirst($ticket->status) }}</span>

@@ -47,13 +47,46 @@
                 <label class="block text-sm font-medium text-dark-300 mb-2">Sort</label>
                 <input type="number" name="sort" value="{{ old('sort', 0) }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
             </div>
-            <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Pterodactyl Nest ID</label>
-                <input type="number" name="nest_id" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Pterodactyl Egg ID</label>
-                <input type="number" name="egg_id" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+        </div>
+        <div class="border-t border-white/5 pt-4">
+            <h4 class="text-sm font-semibold text-dark-300 mb-3">Pterodactyl Resources</h4>
+            <div class="grid md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Memory (MB)</label>
+                    <input type="number" name="memory" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('memory', 1024) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">CPU (%)</label>
+                    <input type="number" name="cpu" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('cpu', 100) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Disk (MB)</label>
+                    <input type="number" name="disk" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('disk', 1024) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Swap (MB)</label>
+                    <input type="number" name="swap" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('swap', 0) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Databases</label>
+                    <input type="number" name="databases" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('databases', 0) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Backups</label>
+                    <input type="number" name="backups" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('backups', 0) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Allocations</label>
+                    <input type="number" name="allocations" min="1" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('allocations', 1) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Nest ID</label>
+                    <input type="number" name="nest_id" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('nest_id') }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Egg ID</label>
+                    <input type="number" name="egg_id" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('egg_id') }}">
+                </div>
             </div>
         </div>
         <p class="text-xs text-dark-500">Prices are managed per currency in the prices section.</p>

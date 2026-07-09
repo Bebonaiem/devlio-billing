@@ -171,6 +171,15 @@ return new class extends Migration
             $table->enum('billing_unit', ['day', 'week', 'month', 'year'])->nullable();
             $table->integer('sort')->default(0);
             $table->morphs('priceable'); // priceable_id, priceable_type
+            $table->integer('memory')->nullable();
+            $table->integer('cpu')->nullable();
+            $table->integer('disk')->nullable();
+            $table->integer('swap')->default(0);
+            $table->integer('databases')->default(0);
+            $table->integer('backups')->default(0);
+            $table->integer('allocations')->default(1);
+            $table->unsignedBigInteger('nest_id')->nullable();
+            $table->unsignedBigInteger('egg_id')->nullable();
             $table->timestamps();
         });
 
@@ -241,7 +250,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('currency_code', 10)->default('USD');
             $table->timestamp('due_at')->nullable();
-            $table->enum('status', ['pending', 'paid', 'cancelled'])->default('pending');
+            $table->enum('status', ['pending', 'paid', 'cancelled', 'overdue', 'refunded'])->default('pending');
             $table->timestamps();
             $table->foreign('currency_code')->references('code')->on('currencies')->cascadeOnDelete();
         });

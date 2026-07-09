@@ -12,7 +12,7 @@
             <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">ID</dt><dd class="text-white text-sm">{{ $user->id }}</dd></div>
             <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Name</dt><dd class="text-white text-sm">{{ $user->name }}</dd></div>
             <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Email</dt><dd class="text-white text-sm">{{ $user->email }}</dd></div>
-            <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Credit Balance</dt><dd class="gradient-text font-semibold text-sm">${{ number_format($user->credit_balance, 2) }}</dd></div>
+            <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Credit Balance</dt><dd class="gradient-text font-semibold text-sm">${{ number_format($user->credits->first()?->amount ?? 0, 2) }}</dd></div>
             <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Role</dt><dd class="text-white text-sm capitalize">{{ $user->roles->pluck('name')->first() ?? 'customer' }}</dd></div>
             <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Affiliate Code</dt><dd class="text-primary-400 font-mono text-sm">{{ $user->affiliate_code ?? 'N/A' }}</dd></div>
             <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Pterodactyl ID</dt><dd class="text-white text-sm">{{ $user->pterodactyl_user_id ?? 'N/A' }}</dd></div>
@@ -24,16 +24,16 @@
         @csrf
         <h2 class="text-lg font-display font-bold text-white mb-4">Edit User</h2>
         <div>
-            <label class="block text-sm font-medium text-dark-300 mb-2">Name</label>
-            <input type="text" name="name" value="{{ $user->name }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm" required>
+            <label class="block text-sm font-medium text-dark-300 mb-2">First Name</label>
+            <input type="text" name="first_name" value="{{ $user->first_name }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm" required>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-dark-300 mb-2">Last Name</label>
+            <input type="text" name="last_name" value="{{ $user->last_name }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm" required>
         </div>
         <div>
             <label class="block text-sm font-medium text-dark-300 mb-2">Email</label>
             <input type="email" name="email" value="{{ $user->email }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm" required>
-        </div>
-        <div>
-            <label class="block text-sm font-medium text-dark-300 mb-2">Credit Balance ($)</label>
-            <input type="number" name="credit_balance" step="0.01" value="{{ $user->credit_balance }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
         </div>
         <div>
             <label class="block text-sm font-medium text-dark-300 mb-2">Role</label>
@@ -50,16 +50,16 @@
     </form>
 
     <div class="glass rounded-2xl p-6 sm:p-8">
-        <h2 class="text-lg font-display font-bold text-white mb-6">Orders ({{ $user->orders->count() }})</h2>
-        @forelse ($user->orders as $order)
+        <h2 class="text-lg font-display font-bold text-white mb-6">Services ({{ $user->services->count() }})</h2>
+        @forelse ($user->services as $svc)
             <div class="glass rounded-xl p-4 mb-3">
                 <div class="flex justify-between items-center">
-                    <span class="text-sm text-white font-medium">#{{ $order->id }} - {{ $order->plan->product->name ?? 'N/A' }} ({{ $order->plan->name ?? 'N/A' }})</span>
-                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium {{ $order->status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : ($order->status === 'suspended' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20') }}">{{ ucfirst($order->status) }}</span>
+                    <span class="text-sm text-white font-medium">{{ $svc->product->name ?? 'Service' }} ({{ $svc->plan->name ?? 'N/A' }})</span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium {{ $svc->status === 'active' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : ($svc->status === 'suspended' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20') }}">{{ ucfirst($svc->status) }}</span>
                 </div>
             </div>
         @empty
-            <p class="text-dark-500 text-sm">No orders.</p>
+            <p class="text-dark-500 text-sm">No services.</p>
         @endforelse
     </div>
 
@@ -68,7 +68,7 @@
         @forelse ($user->invoices->take(10) as $invoice)
             <div class="flex justify-between items-center py-3 border-b border-white/5 last:border-0">
                 <span class="text-sm text-dark-300">{{ $invoice->number }}</span>
-                <span class="{{ $invoice->status === 'paid' ? 'text-green-400' : ($invoice->status === 'overdue' ? 'text-red-400' : 'text-yellow-400') }} text-sm">${{ number_format($invoice->total, 2) }} - {{ ucfirst($invoice->status) }}</span>
+                <span class="{{ $invoice->status === 'paid' ? 'text-green-400' : ($invoice->status === 'overdue' ? 'text-red-400' : 'text-yellow-400') }} text-sm">${{ number_format($invoice->items->sum(fn($i) => $i->price * $i->quantity), 2) }} - {{ ucfirst($invoice->status) }}</span>
             </div>
         @empty
             <p class="text-dark-500 text-sm">No invoices.</p>
@@ -92,7 +92,7 @@
         @php $userTransactions = $user->invoices->flatMap->transactions->sortByDesc('created_at')->take(10); @endphp
         @forelse ($userTransactions as $txn)
             <div class="flex justify-between items-center py-3 border-b border-white/5 last:border-0">
-                <span class="text-sm text-dark-300">{{ $txn->gateway->name ?? $txn->gateway }} <span class="text-dark-500">{{ $txn->created_at->format('M d') }}</span></span>
+                <span class="text-sm text-dark-300">{{ $txn->gateway->name ?? $txn->gateway_id }} <span class="text-dark-500">{{ $txn->created_at->format('M d') }}</span></span>
                 <span class="{{ $txn->status === 'succeeded' ? 'text-green-400' : ($txn->status === 'failed' ? 'text-red-400' : 'text-yellow-400') }} text-sm">${{ number_format($txn->amount, 2) }} ({{ $txn->status }})</span>
             </div>
         @empty

@@ -18,6 +18,10 @@
                 <label class="block text-sm font-medium text-dark-300 mb-2">Name</label>
                 <input type="text" name="name" required class="w-full px-4 py-3 rounded-xl input-field text-white placeholder-dark-500 text-sm" value="{{ old('name', $plan->name) }}">
             </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-dark-300 mb-2">Description</label>
+                <textarea name="description" rows="2" class="w-full px-4 py-3 rounded-xl input-field text-white placeholder-dark-500 text-sm">{{ old('description', $plan->description) }}</textarea>
+            </div>
             <div>
                 <label class="block text-sm font-medium text-dark-300 mb-2">Type</label>
                 <select name="type" required class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
@@ -42,6 +46,47 @@
             <div>
                 <label class="block text-sm font-medium text-dark-300 mb-2">Sort</label>
                 <input type="number" name="sort" value="{{ old('sort', $plan->sort) }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+            </div>
+        </div>
+        <div class="border-t border-white/5 pt-4">
+            <h4 class="text-sm font-semibold text-dark-300 mb-3">Pterodactyl Resources</h4>
+            <div class="grid md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Memory (MB)</label>
+                    <input type="number" name="memory" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('memory', $plan->memory ?? 1024) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">CPU (%)</label>
+                    <input type="number" name="cpu" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('cpu', $plan->cpu ?? 100) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Disk (MB)</label>
+                    <input type="number" name="disk" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('disk', $plan->disk ?? 1024) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Swap (MB)</label>
+                    <input type="number" name="swap" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('swap', $plan->swap ?? 0) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Databases</label>
+                    <input type="number" name="databases" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('databases', $plan->databases ?? 0) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Backups</label>
+                    <input type="number" name="backups" min="0" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('backups', $plan->backups ?? 0) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Allocations</label>
+                    <input type="number" name="allocations" min="1" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('allocations', $plan->allocations ?? 1) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Nest ID</label>
+                    <input type="number" name="nest_id" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('nest_id', $plan->nest_id) }}">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Egg ID</label>
+                    <input type="number" name="egg_id" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('egg_id', $plan->egg_id) }}">
+                </div>
             </div>
         </div>
         <p class="text-xs text-dark-500">Prices are managed per currency in the prices section.</p>

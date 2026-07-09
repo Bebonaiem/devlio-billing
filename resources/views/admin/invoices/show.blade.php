@@ -14,10 +14,8 @@
 
             <dl class="space-y-3">
                 <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">User</dt><dd class="text-white text-sm">{{ $invoice->user->name }} ({{ $invoice->user->email }})</dd></div>
-                <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Order</dt><dd class="text-white text-sm">{{ $invoice->order ? '#'.$invoice->order_id : 'N/A' }}</dd></div>
-                <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Due Date</dt><dd class="text-white text-sm">{{ $invoice->due_date->format('M d, Y') }}</dd></div>
-                <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Paid At</dt><dd class="text-white text-sm">{{ $invoice->paid_at?->format('M d, Y H:i') ?? 'N/A' }}</dd></div>
-                <div class="flex justify-between py-2"><dt class="text-dark-400 text-sm">Total</dt><dd class="gradient-text font-bold">${{ number_format($invoice->total, 2) }}</dd></div>
+                <div class="flex justify-between py-2 border-b border-white/5"><dt class="text-dark-400 text-sm">Due Date</dt><dd class="text-white text-sm">{{ $invoice->due_at?->format('M d, Y') ?? 'N/A' }}</dd></div>
+                <div class="flex justify-between py-2"><dt class="text-dark-400 text-sm">Total</dt><dd class="gradient-text font-bold">${{ number_format($totals['total'] ?? 0, 2) }}</dd></div>
             </dl>
         </div>
 
@@ -42,8 +40,8 @@
                     <div class="p-4">
                         @foreach ($invoice->transactions as $txn)
                             <div class="flex justify-between py-2 border-b border-white/5 last:border-0">
-                                <span class="text-sm text-dark-300">{{ $txn->gateway }} <span class="text-dark-500">{{ $txn->created_at->format('M d, H:i') }}</span></span>
-                                <span class="text-sm {{ $txn->status === 'completed' ? 'text-green-400' : 'text-red-400' }}">${{ number_format($txn->amount, 2) }} ({{ $txn->status }})</span>
+                                <span class="text-sm text-dark-300">{{ $txn->gateway->name ?? $txn->gateway_id }} <span class="text-dark-500">{{ $txn->created_at->format('M d, H:i') }}</span></span>
+                                <span class="text-sm {{ $txn->status === 'succeeded' ? 'text-green-400' : 'text-red-400' }}">${{ number_format($txn->amount, 2) }} ({{ $txn->status }})</span>
                             </div>
                         @endforeach
                     </div>

@@ -64,7 +64,7 @@
                 <dl class="space-y-3">
                     <div class="flex justify-between py-2 border-b border-white/5">
                         <dt class="text-dark-400 text-sm">Credit Balance</dt>
-                        <dd class="gradient-text font-semibold text-sm">${{ number_format($user->credit_balance, 2) }}</dd>
+                        <dd class="gradient-text font-semibold text-sm">${{ number_format($user->credits->first()?->amount ?? 0, 2) }}</dd>
                     </div>
                     <div class="flex justify-between py-2 border-b border-white/5">
                         <dt class="text-dark-400 text-sm">Affiliate Code</dt>

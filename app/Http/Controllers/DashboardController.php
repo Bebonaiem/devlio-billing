@@ -149,7 +149,7 @@ class DashboardController extends Controller
     public function createTicket()
     {
         $services = Service::where('user_id', Auth::id())->whereIn('status', ['active', 'suspended'])->get();
-        return view('dashboard.tickets-create', compact('services'));
+        return view('dashboard.tickets.create', compact('services'));
     }
 
     public function storeTicket(Request $request)
