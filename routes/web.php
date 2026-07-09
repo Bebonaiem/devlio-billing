@@ -167,7 +167,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/upgrades/{upgrade}', [AdminUpgradeController::class, 'destroy'])->name('upgrades.destroy');
 
         Route::get('/deploy', [AdminDeployController::class, 'index'])->name('deploy.index');
-        Route::get('/deploy/run', [AdminDeployController::class, 'run'])->name('deploy.run');
+        Route::post('/deploy', [AdminDeployController::class, 'run'])->name('deploy.run');
     });
 });
 

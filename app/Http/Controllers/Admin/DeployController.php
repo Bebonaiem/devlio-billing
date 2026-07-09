@@ -10,7 +10,15 @@ class DeployController extends Controller
 {
     public function index()
     {
-        return view('admin.deploy.index');
+        $deployResult = null;
+        if (session('deploy_output')) {
+            $deployResult = [
+                'status' => session('deploy_status'),
+                'message' => session('deploy_message'),
+                'output' => session('deploy_output'),
+            ];
+        }
+        return view('admin.deploy.index', compact('deployResult'));
     }
 
     public function run()
@@ -19,35 +27,29 @@ class DeployController extends Controller
         $commands = [
             "cd $baseDir && git pull origin main 2>&1",
             "cd $baseDir && php artisan migrate --force 2>&1",
-            "cd $baseDir && chown -R www-data:www-data storage bootstrap/cache 2>&1",
         ];
 
         $output = '';
         $failed = false;
 
         foreach ($commands as $cmd) {
-            if (str_starts_with($cmd, 'chown')) {
-                if (PHP_OS_FAMILY !== 'Windows') {
-                    $result = Process::run($cmd);
-                    $output .= "> $cmd\n" . $result->output() . ($result->exitCode() ? $result->errorOutput() : '') . "\n";
-                    if (!$result->successful()) $failed = true;
-                } else {
-                    $output .= "> $cmd\n(skipped on Windows)\n";
-                }
-            } else {
-                $result = Process::run($cmd);
-                $output .= "> $cmd\n" . $result->output() . ($result->exitCode() ? $result->errorOutput() : '') . "\n";
-                if (!$result->successful()) $failed = true;
-            }
+            $result = Process::run($cmd);
+            $output .= "> $cmd\n" . $result->output() . $result->errorOutput() . "\n";
+            if (!$result->successful()) $failed = true;
+        }
+
+        if (PHP_OS_FAMILY !== 'Windows') {
+            $chown = Process::run("cd $baseDir && chown -R www-data:www-data storage bootstrap/cache 2>&1");
+            $output .= "> chown storage bootstrap/cache\n" . $chown->output() . $chown->errorOutput() . "\n";
+            if (!$chown->successful()) $failed = true;
         }
 
         $status = $failed ? 'error' : 'success';
         $message = $failed ? 'Deploy completed with errors.' : 'Deploy completed successfully.';
 
-        return response()->json([
-            'status' => $status,
-            'message' => $message,
-            'output' => $output,
-        ]);
+        return redirect()->route('admin.deploy.index')
+            ->with('deploy_status', $status)
+            ->with('deploy_message', $message)
+            ->with('deploy_output', $output);
     }
 }
