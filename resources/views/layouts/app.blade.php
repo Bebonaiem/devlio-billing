@@ -74,6 +74,11 @@
     </div>
 
     <nav class="nav-glass fixed top-0 left-0 right-0 z-50">
+        <style>
+            .sidebar-link { transition: all 0.2s; }
+            .sidebar-link:hover { background: rgba(255, 255, 255, 0.05); }
+            .sidebar-link.active { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+        </style>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <a href="{{ route('storefront') }}" class="flex items-center gap-2">
@@ -197,7 +202,69 @@
         </div>
     </nav>
 
-    <main class="flex-1 pt-16 relative z-10">
+    @auth
+    <div class="flex flex-1 pt-16 relative z-10">
+        <aside id="sidebar" class="w-64 bg-dark-900/80 backdrop-blur-xl border-r border-white/5 min-h-[calc(100vh-4rem)] flex-shrink-0 flex flex-col fixed lg:sticky top-16 h-[calc(100vh-4rem)] z-40 transition-transform -translate-x-full lg:translate-x-0">
+            <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+                <a href="{{ route('dashboard.index') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('dashboard.index') ? 'active' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    Dashboard
+                </a>
+                <a href="{{ route('dashboard.services') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('dashboard.services') || request()->routeIs('dashboard.service-detail') ? 'active' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
+                    Services
+                </a>
+                <a href="{{ route('dashboard.servers') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('dashboard.servers') || request()->routeIs('dashboard.server-detail') ? 'active' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2z"/></svg>
+                    Servers
+                </a>
+                <a href="{{ route('dashboard.invoices') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('dashboard.invoices') || request()->routeIs('dashboard.invoice-detail') ? 'active' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    Invoices
+                </a>
+                <a href="{{ route('dashboard.credits') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('dashboard.credits*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Credits
+                </a>
+                <a href="{{ route('dashboard.tickets') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('dashboard.tickets*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.5-1 2.5-2 3.5-1 1-2 2-2 4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Support
+                </a>
+                <a href="{{ route('dashboard.affiliate') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('dashboard.affiliate') ? 'active' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    Affiliate
+                </a>
+                <div class="pt-3 mt-3 border-t border-white/5"></div>
+                <a href="{{ route('announcements.index') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('announcements.*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                    Announcements
+                </a>
+                <a href="{{ route('articles.index') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('articles.*') ? 'active' : '' }}">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                    Help Center
+                </a>
+                <div class="pt-3 mt-3 border-t border-white/5">
+                    <a href="{{ route('dashboard.profile') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('dashboard.profile') ? 'active' : '' }}">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        Profile
+                    </a>
+                    <a href="{{ route('storefront') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-400 hover:text-white">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        Browse Store
+                    </a>
+                    @role('admin')
+                        <a href="{{ route('admin.dashboard') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-primary-400 hover:text-primary-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016a11.955 11.955 0 01-2.667 1.048M12 6.804a5.974 5.974 0 01-2.128 1.036M4.4 5.398c.004.128.006.256.006.384A6.301 6.301 0 006 11.5a6.193 6.193 0 01-1.893.434"/></svg>
+                            Admin Panel
+                        </a>
+                    @endrole
+                </div>
+            </nav>
+        </aside>
+
+        <main class="flex-1 min-h-[calc(100vh-4rem)]">
+@endauth
+
         @if (session('success'))
             <div class="max-w-7xl mx-auto mt-6 px-4 animate-fade-in">
                 <div class="glass rounded-xl px-5 py-4 flex items-center gap-3 border-green-500/20">
@@ -219,7 +286,11 @@
             </div>
         @endif
         @yield('content')
-    </main>
+
+@auth
+        </main>
+    </div>
+@endauth
 
     <footer class="relative z-10 border-t border-white/5 mt-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -240,6 +311,9 @@
     <script>
         document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
             document.getElementById('mobileMenu')?.classList.toggle('hidden');
+        });
+        document.getElementById('sidebarToggle')?.addEventListener('click', () => {
+            document.getElementById('sidebar')?.classList.toggle('-translate-x-full');
         });
     </script>
     @livewireScripts
