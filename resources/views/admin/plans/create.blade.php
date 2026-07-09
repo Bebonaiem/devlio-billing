@@ -12,6 +12,7 @@
                         <option value="{{ $product->id }}">{{ $product->name }}</option>
                     @endforeach
                 </select>
+                <input type="hidden" name="priceable_type" value="App\Models\Product">
             </div>
             <div>
                 <label class="block text-sm font-medium text-dark-300 mb-2">Name</label>

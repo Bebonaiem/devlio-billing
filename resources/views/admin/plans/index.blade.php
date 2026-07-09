@@ -26,7 +26,7 @@
                 @forelse ($plans as $plan)
                     <tr class="border-b border-white/5 hover:bg-white/[0.02] transition">
                         <td class="px-6 py-4 font-medium text-white text-sm">{{ $plan->name }}</td>
-                        <td class="px-6 py-4 text-sm text-dark-300">{{ $plan->product->name ?? 'N/A' }}</td>
+                        <td class="px-6 py-4 text-sm text-dark-300">{{ $plan->priceable->name ?? 'N/A' }}</td>
                         <td class="px-6 py-4 text-sm text-white">${{ number_format($plan->prices->first()?->price ?? 0, 2) }}</td>
                         <td class="px-6 py-4 text-sm text-dark-400 capitalize">{{ $plan->billing_period ? $plan->billing_period . ' ' . $plan->billing_unit : 'N/A' }}</td>
                         <td class="px-6 py-4">

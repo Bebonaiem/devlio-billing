@@ -9,17 +9,14 @@
                 <label class="block text-sm font-medium text-dark-300 mb-2">Product</label>
                 <select name="product_id" required class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
                     @foreach ($products as $product)
-                        <option value="{{ $product->id }}" {{ $plan->product_id == $product->id ? 'selected' : '' }}>{{ $product->name }}</option>
+                        <option value="{{ $product->id }}" {{ $plan->priceable_id == $product->id && $plan->priceable_type == 'App\Models\Product' ? 'selected' : '' }}>{{ $product->name }}</option>
                     @endforeach
                 </select>
+                <input type="hidden" name="priceable_type" value="App\Models\Product">
             </div>
             <div>
                 <label class="block text-sm font-medium text-dark-300 mb-2">Name</label>
                 <input type="text" name="name" required class="w-full px-4 py-3 rounded-xl input-field text-white placeholder-dark-500 text-sm" value="{{ old('name', $plan->name) }}">
-            </div>
-            <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-dark-300 mb-2">Description</label>
-                <textarea name="description" rows="2" class="w-full px-4 py-3 rounded-xl input-field text-white placeholder-dark-500 text-sm">{{ old('description', $plan->description) }}</textarea>
             </div>
             <div>
                 <label class="block text-sm font-medium text-dark-300 mb-2">Type</label>
@@ -45,14 +42,6 @@
             <div>
                 <label class="block text-sm font-medium text-dark-300 mb-2">Sort</label>
                 <input type="number" name="sort" value="{{ old('sort', $plan->sort) }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Pterodactyl Nest ID</label>
-                <input type="number" name="nest_id" value="{{ $plan->nest_id }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-dark-300 mb-2">Pterodactyl Egg ID</label>
-                <input type="number" name="egg_id" value="{{ $plan->egg_id }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
             </div>
         </div>
         <p class="text-xs text-dark-500">Prices are managed per currency in the prices section.</p>

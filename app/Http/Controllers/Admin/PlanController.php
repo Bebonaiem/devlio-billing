@@ -81,6 +81,7 @@ class PlanController extends Controller
     public function update(Request $request, Plan $plan)
     {
         $data = $request->validate([
+            'product_id' => 'required|exists:products,id',
             'name' => 'required|string|max:255',
             'type' => 'required|in:free,one-time,recurring',
             'billing_period' => 'nullable|integer|min:1',
@@ -99,6 +100,8 @@ class PlanController extends Controller
             'billing_period' => $data['billing_period'] ?? null,
             'billing_unit' => $data['billing_unit'] ?? null,
             'sort' => $data['sort'] ?? 0,
+            'priceable_id' => $data['product_id'],
+            'priceable_type' => Product::class,
         ]);
 
         if (!empty($data['prices'])) {

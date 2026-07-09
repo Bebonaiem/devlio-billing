@@ -17,7 +17,6 @@
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Name</th>
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Plans</th>
                     <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Status</th>
-                    <th class="text-left px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Sort</th>
                     <th class="text-right px-6 py-3 text-xs font-medium text-dark-400 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
@@ -31,9 +30,9 @@
                                 {{ $product->enabled ? 'Active' : 'Inactive' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm text-dark-400">{{ $product->sort_order }}</td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex items-center justify-end gap-2">
+                                <a href="{{ route('admin.products.plans', $product) }}" class="text-blue-400 hover:text-blue-300 text-sm transition">Plans</a>
                                 <a href="{{ route('admin.products.edit', $product) }}" class="text-primary-400 hover:text-primary-300 text-sm transition">Edit</a>
                                 <form method="POST" action="{{ route('admin.products.destroy', $product) }}" class="inline" onsubmit="return confirm('Delete this product?')">
                                     @csrf @method('DELETE')
