@@ -10,6 +10,7 @@ use App\Models\Plan;
 use App\Models\Price;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Services\PterodactylService;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
@@ -102,7 +103,7 @@ class ProductController extends Controller
             ->with('success', 'Product deleted successfully.');
     }
 
-    public function plans(Product $product)
+    public function plans(Product $product, PterodactylService $pterodactyl)
     {
         $product->load(['plans' => function ($q) {
             $q->with('prices')->orderBy('sort');
@@ -111,7 +112,9 @@ class ProductController extends Controller
         $currencies = Currency::where('enabled', true)->get();
         $configOptions = ConfigOption::where('parent_id', null)->with('children')->orderBy('sort')->get();
 
-        return view('admin.products.plans', compact('product', 'currencies', 'configOptions'));
+        $nests = $pterodactyl->getNests();
+
+        return view('admin.products.plans', compact('product', 'currencies', 'configOptions', 'nests'));
     }
 
     public function storePlan(Request $request, Product $product)
@@ -122,6 +125,15 @@ class ProductController extends Controller
             'billing_period' => 'nullable|integer|min:1',
             'billing_unit' => 'nullable|in:day,week,month,year',
             'sort' => 'nullable|integer|min:0',
+            'nest_id' => 'nullable|integer',
+            'egg_id' => 'nullable|integer',
+            'memory' => 'nullable|integer|min:0',
+            'cpu' => 'nullable|integer|min:0',
+            'disk' => 'nullable|integer|min:0',
+            'swap' => 'nullable|integer|min:0',
+            'databases' => 'nullable|integer|min:0',
+            'backups' => 'nullable|integer|min:0',
+            'allocations' => 'nullable|integer|min:0',
             'prices' => 'nullable|array',
             'prices.*.currency_code' => 'required_with:prices|exists:currencies,code',
             'prices.*.price' => 'required_with:prices|numeric|min:0',
@@ -134,6 +146,15 @@ class ProductController extends Controller
             'billing_period' => $validated['billing_period'] ?? null,
             'billing_unit' => $validated['billing_unit'] ?? null,
             'sort' => $validated['sort'] ?? 0,
+            'nest_id' => $validated['nest_id'] ?? null,
+            'egg_id' => $validated['egg_id'] ?? null,
+            'memory' => $validated['memory'] ?? null,
+            'cpu' => $validated['cpu'] ?? null,
+            'disk' => $validated['disk'] ?? null,
+            'swap' => $validated['swap'] ?? 0,
+            'databases' => $validated['databases'] ?? 0,
+            'backups' => $validated['backups'] ?? 0,
+            'allocations' => $validated['allocations'] ?? 1,
             'priceable_type' => Product::class,
         ]);
 
@@ -160,6 +181,15 @@ class ProductController extends Controller
             'billing_period' => 'nullable|integer|min:1',
             'billing_unit' => 'nullable|in:day,week,month,year',
             'sort' => 'nullable|integer|min:0',
+            'nest_id' => 'nullable|integer',
+            'egg_id' => 'nullable|integer',
+            'memory' => 'nullable|integer|min:0',
+            'cpu' => 'nullable|integer|min:0',
+            'disk' => 'nullable|integer|min:0',
+            'swap' => 'nullable|integer|min:0',
+            'databases' => 'nullable|integer|min:0',
+            'backups' => 'nullable|integer|min:0',
+            'allocations' => 'nullable|integer|min:0',
             'prices' => 'nullable|array',
             'prices.*.id' => 'nullable|integer',
             'prices.*.currency_code' => 'required_with:prices|exists:currencies,code',
@@ -173,6 +203,15 @@ class ProductController extends Controller
             'billing_period' => $validated['billing_period'] ?? null,
             'billing_unit' => $validated['billing_unit'] ?? null,
             'sort' => $validated['sort'] ?? 0,
+            'nest_id' => $validated['nest_id'] ?? null,
+            'egg_id' => $validated['egg_id'] ?? null,
+            'memory' => $validated['memory'] ?? null,
+            'cpu' => $validated['cpu'] ?? null,
+            'disk' => $validated['disk'] ?? null,
+            'swap' => $validated['swap'] ?? 0,
+            'databases' => $validated['databases'] ?? 0,
+            'backups' => $validated['backups'] ?? 0,
+            'allocations' => $validated['allocations'] ?? 1,
         ]);
 
         if (!empty($validated['prices'])) {

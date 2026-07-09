@@ -142,6 +142,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('coupons', AdminCouponController::class);
         Route::post('currencies/{currency}/default', [AdminCurrencyController::class, 'setDefault'])->name('currencies.setDefault');
 
+        Route::get('pterodactyl/nests/{nest}/eggs', function (int $nest, \App\Services\PterodactylService $pterodactyl) {
+            return response()->json($pterodactyl->getEggs($nest));
+        })->name('pterodactyl.eggs');
+
         Route::get('plans', [AdminPlanController::class, 'index'])->name('plans.index');
         Route::get('plans/create', [AdminPlanController::class, 'create'])->name('plans.create');
         Route::post('plans', [AdminPlanController::class, 'store'])->name('plans.store');

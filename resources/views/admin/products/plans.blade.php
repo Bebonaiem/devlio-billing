@@ -16,8 +16,16 @@
     showCreateForm: false,
     editingPlan: null,
     prices: [{{ $currencies->map(fn($c) => '{\'currency_code\': \'' . $c->code . '\', \'price\': \'\', \'setup_fee\': \'\'}')->join(', ') }}],
+    selectedNest: '',
+    eggs: [],
     init() {
         this.prices = [{{ $currencies->map(fn($c) => '{\'currency_code\': \'' . $c->code . '\', \'price\': \'\', \'setup_fee\': \'\'}')->join(', ') }}];
+        this.$watch('selectedNest', async (nestId) => {
+            if (!nestId) { this.eggs = []; return; }
+            const res = await fetch('/admin/pterodactyl/nests/' + nestId + '/eggs');
+            const data = await res.json();
+            this.eggs = data;
+        });
     },
     addPriceRow() {
         this.prices.push({currency_code: '{{ $currencies->first()?->code ?? 'USD' }}', price: '', setup_fee: ''});
@@ -113,6 +121,58 @@
                         <div>
                             <label class="block text-sm font-medium text-dark-300 mb-2">Sort</label>
                             <input type="number" name="sort" value="0" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                        </div>
+                    </div>
+
+                    <div class="border-t border-white/5 pt-4">
+                        <h4 class="text-sm font-medium text-dark-300 mb-3">Pterodactyl Configuration</h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">Nest</label>
+                                <select name="nest_id" x-model="selectedNest" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                                    <option value="">Select Nest</option>
+                                    @foreach ($nests as $nest)
+                                        <option value="{{ $nest['attributes']['id'] }}">{{ $nest['attributes']['name'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">Egg</label>
+                                <select name="egg_id" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                                    <option value="">Select Nest First</option>
+                                    <template x-for="egg in eggs" :key="egg.attributes.id">
+                                        <option :value="egg.attributes.id" x-text="egg.attributes.name"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">Memory (MB)</label>
+                                <input type="number" name="memory" min="0" value="1024" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">CPU (%)</label>
+                                <input type="number" name="cpu" min="0" value="100" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">Disk (MB)</label>
+                                <input type="number" name="disk" min="0" value="1024" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">Swap (MB)</label>
+                                <input type="number" name="swap" min="0" value="0" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">Databases</label>
+                                <input type="number" name="databases" min="0" value="0" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">Backups</label>
+                                <input type="number" name="backups" min="0" value="0" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-dark-300 mb-2">Allocations</label>
+                                <input type="number" name="allocations" min="0" value="1" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                            </div>
                         </div>
                     </div>
 
