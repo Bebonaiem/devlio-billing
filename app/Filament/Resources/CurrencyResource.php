@@ -1,10 +1,11 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CurrencyResource\Pages;
 use App\Models\Currency;
+use Filament\Schemas;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -28,11 +29,10 @@ class CurrencyResource extends Resource
 
     protected static ?string $navigationLabel = 'Currencies';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Currency Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Currency Details')
                     ->schema([
                         Forms\Components\TextInput::make('code')
                             ->required()

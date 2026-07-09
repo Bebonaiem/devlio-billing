@@ -1,12 +1,13 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TicketResource\Pages;
 use App\Models\Ticket;
+use Filament\Schemas;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Schema;
+
+
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -29,11 +30,10 @@ class TicketResource extends Resource
 
     protected static ?string $navigationLabel = 'Tickets';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Ticket Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Ticket Details')
                     ->schema([
                         Forms\Components\Select::make('status')
                             ->options([
@@ -58,34 +58,33 @@ class TicketResource extends Resource
             ]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist
-            ->schema([
-                Infolists\Components\Section::make('Ticket Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Ticket Details')
                     ->schema([
-                        Infolists\Components\TextEntry::make('id'),
-                        Infolists\Components\TextEntry::make('user.email')
+                        Schemas\Components\TextEntry::make('id'),
+                        Schemas\Components\TextEntry::make('user.email')
                             ->label('Customer'),
-                        Infolists\Components\TextEntry::make('subject')
+                        Schemas\Components\TextEntry::make('subject')
                             ->weight('bold'),
-                        Infolists\Components\TextEntry::make('status')
+                        Schemas\Components\TextEntry::make('status')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
                                 'open' => 'success',
                                 'closed' => 'gray',
                             }),
-                        Infolists\Components\TextEntry::make('priority')
+                        Schemas\Components\TextEntry::make('priority')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
                                 'low' => 'gray',
                                 'medium' => 'warning',
                                 'high' => 'danger',
                             }),
-                        Infolists\Components\TextEntry::make('assignedTo.name')
+                        Schemas\Components\TextEntry::make('assignedTo.name')
                             ->label('Assigned To')
                             ->placeholder('Unassigned'),
-                        Infolists\Components\TextEntry::make('created_at')
+                        Schemas\Components\TextEntry::make('created_at')
                             ->dateTime(),
                     ])->columns(3),
             ]);

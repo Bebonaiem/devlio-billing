@@ -1,10 +1,11 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use Filament\Schemas;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -28,11 +29,10 @@ class UserResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Personal Information')
+        return $schema->schema([
+                Schemas\Components\Section::make('Personal Information')
                     ->schema([
                         Forms\Components\TextInput::make('first_name')
                             ->required()
@@ -52,7 +52,7 @@ class UserResource extends Resource
                             ->maxLength(255)
                             ->helperText('Leave empty to keep current password'),
                     ])->columns(2),
-                Forms\Components\Section::make('Account Details')
+                Schemas\Components\Section::make('Account Details')
                     ->schema([
                         Forms\Components\Select::make('role_id')
                             ->label('Role')

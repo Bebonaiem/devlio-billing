@@ -1,10 +1,11 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\AnnouncementResource\Pages;
 use App\Models\Announcement;
+use Filament\Schemas;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -27,11 +28,10 @@ class AnnouncementResource extends Resource
 
     protected static ?string $navigationLabel = 'Announcements';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Announcement Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Announcement Details')
                     ->schema([
                         Forms\Components\TextInput::make('title')
                             ->required()
@@ -50,7 +50,7 @@ class AnnouncementResource extends Resource
                         Forms\Components\Toggle::make('active')
                             ->default(true),
                     ])->columns(2),
-                Forms\Components\Section::make('Schedule')
+                Schemas\Components\Section::make('Schedule')
                     ->schema([
                         Forms\Components\DatePicker::make('starts_at')
                             ->label('Starts At'),

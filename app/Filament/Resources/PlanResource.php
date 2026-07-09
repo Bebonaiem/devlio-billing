@@ -1,10 +1,11 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PlanResource\Pages;
 use App\Models\Plan;
+use Filament\Schemas;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -25,11 +26,10 @@ class PlanResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Plan Information')
+        return $schema->schema([
+                Schemas\Components\Section::make('Plan Information')
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->required()
@@ -58,7 +58,7 @@ class PlanResource extends Resource
                         Forms\Components\Textarea::make('description')
                             ->rows(3),
                     ])->columns(2),
-                Forms\Components\Section::make('Server Configuration')
+                Schemas\Components\Section::make('Server Configuration')
                     ->schema([
                         Forms\Components\TextInput::make('memory')
                             ->numeric()
@@ -87,7 +87,7 @@ class PlanResource extends Resource
                         Forms\Components\TextInput::make('egg_id')
                             ->numeric(),
                     ])->columns(3),
-                Forms\Components\Section::make('Pricing')
+                Schemas\Components\Section::make('Pricing')
                     ->schema([
                         Forms\Components\Repeater::make('prices')
                             ->relationship()

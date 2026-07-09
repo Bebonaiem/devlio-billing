@@ -1,12 +1,13 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ServerResource\Pages;
 use App\Models\Server;
+use Filament\Schemas;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Schema;
+
+
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -28,35 +29,33 @@ class ServerResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 //
             ]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist
-            ->schema([
-                Infolists\Components\Section::make('Server Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Server Details')
                     ->schema([
-                        Infolists\Components\TextEntry::make('id'),
-                        Infolists\Components\TextEntry::make('user.email')
+                        Schemas\Components\TextEntry::make('id'),
+                        Schemas\Components\TextEntry::make('user.email')
                             ->label('Owner'),
-                        Infolists\Components\TextEntry::make('service.product.name')
+                        Schemas\Components\TextEntry::make('service.product.name')
                             ->label('Product'),
-                        Infolists\Components\TextEntry::make('external_id')
+                        Schemas\Components\TextEntry::make('external_id')
                             ->label('Pterodactyl ID'),
-                        Infolists\Components\TextEntry::make('status')
+                        Schemas\Components\TextEntry::make('status')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
                                 'active' => 'success',
                                 'suspended' => 'danger',
                                 'pending' => 'warning',
                             }),
-                        Infolists\Components\TextEntry::make('created_at')
+                        Schemas\Components\TextEntry::make('created_at')
                             ->dateTime(),
                     ])->columns(3),
             ]);

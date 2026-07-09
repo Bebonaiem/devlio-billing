@@ -1,12 +1,13 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ExtensionResource\Pages;
 use App\Models\Extension;
+use Filament\Schemas;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Schema;
+
+
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -29,11 +30,10 @@ class ExtensionResource extends Resource
 
     protected static ?string $navigationLabel = 'Extensions';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Extension Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Extension Details')
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->disabled(),
@@ -47,29 +47,28 @@ class ExtensionResource extends Resource
             ]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist
-            ->schema([
-                Infolists\Components\Section::make('Extension Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Extension Details')
                     ->schema([
-                        Infolists\Components\TextEntry::make('name'),
-                        Infolists\Components\TextEntry::make('type')
+                        Schemas\Components\TextEntry::make('name'),
+                        Schemas\Components\TextEntry::make('type')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
                                 'server' => 'primary',
                                 'gateway' => 'success',
                             }),
-                        Infolists\Components\TextEntry::make('version'),
-                        Infolists\Components\IconColumn::make('enabled')
+                        Schemas\Components\TextEntry::make('version'),
+                        Schemas\Components\IconColumn::make('enabled')
                             ->boolean(),
                     ])->columns(2),
-                Infolists\Components\Section::make('Settings')
+                Schemas\Components\Section::make('Settings')
                     ->schema([
-                        Infolists\Components\RepeatableEntry::make('settings')
+                        Schemas\Components\RepeatableEntry::make('settings')
                             ->schema([
-                                Infolists\Components\TextEntry::make('key'),
-                                Infolists\Components\TextEntry::make('value'),
+                                Schemas\Components\TextEntry::make('key'),
+                                Schemas\Components\TextEntry::make('value'),
                             ])->columns(2),
                     ]),
             ]);

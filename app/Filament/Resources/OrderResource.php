@@ -1,12 +1,12 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Models\Order;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas;
+use Filament\Schemas\Schema;
+
+
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -29,39 +29,37 @@ class OrderResource extends Resource
 
     protected static ?string $navigationLabel = 'Orders';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 //
             ]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist
-            ->schema([
-                Infolists\Components\Section::make('Order Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Order Details')
                     ->schema([
-                        Infolists\Components\TextEntry::make('id'),
-                        Infolists\Components\TextEntry::make('user.email')
+                        Schemas\Components\TextEntry::make('id'),
+                        Schemas\Components\TextEntry::make('user.email')
                             ->label('Customer'),
-                        Infolists\Components\TextEntry::make('formatted_total')
+                        Schemas\Components\TextEntry::make('formatted_total')
                             ->label('Total')
                             ->weight('bold'),
-                        Infolists\Components\TextEntry::make('currency.code')
+                        Schemas\Components\TextEntry::make('currency.code')
                             ->label('Currency'),
-                        Infolists\Components\TextEntry::make('created_at')
+                        Schemas\Components\TextEntry::make('created_at')
                             ->dateTime(),
                     ])->columns(2),
-                Infolists\Components\Section::make('Services')
+                Schemas\Components\Section::make('Services')
                     ->schema([
-                        Infolists\Components\RepeatableEntry::make('services')
+                        Schemas\Components\RepeatableEntry::make('services')
                             ->schema([
-                                Infolists\Components\TextEntry::make('product.name'),
-                                Infolists\Components\TextEntry::make('plan.name'),
-                                Infolists\Components\TextEntry::make('formatted_price'),
-                                Infolists\Components\TextEntry::make('status')
+                                Schemas\Components\TextEntry::make('product.name'),
+                                Schemas\Components\TextEntry::make('plan.name'),
+                                Schemas\Components\TextEntry::make('formatted_price'),
+                                Schemas\Components\TextEntry::make('status')
                                     ->badge(),
                             ])->columns(4),
                     ]),

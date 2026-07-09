@@ -1,12 +1,13 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ServiceResource\Pages;
 use App\Models\Service;
+use Filament\Schemas;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Schema;
+
+
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -30,28 +31,26 @@ class ServiceResource extends Resource
 
     protected static ?string $navigationLabel = 'Services';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema->schema([
                 //
             ]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist
-            ->schema([
-                Infolists\Components\Section::make('Service Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Service Details')
                     ->schema([
-                        Infolists\Components\TextEntry::make('id'),
-                        Infolists\Components\TextEntry::make('user.email')
+                        Schemas\Components\TextEntry::make('id'),
+                        Schemas\Components\TextEntry::make('user.email')
                             ->label('Customer'),
-                        Infolists\Components\TextEntry::make('product.name')
+                        Schemas\Components\TextEntry::make('product.name')
                             ->label('Product'),
-                        Infolists\Components\TextEntry::make('plan.name')
+                        Schemas\Components\TextEntry::make('plan.name')
                             ->label('Plan'),
-                        Infolists\Components\TextEntry::make('status')
+                        Schemas\Components\TextEntry::make('status')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
                                 'active' => 'success',
@@ -59,9 +58,9 @@ class ServiceResource extends Resource
                                 'cancelled' => 'danger',
                                 'suspended' => 'gray',
                             }),
-                        Infolists\Components\TextEntry::make('formatted_price')
+                        Schemas\Components\TextEntry::make('formatted_price')
                             ->label('Price'),
-                        Infolists\Components\TextEntry::make('expires_at')
+                        Schemas\Components\TextEntry::make('expires_at')
                             ->label('Expires At')
                             ->dateTime()
                             ->placeholder('Never'),

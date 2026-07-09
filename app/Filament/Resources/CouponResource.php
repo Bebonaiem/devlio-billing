@@ -1,10 +1,11 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CouponResource\Pages;
 use App\Models\Coupon;
+use Filament\Schemas;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -27,11 +28,10 @@ class CouponResource extends Resource
 
     protected static ?string $navigationLabel = 'Coupons';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Coupon Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Coupon Details')
                     ->schema([
                         Forms\Components\TextInput::make('code')
                             ->required()
@@ -57,7 +57,7 @@ class CouponResource extends Resource
                         Forms\Components\DatePicker::make('expires_at')
                             ->label('Expires At'),
                     ])->columns(2),
-                Forms\Components\Section::make('Products')
+                Schemas\Components\Section::make('Products')
                     ->schema([
                         Forms\Components\Select::make('products')
                             ->relationship('products', 'name')

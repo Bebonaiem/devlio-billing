@@ -1,12 +1,13 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\InvoiceResource\Pages;
 use App\Models\Invoice;
+use Filament\Schemas;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Infolists;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Schema;
+
+
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -30,11 +31,10 @@ class InvoiceResource extends Resource
 
     protected static ?string $navigationLabel = 'Invoices';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Invoice Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Invoice Details')
                     ->schema([
                         Forms\Components\Select::make('status')
                             ->options([
@@ -48,24 +48,23 @@ class InvoiceResource extends Resource
             ]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist
-            ->schema([
-                Infolists\Components\Section::make('Invoice Details')
+        return $schema->schema([
+                Schemas\Components\Section::make('Invoice Details')
                     ->schema([
-                        Infolists\Components\TextEntry::make('number')
+                        Schemas\Components\TextEntry::make('number')
                             ->label('Invoice Number')
                             ->weight('bold'),
-                        Infolists\Components\TextEntry::make('user.email')
+                        Schemas\Components\TextEntry::make('user.email')
                             ->label('Customer'),
-                        Infolists\Components\TextEntry::make('formatted_total')
+                        Schemas\Components\TextEntry::make('formatted_total')
                             ->label('Total')
                             ->weight('bold'),
-                        Infolists\Components\TextEntry::make('formatted_remaining')
+                        Schemas\Components\TextEntry::make('formatted_remaining')
                             ->label('Remaining')
                             ->color(fn ($state): string => str_contains($state, '0.00') ? 'success' : 'warning'),
-                        Infolists\Components\TextEntry::make('status')
+                        Schemas\Components\TextEntry::make('status')
                             ->badge()
                             ->color(fn (string $state): string => match ($state) {
                                 'paid' => 'success',
@@ -73,19 +72,19 @@ class InvoiceResource extends Resource
                                 'overdue' => 'danger',
                                 'cancelled' => 'gray',
                             }),
-                        Infolists\Components\TextEntry::make('due_at')
+                        Schemas\Components\TextEntry::make('due_at')
                             ->label('Due At')
                             ->dateTime(),
                     ])->columns(3),
-                Infolists\Components\Section::make('Items')
+                Schemas\Components\Section::make('Items')
                     ->schema([
-                        Infolists\Components\RepeatableEntry::make('items')
+                        Schemas\Components\RepeatableEntry::make('items')
                             ->schema([
-                                Infolists\Components\TextEntry::make('description'),
-                                Infolists\Components\TextEntry::make('quantity'),
-                                Infolists\Components\TextEntry::make('price')
+                                Schemas\Components\TextEntry::make('description'),
+                                Schemas\Components\TextEntry::make('quantity'),
+                                Schemas\Components\TextEntry::make('price')
                                     ->money('USD'),
-                                Infolists\Components\TextEntry::make('total')
+                                Schemas\Components\TextEntry::make('total')
                                     ->state(fn ($record): float => $record->quantity * $record->price)
                                     ->money('USD'),
                             ])->columns(4),

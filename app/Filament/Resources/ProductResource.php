@@ -1,10 +1,11 @@
-<?php
+﻿<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
+use Filament\Schemas;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -25,11 +26,10 @@ class ProductResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Product Information')
+        return $schema->schema([
+                Schemas\Components\Section::make('Product Information')
                     ->schema([
                         Forms\Components\TextInput::make('name')
                             ->required()
@@ -52,7 +52,7 @@ class ProductResource extends Resource
                             ->directory('products')
                             ->visibility('public'),
                     ])->columns(2),
-                Forms\Components\Section::make('Settings')
+                Schemas\Components\Section::make('Settings')
                     ->schema([
                         Forms\Components\Toggle::make('enabled')
                             ->default(true),
