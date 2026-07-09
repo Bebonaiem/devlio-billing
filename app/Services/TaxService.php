@@ -34,11 +34,13 @@ class TaxService
 
     public function getUserCountry(User $user): string
     {
-        $properties = $user->properties ?? [];
-        $country = $properties['country'] ?? null;
+        $property = \App\Models\Property::where('model_type', User::class)
+            ->where('model_id', $user->id)
+            ->where('key', 'country')
+            ->first();
 
-        if ($country) {
-            return $country;
+        if ($property && $property->value) {
+            return $property->value;
         }
 
         return config('billing.default_country', 'all');

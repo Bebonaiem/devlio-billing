@@ -30,10 +30,12 @@ class InvoiceController extends Controller
 
     public function markPaid(Invoice $invoice)
     {
+        $totals = app(InvoiceService::class)->calculateTotal($invoice);
+
         $transaction = InvoiceTransaction::create([
             'invoice_id' => $invoice->id,
             'gateway_id' => null,
-            'amount' => 0,
+            'amount' => $totals['total'],
             'fee' => 0,
             'transaction_id' => 'MANUAL-' . strtoupper(uniqid()),
             'status' => 'succeeded',

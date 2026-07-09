@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\InvoiceTransaction;
 use App\Models\Service;
-use App\Models\Setting;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -71,30 +70,6 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact(
             'stats', 'recentServices', 'recentTransactions', 'revenueLabels', 'revenueData'
         ));
-    }
-
-    public function settings()
-    {
-        $settings = Setting::all()->pluck('value', 'key');
-        return view('admin.settings', compact('settings'));
-    }
-
-    public function updateSettings(Request $request)
-    {
-        $keys = [
-            'site_name', 'site_description', 'default_currency', 'default_country',
-            'invoice_prefix', 'invoice_due_days',
-            'grace_days', 'terminate_days',
-            'affiliate_rate', 'smtp_host', 'smtp_port',
-        ];
-
-        foreach ($keys as $key) {
-            if ($request->has($key)) {
-                Setting::set($key, $request->input($key));
-            }
-        }
-
-        return back()->with('success', 'Settings updated successfully.');
     }
 
     public function users()
