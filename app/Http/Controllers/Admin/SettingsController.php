@@ -28,7 +28,7 @@ class SettingsController extends Controller
             'smtp_host', 'smtp_port', 'smtp_username', 'smtp_password', 'smtp_encryption', 'mail_from_address',
             'pterodactyl_url', 'pterodactyl_api_key',
             'paypal_client_id', 'paypal_secret', 'paypal_webhook_id', 'paypal_sandbox',
-            'stripe_key', 'stripe_secret',
+            'stripe_key', 'stripe_secret', 'stripe_webhook_secret',
         ];
 
         foreach ($keys as $key) {

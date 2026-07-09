@@ -138,6 +138,10 @@
                 <label class="block text-sm font-medium text-dark-300 mb-2">Secret Key</label>
                 <input type="password" name="stripe_secret" value="{{ $settings['stripe_secret'] ?? '' }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
             </div>
+            <div>
+                <label class="block text-sm font-medium text-dark-300 mb-2">Webhook Secret</label>
+                <input type="password" name="stripe_webhook_secret" value="{{ $settings['stripe_webhook_secret'] ?? '' }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+            </div>
         </div>
     </div>
 

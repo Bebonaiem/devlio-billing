@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
+use App\Models\Extension;
 use App\Models\Invoice;
 use App\Models\InvoiceTransaction;
 use App\Services\InvoiceService;
@@ -13,7 +14,11 @@ class PayPalController extends Controller
     public function __construct(
         private readonly \App\Services\PayPalService $paypal,
         private readonly InvoiceService $invoiceService,
-    ) {}
+    ) {
+        $this->gatewayId = Extension::where('extension', 'paypal')->value('id');
+    }
+
+    private ?int $gatewayId = null;
 
     public function handleWebhook(Request $request)
     {
@@ -76,7 +81,7 @@ class PayPalController extends Controller
 
         $transaction = InvoiceTransaction::create([
             'invoice_id' => $invoice->id,
-            'gateway_id' => null,
+            'gateway_id' => $this->gatewayId,
             'amount' => $amount,
             'fee' => 0,
             'transaction_id' => $transactionId,

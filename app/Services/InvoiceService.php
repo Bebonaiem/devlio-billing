@@ -132,7 +132,7 @@ class InvoiceService
         $invoice->update(['status' => 'cancelled']);
     }
 
-    private function createSnapshot(Invoice $invoice): void
+    public function createSnapshot(Invoice $invoice): void
     {
         $totals = $this->calculateTotal($invoice);
         $user = $invoice->user;

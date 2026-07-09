@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Webhook;
 
 use App\Http\Controllers\Controller;
+use App\Models\Extension;
 use App\Models\Invoice;
 use App\Models\InvoiceTransaction;
 use App\Services\InvoiceService;
@@ -13,7 +14,11 @@ class StripeController extends Controller
     public function __construct(
         private readonly \App\Services\StripeService $stripe,
         private readonly InvoiceService $invoiceService,
-    ) {}
+    ) {
+        $this->gatewayId = Extension::where('extension', 'stripe')->value('id');
+    }
+
+    private ?int $gatewayId = null;
 
     public function handleWebhook(Request $request)
     {
@@ -48,7 +53,7 @@ class StripeController extends Controller
 
         $transaction = InvoiceTransaction::create([
             'invoice_id' => $invoice->id,
-            'gateway_id' => null,
+            'gateway_id' => $this->gatewayId,
             'amount' => (float) ($session->amount_total ?? 0) / 100,
             'fee' => 0,
             'transaction_id' => $session->payment_intent ?? $session->id,
@@ -75,7 +80,7 @@ class StripeController extends Controller
 
         $transaction = InvoiceTransaction::create([
             'invoice_id' => $invoice->id,
-            'gateway_id' => null,
+            'gateway_id' => $this->gatewayId,
             'amount' => (float) ($stripeInvoice->amount_paid ?? 0) / 100,
             'fee' => (float) ($stripeInvoice->charge ?? 0) / 100,
             'transaction_id' => $stripeInvoice->payment_intent ?? $stripeInvoice->id,

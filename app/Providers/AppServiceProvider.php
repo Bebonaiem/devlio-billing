@@ -42,14 +42,15 @@ class AppServiceProvider extends ServiceProvider
                     'services.paypal.client_id' => $settings->get('paypal_client_id'),
                     'services.paypal.secret' => $settings->get('paypal_secret') ?? '',
                     'services.paypal.webhook_id' => $settings->get('paypal_webhook_id') ?? '',
-                    'services.paypal.sandbox' => $settings->get('paypal_sandbox') === '1',
+                    'services.paypal.mode' => $settings->get('paypal_sandbox') === '1' ? 'sandbox' : 'live',
                 ]);
             }
 
             if ($settings->has('stripe_key') && $settings->get('stripe_key')) {
                 config([
-                    'services.stripe.key' => $settings->get('stripe_key'),
-                    'services.stripe.secret' => $settings->get('stripe_secret') ?? '',
+                    'services.stripe.public_key' => $settings->get('stripe_key'),
+                    'services.stripe.secret_key' => $settings->get('stripe_secret') ?? '',
+                    'services.stripe.webhook_secret' => $settings->get('stripe_webhook_secret') ?? '',
                 ]);
             }
         } catch (\Exception $e) {

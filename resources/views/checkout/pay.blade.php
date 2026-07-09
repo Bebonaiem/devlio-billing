@@ -14,10 +14,6 @@
             </span>
         </div>
 
-        @php
-            $subtotal = $invoice->items->sum(fn($item) => $item->price * $item->quantity);
-        @endphp
-
         <div class="space-y-3 mb-6">
             @foreach ($invoice->items as $item)
                 <div class="flex justify-between py-2 border-b border-white/5">
@@ -25,13 +21,29 @@
                     <span class="text-sm text-white">${{ number_format($item->price * $item->quantity, 2) }}</span>
                 </div>
             @endforeach
+            <div class="flex justify-between py-2 border-b border-white/5">
+                <span class="text-sm text-dark-400">Subtotal</span>
+                <span class="text-sm text-white">${{ number_format($totals['subtotal'], 2) }}</span>
+            </div>
+            @if ($totals['tax'] > 0)
+            <div class="flex justify-between py-2 border-b border-white/5">
+                <span class="text-sm text-dark-400">{{ $totals['tax_name'] ?? 'Tax' }} ({{ $totals['tax_rate'] }}%)</span>
+                <span class="text-sm text-white">${{ number_format($totals['tax'], 2) }}</span>
+            </div>
+            @endif
+            @if ($creditsApplied > 0)
+            <div class="flex justify-between py-2 border-b border-white/5">
+                <span class="text-sm text-green-400">Credit Applied</span>
+                <span class="text-sm text-green-400">-${{ number_format($creditsApplied, 2) }}</span>
+            </div>
+            @endif
             <div class="flex justify-between py-2">
-                <span class="font-bold text-white">Total</span>
-                <span class="font-bold gradient-text">${{ number_format($subtotal, 2) }}</span>
+                <span class="font-bold text-white">Total Due</span>
+                <span class="font-bold gradient-text">${{ number_format($remaining, 2) }}</span>
             </div>
         </div>
 
-        @if ($paymentGateways->isNotEmpty())
+        @if ($remaining > 0 && $paymentGateways->isNotEmpty())
             <form method="POST" action="{{ route('checkout.pay.process') }}" class="space-y-4">
                 @csrf
                 <input type="hidden" name="invoice_id" value="{{ $invoice->id }}">
@@ -44,8 +56,19 @@
                         </label>
                     @endforeach
                 </div>
-                <button type="submit" class="w-full py-3 px-4 btn-primary text-white font-medium rounded-xl text-sm">Pay Now</button>
+                <button type="submit" class="w-full py-3 px-4 btn-primary text-white font-medium rounded-xl text-sm">
+                    Pay ${{ number_format($remaining, 2) }}
+                </button>
             </form>
+        @elseif ($remaining <= 0)
+            <div class="text-center py-6">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-green-500/20 flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <p class="text-white font-semibold">Fully Paid!</p>
+                <p class="text-dark-400 text-sm mt-1">This invoice has been fully paid by credits.</p>
+                <a href="{{ route('dashboard.index') }}" class="mt-4 inline-block px-6 py-3 btn-primary text-white font-medium rounded-xl text-sm">Go to Dashboard</a>
+            </div>
         @else
             <div class="text-center py-6">
                 <p class="text-dark-400">No payment gateways available. Please contact support.</p>

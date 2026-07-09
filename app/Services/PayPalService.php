@@ -70,7 +70,7 @@ class PayPalService
         return ['error' => $response->body()];
     }
 
-    public function createOrder(Invoice $invoice, string $returnUrl, string $cancelUrl): ?string
+    public function createOrder(Invoice $invoice, string $returnUrl, string $cancelUrl): ?array
     {
         $totals = app(InvoiceService::class)->calculateTotal($invoice);
 
@@ -95,7 +95,17 @@ class PayPalService
         ]);
 
         if (isset($result['id'])) {
-            return $result['id'];
+            $approvalUrl = null;
+            foreach ($result['links'] ?? [] as $link) {
+                if (($link['rel'] ?? '') === 'payer-action') {
+                    $approvalUrl = $link['href'];
+                    break;
+                }
+            }
+            return [
+                'id' => $result['id'],
+                'approval_url' => $approvalUrl,
+            ];
         }
 
         return null;

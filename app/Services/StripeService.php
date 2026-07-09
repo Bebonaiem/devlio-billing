@@ -21,6 +21,32 @@ class StripeService
         }
     }
 
+    public function createPaymentSession(Invoice $invoice, float $amount, int $gatewayId, string $successUrl, string $cancelUrl): ?Session
+    {
+        try {
+            return Session::create([
+                'mode' => 'payment',
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => strtolower($invoice->currency_code ?? 'usd'),
+                        'product_data' => ['name' => 'Invoice #' . $invoice->number],
+                        'unit_amount' => (int) round($amount * 100),
+                    ],
+                    'quantity' => 1,
+                ]],
+                'success_url' => $successUrl,
+                'cancel_url' => $cancelUrl,
+                'metadata' => [
+                    'invoice_id' => $invoice->id,
+                    'gateway_id' => $gatewayId,
+                ],
+            ]);
+        } catch (ApiErrorException $e) {
+            report($e);
+            return null;
+        }
+    }
+
     public function createCheckoutSession(Invoice $invoice, string $successUrl, string $cancelUrl, ?string $customerId = null): ?Session
     {
         $lineItems = [];
@@ -28,15 +54,13 @@ class StripeService
         foreach ($invoice->items as $item) {
             $lineItems[] = [
                 'price_data' => [
-                    'currency' => $invoice->currency_code ?? 'usd',
+                    'currency' => strtolower($invoice->currency_code ?? 'usd'),
                     'product_data' => ['name' => $item->description],
                     'unit_amount' => (int) ($item->price * 100),
                 ],
                 'quantity' => $item->quantity ?? 1,
             ];
         }
-
-        $totals = app(InvoiceService::class)->calculateTotal($invoice);
 
         $sessionData = [
             'mode' => 'payment',

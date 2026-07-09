@@ -9,12 +9,19 @@
         <h1 class="text-3xl font-display font-bold text-white mb-3">Payment Successful!</h1>
         <p class="text-dark-400 mb-8">Your order has been placed. Your server will be provisioned shortly.</p>
 
+        @if ($invoice)
         <div class="glass rounded-xl p-5 mb-8 text-left">
             <div class="space-y-2">
-                <div class="flex justify-between"><span class="text-dark-400 text-sm">Invoice ID</span><span class="text-white text-sm font-medium">#{{ $invoice->id }}</span></div>
-                <div class="flex justify-between"><span class="text-dark-400 text-sm">Status</span><span class="text-yellow-400 text-sm font-semibold">Processing</span></div>
+                <div class="flex justify-between"><span class="text-dark-400 text-sm">Invoice</span><span class="text-white text-sm font-medium">#{{ $invoice->number ?? $invoice->id }}</span></div>
+                <div class="flex justify-between">
+                    <span class="text-dark-400 text-sm">Status</span>
+                    <span class="text-sm font-semibold {{ $invoice->isPaid() ? 'text-green-400' : 'text-yellow-400' }}">
+                        {{ $invoice->isPaid() ? 'Paid' : 'Processing' }}
+                    </span>
+                </div>
             </div>
         </div>
+        @endif
 
         <div class="flex flex-col sm:flex-row justify-center gap-3">
             <a href="{{ route('dashboard.services') }}" class="px-6 py-3 btn-primary text-white font-medium rounded-xl text-sm">View My Services</a>

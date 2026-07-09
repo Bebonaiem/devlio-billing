@@ -10,11 +10,16 @@ use App\Exceptions\ProductUnavailableException;
 use App\Exceptions\UserLimitExceededException;
 use App\Models\Cart;
 use App\Models\Currency;
+use App\Models\Extension;
 use App\Models\Invoice;
+use App\Models\InvoiceTransaction;
 use App\Models\Order;
 use App\Services\CheckoutService;
 use App\Services\CreditService;
 use App\Services\CurrencyService;
+use App\Services\InvoiceService;
+use App\Services\PayPalService;
+use App\Services\StripeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -98,6 +103,20 @@ class CheckoutController extends Controller
 
             if (!empty($validated['apply_credit']) && $result['invoice']) {
                 $this->credit->applyToInvoice($user, $result['invoice']);
+
+                $totals = app(InvoiceService::class)->calculateTotal($result['invoice']);
+                $creditsApplied = (float) $result['invoice']->transactions()
+                    ->where('is_credit_transaction', true)
+                    ->where('status', 'succeeded')
+                    ->sum('amount');
+                $remaining = round(max(0, $totals['total'] - $creditsApplied), 2);
+
+                if ($remaining <= 0) {
+                    $result['invoice']->update(['status' => 'paid']);
+                    app(InvoiceService::class)->createSnapshot($result['invoice']);
+                    $this->activateInvoiceServices($result['invoice']);
+                    return redirect()->route('checkout.success', ['invoice' => $result['invoice']->id]);
+                }
             }
 
             if ($result['invoice']) {
@@ -134,12 +153,22 @@ class CheckoutController extends Controller
                 ->with('success', 'Invoice is already paid.');
         }
 
-        $invoice->load(['items', 'currency']);
+        $invoice->load(['items', 'currency', 'transactions']);
+
+        $invoiceService = app(InvoiceService::class);
+        $totals = $invoiceService->calculateTotal($invoice);
+        $creditsApplied = (float) $invoice->transactions()
+            ->where('is_credit_transaction', true)
+            ->where('status', 'succeeded')
+            ->sum('amount');
+        $remaining = round(max(0, $totals['total'] - $creditsApplied), 2);
 
         $currencies = Currency::where('enabled', true)->get();
-        $paymentGateways = \App\Models\Extension::where('type', 'gateway')->where('enabled', true)->get();
+        $paymentGateways = Extension::where('type', 'gateway')->where('enabled', true)->get();
 
-        return view('checkout.pay', compact('invoice', 'currencies', 'paymentGateways'));
+        return view('checkout.pay', compact(
+            'invoice', 'totals', 'creditsApplied', 'remaining', 'currencies', 'paymentGateways'
+        ));
     }
 
     public function processPay(Request $request)
@@ -150,7 +179,7 @@ class CheckoutController extends Controller
         ]);
 
         $user = Auth::user();
-        $invoice = Invoice::with('items')->findOrFail($validated['invoice_id']);
+        $invoice = Invoice::with(['items', 'transactions'])->findOrFail($validated['invoice_id']);
 
         if ($invoice->user_id !== $user->id) {
             abort(403);
@@ -161,22 +190,105 @@ class CheckoutController extends Controller
                 ->with('success', 'Invoice is already paid.');
         }
 
-        // TODO: Process payment with the selected gateway
-        // For now, mark as paid for testing
-        $transaction = \App\Models\InvoiceTransaction::create([
-            'invoice_id' => $invoice->id,
-            'gateway_id' => $validated['gateway'],
-            'amount' => $invoice->items->sum(fn($i) => $i->price * $i->quantity),
-            'fee' => 0,
-            'transaction_id' => 'TXN-' . strtoupper(uniqid()),
-            'status' => 'succeeded',
-            'is_credit_transaction' => false,
-        ]);
+        $gateway = Extension::findOrFail($validated['gateway']);
+        $invoiceService = app(InvoiceService::class);
+        $totals = $invoiceService->calculateTotal($invoice);
+        $creditsApplied = (float) $invoice->transactions()
+            ->where('is_credit_transaction', true)
+            ->where('status', 'succeeded')
+            ->sum('amount');
+        $remaining = round(max(0, $totals['total'] - $creditsApplied), 2);
 
-        app(\App\Services\InvoiceService::class)->markPaid($invoice, $transaction);
+        if ($remaining <= 0) {
+            $invoice->update(['status' => 'paid']);
+            $invoiceService->createSnapshot($invoice);
+            $this->activateInvoiceServices($invoice);
+            return redirect()->route('checkout.success', ['invoice' => $invoice->id]);
+        }
 
-        return redirect()->route('checkout.success', ['invoice' => $invoice->id])
-            ->with('success', 'Payment successful!');
+        return match ($gateway->extension) {
+            'stripe' => $this->processStripePayment($invoice, $remaining, $gateway),
+            'paypal' => $this->processPayPalPayment($invoice, $remaining, $gateway),
+            'credit' => $this->processCreditPayment($invoice, $remaining, $gateway, $user),
+            default => back()->with('error', 'Unsupported payment gateway.'),
+        };
+    }
+
+    private function processStripePayment(Invoice $invoice, float $amount, Extension $gateway)
+    {
+        $stripe = app(StripeService::class);
+        $successUrl = route('checkout.success', ['invoice' => $invoice->id]) . '&session_id={CHECKOUT_SESSION_ID}';
+        $cancelUrl = route('checkout.cancel');
+
+        $session = $stripe->createPaymentSession(
+            $invoice,
+            $amount,
+            $gateway->id,
+            $successUrl,
+            $cancelUrl
+        );
+
+        if (!$session || !$session->url) {
+            return back()->with('error', 'Failed to create Stripe payment session. Please try again.');
+        }
+
+        return redirect()->away($session->url);
+    }
+
+    private function processPayPalPayment(Invoice $invoice, float $amount, Extension $gateway)
+    {
+        $paypal = app(PayPalService::class);
+        $returnUrl = route('checkout.success', ['invoice' => $invoice->id]);
+        $cancelUrl = route('checkout.cancel');
+
+        $order = $paypal->createOrder($invoice, $returnUrl, $cancelUrl);
+
+        if (!$order || !$order['approval_url']) {
+            return back()->with('error', 'Failed to create PayPal order. Please try again.');
+        }
+
+        session(['paypal_order_id' => $order['id'], 'paypal_gateway_id' => $gateway->id]);
+
+        return redirect()->away($order['approval_url']);
+    }
+
+    private function processCreditPayment(Invoice $invoice, float $amount, Extension $gateway, $user)
+    {
+        if ($this->credit->deduct($user, $amount, $invoice->currency_code)) {
+            $transaction = InvoiceTransaction::create([
+                'invoice_id' => $invoice->id,
+                'gateway_id' => $gateway->id,
+                'amount' => $amount,
+                'fee' => 0,
+                'transaction_id' => 'CREDIT-' . strtoupper(uniqid()),
+                'status' => 'succeeded',
+                'is_credit_transaction' => true,
+            ]);
+
+            app(InvoiceService::class)->markPaid($invoice, $transaction);
+
+            return redirect()->route('checkout.success', ['invoice' => $invoice->id]);
+        }
+
+        return back()->with('error', 'Insufficient credit balance.');
+    }
+
+    private function activateInvoiceServices(Invoice $invoice): void
+    {
+        $items = $invoice->items()->whereNotNull('reference_id')->get();
+        foreach ($items as $item) {
+            if ($item->reference_type === \App\Models\Service::class) {
+                $service = \App\Models\Service::find($item->reference_id);
+                if ($service && $service->status === 'pending') {
+                    $service->update(['status' => 'active']);
+                    try {
+                        app(\App\Services\ServiceService::class)->activateService($service);
+                    } catch (\Exception $e) {
+                        report($e);
+                    }
+                }
+            }
+        }
     }
 
     public function success(Request $request)
