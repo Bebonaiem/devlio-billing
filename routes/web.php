@@ -29,6 +29,15 @@ use App\Http\Controllers\StorefrontController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\Webhook\PayPalController;
 use App\Http\Controllers\Webhook\StripeController;
+use App\Livewire\Cart;
+use App\Livewire\Checkout;
+use App\Livewire\Credits;
+use App\Livewire\Dashboard;
+use App\Livewire\Invoices;
+use App\Livewire\Profile;
+use App\Livewire\Services;
+use App\Livewire\TicketDetail;
+use App\Livewire\Tickets;
 use App\Services\PterodactylService;
 use Illuminate\Support\Facades\Route;
 
@@ -63,7 +72,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
     Route::prefix('cart')->name('cart.')->group(function () {
-        Route::get('/', [CartController::class, 'index'])->name('index');
+        Route::get('/', Cart::class)->name('index');
         Route::post('/add', [CartController::class, 'add'])->name('add');
         Route::patch('/update/{item}', [CartController::class, 'update'])->name('update');
         Route::delete('/remove/{item}', [CartController::class, 'remove'])->name('remove');
@@ -72,7 +81,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/coupon', [CartController::class, 'removeCoupon'])->name('coupon.remove');
     });
 
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::get('/checkout', Checkout::class)->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/pay/{invoice}', [CheckoutController::class, 'pay'])->name('checkout.pay');
     Route::post('/checkout/pay', [CheckoutController::class, 'processPay'])->name('checkout.pay.process');
@@ -81,16 +90,19 @@ Route::middleware('auth')->group(function () {
     Route::post('/currency', [CheckoutController::class, 'setCurrency'])->name('currency.set');
 
     Route::prefix('dashboard')->name('dashboard.')->group(function () {
-        Route::get('/', [DashboardController::class, 'index'])->name('index');
-        Route::get('/services', [DashboardController::class, 'services'])->name('services');
+        Route::get('/', Dashboard::class)->name('index');
+        Route::get('/services', Services::class)->name('services');
         Route::get('/services/{service}', [DashboardController::class, 'serviceDetail'])->name('service-detail');
-        Route::get('/invoices', [DashboardController::class, 'invoices'])->name('invoices');
+        Route::get('/invoices', Invoices::class)->name('invoices');
         Route::get('/invoices/{invoice}', [DashboardController::class, 'invoiceDetail'])->name('invoice-detail');
         Route::get('/invoices/{invoice}/pdf', [DashboardController::class, 'downloadPdf'])->name('invoices.pdf');
-        Route::get('/tickets', [DashboardController::class, 'tickets'])->name('tickets');
-        Route::get('/credits', [DashboardController::class, 'depositCredits'])->name('credits');
+        Route::get('/tickets', Tickets::class)->name('tickets');
+        Route::get('/tickets/{ticket}', TicketDetail::class)->name('ticket-detail');
+        Route::get('/tickets/create', [DashboardController::class, 'createTicket'])->name('tickets.create');
+        Route::post('/tickets', [DashboardController::class, 'storeTicket'])->name('tickets.store');
+        Route::get('/credits', Credits::class)->name('credits');
         Route::post('/credits', [DashboardController::class, 'processDeposit'])->name('credits.process');
-        Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
+        Route::get('/profile', Profile::class)->name('profile');
         Route::patch('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
         Route::patch('/profile/password', [DashboardController::class, 'updatePassword'])->name('profile.password');
         Route::get('/two-factor', [TwoFactorController::class, 'show'])->name('2fa.show');
@@ -98,8 +110,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/two-factor/disable', [TwoFactorController::class, 'disable'])->name('2fa.disable');
         Route::get('/servers', [StatusController::class, 'index'])->name('servers');
         Route::get('/affiliate', [DashboardController::class, 'affiliate'])->name('affiliate');
-        Route::get('/tickets/create', [DashboardController::class, 'createTicket'])->name('tickets.create');
-        Route::post('/tickets', [DashboardController::class, 'storeTicket'])->name('tickets.store');
     });
 
     Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
