@@ -113,11 +113,35 @@ class DashboardController extends Controller
             return back()->with('error', 'You cannot delete yourself.');
         }
 
-        $user->tickets()->delete();
-        $user->services()->delete();
-        $user->invoices()->delete();
-        $user->credits()->delete();
-        $user->delete();
+        DB::transaction(function () use ($user) {
+            $user->tickets()->delete();
+            $user->services()->each(function ($service) {
+                $service->server()->delete();
+                $service->configs()->delete();
+                $service->cancellations()->delete();
+                $service->upgrades()->delete();
+            });
+            $user->services()->delete();
+            $user->invoices()->each(function ($invoice) {
+                $invoice->transactions()->delete();
+                $invoice->items()->delete();
+                $invoice->snapshot()->delete();
+            });
+            $user->invoices()->delete();
+            $user->credits()->delete();
+            $user->orders()->each(function ($order) {
+                $order->services()->delete();
+            });
+            $user->orders()->delete();
+            $user->servers()->delete();
+            $user->apiKeys()->delete();
+            $user->carts()->delete();
+            $user->notifications()->delete();
+            $user->notificationPreferences()->delete();
+            $user->billingAgreements()->delete();
+            $user->referredAffiliateCommissions()->delete();
+            $user->delete();
+        });
 
         return redirect()->route('admin.users')
             ->with('success', 'User deleted successfully.');

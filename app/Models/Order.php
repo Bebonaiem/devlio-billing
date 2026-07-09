@@ -27,4 +27,14 @@ class Order extends Model
     {
         return $this->belongsTo(Currency::class, 'currency_code', 'code');
     }
+
+    public function servers(): HasMany
+    {
+        return $this->hasMany(Server::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
 }

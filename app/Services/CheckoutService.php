@@ -194,9 +194,15 @@ class CheckoutService
             $priceModel = $plan->prices()->first();
         }
 
+        if (! $priceModel) {
+            throw new \App\Exceptions\CheckoutException(
+                "No price found for plan: {$plan->name}"
+            );
+        }
+
         return [
-            'price' => $priceModel ? (float) $priceModel->price : 0.0,
-            'setup_fee' => $priceModel ? (float) $priceModel->setup_fee : 0.0,
+            'price' => (float) $priceModel->price,
+            'setup_fee' => (float) $priceModel->setup_fee,
         ];
     }
 
@@ -252,19 +258,27 @@ class CheckoutService
 
     private function finalizeServices(Collection $services, ?Invoice $invoice): void
     {
+        $invoicePaid = false;
+
         foreach ($services as $service) {
             $plan = $service->plan;
 
-            if ($plan->type === 'free' || $plan->type === 'one-time') {
-                $service->update(['status' => 'active']);
+            if (!$plan) {
+                continue;
+            }
 
-                if ($invoice) {
-                    $this->invoice->markPaid($invoice, $this->createCreditTransaction($invoice));
-                }
+            if (($plan->type === 'free' || $plan->type === 'one-time') && $invoice && !$invoicePaid) {
+                $service->update(['status' => 'active']);
+                $this->invoice->markPaid($invoice, $this->createCreditTransaction($invoice));
+                $invoicePaid = true;
             }
 
             if (!$service->expires_at) {
                 $service->update(['expires_at' => $this->service->getExpiryDate($plan)]);
+            }
+
+            if (!$service->relationLoaded('server')) {
+                $service->load('server');
             }
 
             if (!$service->server) {

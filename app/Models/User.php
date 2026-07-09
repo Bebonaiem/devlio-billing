@@ -63,11 +63,6 @@ class User extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
-    public function services(): HasMany
-    {
-        return $this->hasMany(Service::class);
-    }
-
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);
@@ -133,7 +128,17 @@ class User extends Authenticatable
         return $this->hasMany(PaymentMethod::class);
     }
 
-    public function servers()
+    public function servers(): HasMany
+    {
+        return $this->hasMany(Server::class);
+    }
+
+    public function services(): HasMany
+    {
+        return $this->hasMany(Service::class);
+    }
+
+    public function serversThroughServices(): HasManyThrough
     {
         return $this->hasManyThrough(Server::class, Service::class);
     }

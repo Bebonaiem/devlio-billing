@@ -18,14 +18,14 @@ class ServerController extends Controller
         return JsonResource::collection($services);
     }
 
-    public function show(Service $service)
+    public function show(Service $server)
     {
-        if ($service->user_id !== request()->user()->id) {
+        if ($server->user_id !== request()->user()->id) {
             abort(403);
         }
 
-        $service->load('product', 'plan.prices', 'configs.configOption', 'configs.configValue');
+        $server->load('product', 'plan.prices', 'configs.configOption', 'configs.configValue');
 
-        return new JsonResource($service);
+        return new JsonResource($server);
     }
 }

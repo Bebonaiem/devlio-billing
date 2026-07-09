@@ -50,9 +50,8 @@ class CheckoutController extends Controller
 
         $subtotal = 0;
         foreach ($cart->items as $item) {
-            $priceModel = $item->plan->prices()
-                ->where('currency_code', $currencyCode)
-                ->first() ?? $item->plan->prices()->first();
+            $prices = $item->plan->prices;
+            $priceModel = $prices->firstWhere('currency_code', $currencyCode) ?? $prices->first();
 
             $price = $priceModel ? (float) $priceModel->price : 0.0;
             $setupFee = $priceModel ? (float) $priceModel->setup_fee : 0.0;
@@ -73,7 +72,7 @@ class CheckoutController extends Controller
 
         $creditBalance = $this->credit->getBalance($user, $currencyCode);
         $currency = Currency::where('code', $currencyCode)->first();
-        $paymentGateways = \App\Models\Extension::where('type', 'gateway')->where('enabled', true)->get();
+        $paymentGateways = Extension::where('type', 'gateway')->where('enabled', true)->get();
 
         return view('checkout.index', compact(
             'cart', 'subtotal', 'discount', 'total', 'creditBalance', 'currency', 'paymentGateways'

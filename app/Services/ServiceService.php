@@ -53,6 +53,11 @@ class ServiceService
     public function renewService(Service $service, float $price): void
     {
         $plan = $service->plan;
+
+        if (!$plan) {
+            return;
+        }
+
         $currentExpiry = $service->expires_at ? Carbon::parse($service->expires_at) : now();
         $newExpiry = $this->calculateNewExpiry($currentExpiry, $plan);
 

@@ -10,6 +10,7 @@ class Coupon extends Model
 {
     protected $fillable = [
         'type',
+        'time',
         'code',
         'value',
         'max_uses',
@@ -40,6 +41,11 @@ class Coupon extends Model
     public function services(): HasMany
     {
         return $this->hasMany(Service::class);
+    }
+
+    public function carts(): HasMany
+    {
+        return $this->hasMany(Cart::class);
     }
 
     public function isActive(): bool

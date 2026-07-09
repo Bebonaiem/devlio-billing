@@ -48,4 +48,9 @@ class ConfigOption extends Model
     {
         return $this->hasMany(ConfigOption::class, 'parent_id');
     }
+
+    public function serviceConfigs(): HasMany
+    {
+        return $this->hasMany(ServiceConfig::class);
+    }
 }

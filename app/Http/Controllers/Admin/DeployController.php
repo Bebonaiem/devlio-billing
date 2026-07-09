@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Process;
 
 class DeployController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
         $deployResult = null;

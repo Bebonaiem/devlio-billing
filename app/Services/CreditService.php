@@ -27,7 +27,7 @@ class CreditService
         DB::transaction(function () use ($user, $amount, $currencyCode) {
             Credit::updateOrCreate(
                 ['user_id' => $user->id, 'currency_code' => $currencyCode],
-                ['amount' => DB::raw("amount + {$amount}")]
+                ['amount' => DB::raw('amount + ' . (float) $amount)]
             );
         });
     }

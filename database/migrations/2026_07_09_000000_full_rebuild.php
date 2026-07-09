@@ -86,6 +86,8 @@ return new class extends Migration
             $table->string('affiliate_code', 20)->nullable()->unique()->after('email_verified');
             $table->unsignedBigInteger('referred_by')->nullable()->after('affiliate_code');
             $table->foreign('referred_by')->references('id')->on('users')->nullOnDelete();
+            $table->unsignedBigInteger('pterodactyl_user_id')->nullable()->after('referred_by');
+            $table->string('pterodactyl_api_key')->nullable()->after('pterodactyl_user_id');
         });
 
         // =====================================================
@@ -295,7 +297,7 @@ return new class extends Migration
             $table->decimal('amount', 12, 2);
             $table->decimal('fee', 12, 2)->default(0);
             $table->string('transaction_id')->nullable();
-            $table->enum('status', ['processing', 'succeeded', 'failed'])->default('processing');
+            $table->enum('status', ['processing', 'succeeded', 'failed', 'refunded'])->default('processing');
             $table->boolean('is_credit_transaction')->default(false);
             $table->timestamps();
             $table->foreign('gateway_id')->references('id')->on('extensions')->nullOnDelete();
@@ -623,8 +625,13 @@ return new class extends Migration
 
         // Restore original schema
         Schema::table('users', function (Blueprint $table) {
+            $table->dropForeign(['referred_by']);
             $table->dropForeign(['role_id']);
-            $table->dropColumn(['first_name', 'last_name', 'tfa_secret', 'role_id', 'email_verified']);
+            $table->dropColumn([
+                'first_name', 'last_name', 'tfa_secret', 'role_id',
+                'email_verified', 'affiliate_code', 'referred_by',
+                'pterodactyl_user_id', 'pterodactyl_api_key',
+            ]);
         });
 
         Schema::dropIfExists('currencies');

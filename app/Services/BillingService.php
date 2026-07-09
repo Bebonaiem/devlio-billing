@@ -31,10 +31,12 @@ class BillingService
 
     public function markInvoicePaid(Invoice $invoice, string $gateway, string $gatewayTransactionId, array $gatewayResponse = []): void
     {
+        $totals = $this->calculateTotal($invoice);
+
         $transaction = InvoiceTransaction::create([
             'invoice_id' => $invoice->id,
             'gateway_id' => null,
-            'amount' => 0,
+            'amount' => $totals['total'],
             'fee' => 0,
             'transaction_id' => $gatewayTransactionId,
             'status' => 'succeeded',
@@ -54,7 +56,6 @@ class BillingService
         $count = 0;
         $dueServices = Service::where('status', 'active')
             ->where('expires_at', '<=', now())
-            ->where('expires_at', '>', now()->subDay())
             ->get();
 
         foreach ($dueServices as $service) {
@@ -88,8 +89,9 @@ class BillingService
         $cutoff = now()->subDays($graceDays);
 
         $services = Service::where('status', 'active')
-            ->whereHas('invoices', function ($q) {
-                $q->where('status', 'overdue');
+            ->whereHas('invoices', function ($q) use ($cutoff) {
+                $q->where('status', 'overdue')
+                    ->where('due_at', '<=', $cutoff);
             })
             ->get();
 

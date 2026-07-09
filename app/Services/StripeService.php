@@ -56,7 +56,7 @@ class StripeService
                 'price_data' => [
                     'currency' => strtolower($invoice->currency_code ?? 'usd'),
                     'product_data' => ['name' => $item->description],
-                    'unit_amount' => (int) ($item->price * 100),
+                    'unit_amount' => (int) round($item->price * 100),
                 ],
                 'quantity' => $item->quantity ?? 1,
             ];
@@ -105,7 +105,7 @@ class StripeService
 
         try {
             return PaymentIntent::create([
-                'amount' => (int) ($totals['total'] * 100),
+                'amount' => (int) round($totals['total'] * 100),
                 'currency' => $invoice->currency_code ?? 'usd',
                 'customer' => $customerId,
                 'metadata' => [

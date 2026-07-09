@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\InvoiceController as AdminInvoiceController;
 use App\Http\Controllers\Admin\PlanController as AdminPlanController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Admin\ServerController as AdminServerController;
 use App\Http\Controllers\Admin\ServiceController as AdminServiceController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
@@ -140,6 +141,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/services/{service}/terminate', [AdminServiceController::class, 'terminate'])->name('services.terminate');
         Route::delete('/services/{service}', [AdminServiceController::class, 'destroy'])->name('services.destroy');
 
+        Route::get('/servers', [AdminServerController::class, 'index'])->name('servers.index');
+        Route::get('/servers/{server}', [AdminServerController::class, 'show'])->name('servers.show');
+        Route::delete('/servers/{server}', [AdminServerController::class, 'destroy'])->name('servers.destroy');
+
         Route::get('/invoices', [AdminInvoiceController::class, 'index'])->name('invoices.index');
         Route::get('/invoices/{invoice}', [AdminInvoiceController::class, 'show'])->name('invoices.show');
         Route::get('/invoices/{invoice}/pdf', [AdminInvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
@@ -196,6 +201,10 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/deploy', [AdminDeployController::class, 'index'])->name('deploy.index');
         Route::post('/deploy', [AdminDeployController::class, 'run'])->name('deploy.run');
+
+        Route::get('/servers', [AdminServerController::class, 'index'])->name('servers.index');
+        Route::get('/servers/{server}', [AdminServerController::class, 'show'])->name('servers.show');
+        Route::delete('/servers/{server}', [AdminServerController::class, 'destroy'])->name('servers.destroy');
     });
 });
 

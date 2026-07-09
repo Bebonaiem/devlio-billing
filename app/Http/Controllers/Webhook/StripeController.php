@@ -84,7 +84,7 @@ class StripeController extends Controller
             'invoice_id' => $invoice->id,
             'gateway_id' => $this->gatewayId,
             'amount' => (float) ($stripeInvoice->amount_paid ?? 0) / 100,
-            'fee' => (float) ($stripeInvoice->charge ?? 0) / 100,
+            'fee' => 0,
             'transaction_id' => $stripeInvoice->payment_intent ?? $stripeInvoice->id,
             'status' => 'succeeded',
             'is_credit_transaction' => false,

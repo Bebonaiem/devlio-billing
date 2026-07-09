@@ -3,7 +3,7 @@
 @section('content')
 <div class="max-w-lg">
     <form method="POST" action="{{ route('admin.currencies.update', $currency) }}" class="glass rounded-2xl p-6 sm:p-8 space-y-5">
-        @csrf @method('PUT')
+        @csrf @method('PATCH')
         <div>
             <label class="block text-sm font-medium text-dark-300 mb-2">Currency Code</label>
             <input type="text" disabled class="w-full px-4 py-3 rounded-xl input-field text-dark-400 text-sm" value="{{ $currency->code }}">

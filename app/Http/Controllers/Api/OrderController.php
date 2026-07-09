@@ -18,14 +18,14 @@ class OrderController extends Controller
         return JsonResource::collection($services);
     }
 
-    public function show(Service $service)
+    public function show(Service $order)
     {
-        if ($service->user_id !== request()->user()->id) {
+        if ($order->user_id !== request()->user()->id) {
             abort(403);
         }
 
-        $service->load('product', 'plan.prices', 'configs.configOption', 'configs.configValue', 'invoices.items');
+        $order->load('product', 'plan.prices', 'configs.configOption', 'configs.configValue', 'invoices.items');
 
-        return new JsonResource($service);
+        return new JsonResource($order);
     }
 }

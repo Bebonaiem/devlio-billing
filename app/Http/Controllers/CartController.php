@@ -217,13 +217,8 @@ class CartController extends Controller
 
     private function getPriceForPlan(Plan $plan, string $currencyCode): array
     {
-        $priceModel = $plan->prices()
-            ->where('currency_code', $currencyCode)
-            ->first();
-
-        if (!$priceModel) {
-            $priceModel = $plan->prices()->first();
-        }
+        $prices = $plan->prices;
+        $priceModel = $prices->firstWhere('currency_code', $currencyCode) ?? $prices->first();
 
         return [
             'price' => $priceModel ? (float) $priceModel->price : 0.0,

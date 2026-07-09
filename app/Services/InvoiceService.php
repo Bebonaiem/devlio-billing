@@ -152,7 +152,7 @@ class InvoiceService
             'tax_name' => $totals['tax_name'],
             'tax_rate' => $totals['tax_rate'],
             'tax_country' => $user ? $this->tax->getUserCountry($user) : null,
-            'bill_to' => $user?->name . ' <' . $user?->email . '>',
+            'bill_to' => $user ? $user->name . ' <' . $user->email . '>' : null,
         ]);
     }
 
@@ -169,7 +169,7 @@ class InvoiceService
     private function dispatchUnsuspend(Service $service): void
     {
         try {
-            app(\App\Services\ServiceService::class)->unsuspend($service);
+            app(\App\Services\ServiceService::class)->unsuspendService($service);
         } catch (\Exception $e) {
             report($e);
         }

@@ -25,7 +25,7 @@
             </div>
 
             <div class="text-center">
-                <a href="{{ route('dashboard.invoices.index') }}"
+                <a href="{{ route('dashboard.invoices') }}"
                    class="inline-block bg-yellow-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-yellow-700 transition">
                     View Invoices
                 </a>

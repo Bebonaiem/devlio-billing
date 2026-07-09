@@ -58,4 +58,11 @@ class Invoice extends Model
     {
         return $this->status === 'pending';
     }
+
+    public function total(): float
+    {
+        return (float) $this->items->sum(function (InvoiceItem $item) {
+            return $item->quantity * $item->price;
+        });
+    }
 }

@@ -15,6 +15,14 @@ class CouponService
             return false;
         }
 
+        if ($coupon->starts_at && $coupon->starts_at->isFuture()) {
+            return false;
+        }
+
+        if ($coupon->expires_at && $coupon->expires_at->isPast()) {
+            return false;
+        }
+
         if ($coupon->max_uses !== null && $coupon->services()->count() >= $coupon->max_uses) {
             return false;
         }

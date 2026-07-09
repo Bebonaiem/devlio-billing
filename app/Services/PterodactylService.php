@@ -57,13 +57,17 @@ class PterodactylService
         ]);
 
         if ($response && $response->successful()) {
-            $pterodactylId = $response->json('attributes.id');
-            $apiKey = $this->createClientApiKey($pterodactylId, $user);
-            $user->update([
-                'pterodactyl_user_id' => $pterodactylId,
-                'pterodactyl_api_key' => $apiKey,
-            ]);
-            return $pterodactylId;
+            $attributes = $response->json('attributes') ?? $response->json('data.attributes');
+            $pterodactylId = $attributes['id'] ?? null;
+
+            if ($pterodactylId) {
+                $apiKey = $this->createClientApiKey($pterodactylId, $user);
+                $user->update([
+                    'pterodactyl_user_id' => $pterodactylId,
+                    'pterodactyl_api_key' => $apiKey,
+                ]);
+                return $pterodactylId;
+            }
         }
 
         Log::error('Failed to create Pterodactyl user', [
@@ -115,10 +119,10 @@ class PterodactylService
         ]);
 
         if ($response && $response->successful()) {
-            $attributes = $response->json('attributes');
+            $attributes = $response->json('attributes') ?? $response->json('data.attributes');
             return [
-                'id' => $attributes['id'],
-                'identifier' => $attributes['identifier'],
+                'id' => $attributes['id'] ?? null,
+                'identifier' => $attributes['identifier'] ?? null,
                 'node' => $attributes['node'] ?? null,
             ];
         }
@@ -154,7 +158,7 @@ class PterodactylService
         $response = $this->safeRequest('get', "/servers/{$serverId}");
 
         if ($response && $response->successful()) {
-            return $response->json('attributes');
+            return $response->json('attributes') ?? $response->json('data.attributes');
         }
 
         return null;
@@ -175,7 +179,7 @@ class PterodactylService
     public function getEggDetails(int $nestId, int $eggId): ?array
     {
         $response = $this->safeRequest('get', "/nests/{$nestId}/eggs/{$eggId}");
-        return $response?->successful() ? $response->json('attributes') : null;
+        return $response?->successful() ? ($response->json('attributes') ?? $response->json('data.attributes')) : null;
     }
 
     public function getLocations(): array
@@ -198,9 +202,13 @@ class PterodactylService
 
     public function getServerResources(string $serverIdentifier, User $user): ?array
     {
-        try {
-            $apiKey = $user->pterodactyl_api_key ?? $this->apiKey;
+        $apiKey = $user->pterodactyl_api_key;
 
+        if (!$apiKey) {
+            return null;
+        }
+
+        try {
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Accept' => 'application/json',

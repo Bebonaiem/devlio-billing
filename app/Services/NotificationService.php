@@ -72,15 +72,6 @@ class NotificationService
 
     private function sendMail(User $user, NotificationTemplate $template, array $data): bool
     {
-        $subject = $this->renderTemplate($template->subject, $data);
-        $body = $this->renderTemplate($template->body, $data);
-
-        $viewName = self::TEMPLATE_MAP[$template->key] ?? null;
-
-        if (! $viewName) {
-            return false;
-        }
-
         $mailable = $this->buildMailable($template->key, $data, $user);
 
         if (! $mailable) {

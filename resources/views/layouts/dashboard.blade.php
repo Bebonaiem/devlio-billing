@@ -114,7 +114,7 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/></svg>
                     Services
                 </a>
-                <a href="{{ route('dashboard.servers') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('dashboard.servers') || request()->routeIs('dashboard.server-detail') ? 'active' : '' }}">
+                <a href="{{ route('dashboard.servers') }}" class="sidebar-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-dark-300 hover:text-white {{ request()->routeIs('dashboard.servers') || request()->routeIs('dashboard.service-detail') ? 'active' : '' }}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2z"/></svg>
                     Servers
                 </a>

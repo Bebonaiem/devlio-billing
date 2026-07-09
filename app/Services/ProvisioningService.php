@@ -19,16 +19,25 @@ class ProvisioningService
         $plan = $service->plan;
         $product = $service->product;
 
+        if (!$user || !$plan) {
+            Log::error('Cannot provision service: missing user or plan', [
+                'service_id' => $service->id,
+                'user_id' => $service->user_id,
+                'plan_id' => $service->plan_id,
+            ]);
+            return null;
+        }
+
         $result = $this->pterodactyl->createServer($user, [
             'name' => ($product->name ?? 'Server') . ' - ' . $user->name,
-            'egg_id' => $plan?->egg_id ?? 1,
-            'memory' => $plan?->memory ?? 1024,
-            'swap' => $plan?->swap ?? 0,
-            'disk' => $plan?->disk ?? 1024,
-            'cpu' => $plan?->cpu ?? 100,
-            'databases' => $plan?->databases ?? 0,
-            'backups' => $plan?->backups ?? 0,
-            'allocations' => $plan?->allocations ?? 1,
+            'egg_id' => $plan->egg_id ?? 1,
+            'memory' => $plan->memory ?? 1024,
+            'swap' => $plan->swap ?? 0,
+            'disk' => $plan->disk ?? 1024,
+            'cpu' => $plan->cpu ?? 100,
+            'databases' => $plan->databases ?? 0,
+            'backups' => $plan->backups ?? 0,
+            'allocations' => $plan->allocations ?? 1,
             'environment' => [],
         ]);
 
@@ -41,9 +50,9 @@ class ProvisioningService
                 'pterodactyl_server_identifier' => $result['identifier'],
                 'name' => $result['name'] ?? ($product->name . ' Server'),
                 'status' => 'active',
-                'cpu' => $plan?->cpu ?? null,
-                'memory' => $plan?->memory ?? null,
-                'disk' => $plan?->disk ?? null,
+                'cpu' => $plan->cpu ?? null,
+                'memory' => $plan->memory ?? null,
+                'disk' => $plan->disk ?? null,
                 'node' => $result['node'] ?? null,
             ]);
 
