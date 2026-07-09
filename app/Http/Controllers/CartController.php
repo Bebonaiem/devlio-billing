@@ -102,8 +102,8 @@ class CartController extends Controller
 
         $existingItem = CartItem::where('cart_id', $cart->id)
             ->where('plan_id', $plan->id)
-            ->where('config_options', json_encode($validated['config_options'] ?? []))
-            ->first();
+            ->get()
+            ->first(fn ($item) => $item->config_options == ($validated['config_options'] ?? []));
 
         if ($existingItem) {
             if (!$product->allow_quantity) {
