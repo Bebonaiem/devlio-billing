@@ -257,8 +257,6 @@ install_website() {
     php artisan db:seed --class=DatabaseSeeder --force
     php artisan storage:link
     php artisan config:cache
-    php artisan route:cache
-    php artisan event:cache
 
     chown -R www-data:www-data /var/www/devlio-billing
     chmod -R 755 /var/www/devlio-billing/storage
@@ -398,9 +396,7 @@ pull_and_migrate() {
     php artisan migrate --force
     echo -e "${YELLOW}Caching...${NC}"
     php artisan config:cache
-    php artisan route:cache
     php artisan view:cache
-    php artisan event:cache
     chown -R www-data:www-data /var/www/devlio-billing
     echo -e "${GREEN}Done!${NC}"
 }
@@ -417,7 +413,6 @@ clear_cache() {
     echo -e "${YELLOW}Clearing cache...${NC}"
     php artisan optimize:clear
     php artisan config:cache
-    php artisan route:cache
     php artisan view:cache
     echo -e "${GREEN}Done!${NC}"
 }

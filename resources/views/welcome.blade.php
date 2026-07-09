@@ -49,9 +49,9 @@
                     @auth
                         <a href="{{ url('/dashboard') }}" class="px-5 py-2 btn-primary text-white text-sm font-medium rounded-xl">Dashboard</a>
                     @else
-                        <a href="{{ route('login') }}" class="px-5 py-2 text-dark-300 hover:text-white text-sm font-medium transition">Log in</a>
+                        <a href="{{ url('/login') }}" class="px-5 py-2 text-dark-300 hover:text-white text-sm font-medium transition">Log in</a>
                         @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="px-5 py-2 btn-primary text-white text-sm font-medium rounded-xl">Register</a>
+                            <a href="{{ url('/register') }}" class="px-5 py-2 btn-primary text-white text-sm font-medium rounded-xl">Register</a>
                         @endif
                     @endauth
                 @endif
@@ -82,7 +82,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
                     </a>
                     @guest
-                        <a href="{{ route('register') }}" class="px-8 py-3.5 bg-dark-800 hover:bg-dark-700 text-dark-300 font-semibold rounded-xl text-sm transition border border-white/5">
+                        <a href="{{ url('/register') }}" class="px-8 py-3.5 bg-dark-800 hover:bg-dark-700 text-dark-300 font-semibold rounded-xl text-sm transition border border-white/5">
                             Create Account
                         </a>
                     @endguest

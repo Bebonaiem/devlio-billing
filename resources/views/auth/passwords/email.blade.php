@@ -42,7 +42,7 @@
             <div class="mt-6 pt-6 border-t border-white/5 text-center">
                 <p class="text-sm text-dark-400">
                     Remember your password?
-                    <a href="{{ route('login') }}" class="text-primary-400 hover:text-primary-300 font-medium transition">Sign in</a>
+                    <a href="{{ url('/login') }}" class="text-primary-400 hover:text-primary-300 font-medium transition">Sign in</a>
                 </p>
             </div>
         </div>

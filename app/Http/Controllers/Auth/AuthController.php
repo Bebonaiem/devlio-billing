@@ -122,7 +122,7 @@ class AuthController extends Controller
         \Illuminate\Support\Facades\DB::table('password_reset_tokens')
             ->where('email', $request->email)->delete();
 
-        return redirect()->route('login')->with('success', 'Password reset successfully.');
+        return redirect('/login')->with('success', 'Password reset successfully.');
     }
 
     public function logout(Request $request): RedirectResponse

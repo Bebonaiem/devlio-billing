@@ -81,7 +81,7 @@
                                         </button>
                                     </form>
                                 @else
-                                    <a href="{{ route('register') }}" class="w-full text-center py-2.5 px-4 bg-dark-700 hover:bg-dark-600 text-dark-300 text-sm font-medium rounded-xl transition block">
+                                    <a href="{{ url('/register') }}" class="w-full text-center py-2.5 px-4 bg-dark-700 hover:bg-dark-600 text-dark-300 text-sm font-medium rounded-xl transition block">
                                         Register
                                     </a>
                                 @endauth

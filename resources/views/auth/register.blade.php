@@ -12,7 +12,7 @@
         </div>
 
         <div class="glass rounded-2xl p-8">
-            <form method="POST" action="{{ route('register') }}" class="space-y-5">
+            <form method="POST" action="{{ url('/register') }}" class="space-y-5">
                 @csrf
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -70,7 +70,7 @@
             <div class="mt-6 pt-6 border-t border-white/5 text-center">
                 <p class="text-sm text-dark-400">
                     Already have an account?
-                    <a href="{{ route('login') }}" class="text-primary-400 hover:text-primary-300 font-medium transition">Sign in</a>
+                    <a href="{{ url('/login') }}" class="text-primary-400 hover:text-primary-300 font-medium transition">Sign in</a>
                 </p>
             </div>
         </div>

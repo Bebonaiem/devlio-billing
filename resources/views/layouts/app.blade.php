@@ -149,8 +149,8 @@
                             </div>
                         </div>
                     @else
-                        <a href="{{ route('login') }}" class="px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">Login</a>
-                        <a href="{{ route('register') }}" class="ml-2 px-5 py-2 text-sm font-medium btn-primary text-white rounded-lg">Get Started</a>
+                        <a href="{{ url('/login') }}" class="px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">Login</a>
+                        <a href="{{ url('/register') }}" class="ml-2 px-5 py-2 text-sm font-medium btn-primary text-white rounded-lg">Get Started</a>
                     @endauth
                 </div>
 
@@ -186,8 +186,8 @@
                         <button type="submit" class="block w-full text-left px-4 py-2.5 text-sm text-red-400 hover:text-red-300 rounded-lg hover:bg-red-500/10">Logout</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Login</a>
-                    <a href="{{ route('register') }}" class="block px-4 py-2.5 text-sm font-medium text-primary-400 hover:text-primary-300 rounded-lg hover:bg-primary-500/10">Get Started</a>
+                    <a href="{{ url('/login') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Login</a>
+                    <a href="{{ url('/register') }}" class="block px-4 py-2.5 text-sm font-medium text-primary-400 hover:text-primary-300 rounded-lg hover:bg-primary-500/10">Get Started</a>
                 @endauth
             </div>
         </div>
