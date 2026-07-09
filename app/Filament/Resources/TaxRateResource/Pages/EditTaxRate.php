@@ -1,4 +1,4 @@
-¿<?php
+<?php
 namespace App\Filament\Resources\TaxRateResource\Pages;
 
 use App\Filament\Resources\TaxRateResource;

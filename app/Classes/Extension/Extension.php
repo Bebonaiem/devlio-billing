@@ -1,4 +1,4 @@
-¿<?php
+<?php
 namespace App\Classes\Extension;
 
 use App\Models\Extension as ExtensionModel;

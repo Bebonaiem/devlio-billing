@@ -1,4 +1,4 @@
-¿<?php
+<?php
 namespace App\Filament\Resources\ExtensionResource\Pages;
 
 use App\Filament\Resources\ExtensionResource;

@@ -1,4 +1,4 @@
-¿<?php
+<?php
 namespace App\Filament\Resources\PlanResource\Pages;
 
 use App\Filament\Resources\PlanResource;

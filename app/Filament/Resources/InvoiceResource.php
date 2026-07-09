@@ -1,4 +1,4 @@
-¿<?php
+<?php
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\InvoiceResource\Pages;

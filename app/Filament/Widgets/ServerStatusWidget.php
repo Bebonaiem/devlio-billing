@@ -1,4 +1,4 @@
-¿<?php
+<?php
 namespace App\Filament\Widgets;
 
 use App\Models\Server;

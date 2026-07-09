@@ -1,4 +1,4 @@
-¿<?php
+<?php
 namespace App\Jobs;
 
 use App\Services\BillingService;
