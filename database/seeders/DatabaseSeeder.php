@@ -18,8 +18,20 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create roles
-        Role::firstOrCreate(['name' => 'admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
         Role::firstOrCreate(['name' => 'customer']);
+
+        // Create admin user
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@gamebilling.com'],
+            [
+                'first_name' => 'Admin',
+                'last_name' => 'User',
+                'email_verified_at' => now(),
+                'password' => bcrypt('password'),
+            ]
+        );
+        $admin->assignRole($adminRole);
 
         // Default settings
         Setting::firstOrCreate(['key' => 'site_name'], ['value' => 'GameBilling']);
