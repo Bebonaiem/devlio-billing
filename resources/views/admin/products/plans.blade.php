@@ -26,7 +26,7 @@
         if (this.prices.length > 1) this.prices.splice(index, 1);
     }
 }">
-    @foreach ($product->plans as $plan)
+    @forelse ($product->plans as $plan)
         <div class="glass rounded-2xl overflow-hidden">
             <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center">
                 <div>
@@ -54,15 +54,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($plan->prices as $price)
+                        @foreach ($plan->prices as $price)
                             <tr class="border-b border-white/5">
                                 <td class="px-6 py-2 text-dark-300">{{ $price->currency_code }}</td>
                                 <td class="px-6 py-2 text-white">${{ number_format($price->price, 2) }}</td>
                                 <td class="px-6 py-2 text-dark-400">${{ number_format($price->setup_fee, 2) }}</td>
                             </tr>
-                        @empty
-                            <tr><td colspan="3" class="px-6 py-4 text-center text-dark-500">No prices set</td></tr>
-                        @endforelse
+                        @endforeach
                     </tbody>
                 </table>
             </div>
