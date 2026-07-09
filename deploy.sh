@@ -53,6 +53,8 @@ create_user() {
     [ -z "$LAST_NAME" ] && LAST_NAME="$FIRST_NAME"
 
     php artisan tinker --execute="
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin']);
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'customer']);
         \$user = \App\Models\User::create([
             'first_name' => '$FIRST_NAME',
             'last_name' => '$LAST_NAME',
