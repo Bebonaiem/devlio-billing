@@ -67,6 +67,22 @@
                         <dd class="gradient-text font-semibold text-sm">${{ number_format($user->credits->first()?->amount ?? 0, 2) }}</dd>
                     </div>
                     <div class="flex justify-between py-2 border-b border-white/5">
+                        <dt class="text-dark-400 text-sm">Two-Factor Auth</dt>
+                        <dd>
+                            @if ($user->tfa_secret)
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-500/10 text-green-400 border border-green-500/20">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                                    Enabled
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                    Disabled
+                                </span>
+                            @endif
+                        </dd>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-white/5">
                         <dt class="text-dark-400 text-sm">Affiliate Code</dt>
                         <dd class="text-primary-400 font-mono text-sm">{{ $user->affiliate_code }}</dd>
                     </div>
@@ -75,6 +91,20 @@
                         <dd class="text-white text-sm">{{ $user->created_at->format('M d, Y') }}</dd>
                     </div>
                 </dl>
+            </div>
+
+            <div class="glass rounded-2xl p-6">
+                <h3 class="font-display font-bold text-white mb-4">Security</h3>
+                <a href="{{ route('dashboard.2fa.show') }}" class="flex items-center gap-3 glass-light rounded-xl p-3 hover:bg-white/10 transition-all group">
+                    <div class="w-10 h-10 rounded-xl bg-primary-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-primary-500/30 transition-all">
+                        <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-white text-sm font-medium">Two-Factor Authentication</p>
+                        <p class="text-dark-400 text-xs">{{ $user->tfa_secret ? 'Enabled' : 'Not enabled' }}</p>
+                    </div>
+                    <svg class="w-4 h-4 text-dark-500 ml-auto group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
             </div>
 
             <div class="glass rounded-2xl p-6">

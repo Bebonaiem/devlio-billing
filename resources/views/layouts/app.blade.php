@@ -87,6 +87,8 @@
 
                 <div class="hidden md:flex items-center gap-1">
                     <a href="{{ route('storefront') }}" class="px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">Products</a>
+                    <a href="{{ route('announcements.index') }}" class="px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">Announcements</a>
+                    <a href="{{ route('articles.index') }}" class="px-4 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all">Help</a>
                     @auth
                         <a href="{{ route('cart.index') }}" class="relative px-3 py-2 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5 transition-all" x-data="{ cartCount: {{ count(session('cart', [])) }} }">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
@@ -165,6 +167,8 @@
         <div id="mobileMenu" class="hidden md:hidden border-t border-white/5">
             <div class="px-4 py-3 space-y-1">
                 <a href="{{ route('storefront') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Products</a>
+                <a href="{{ route('announcements.index') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Announcements</a>
+                <a href="{{ route('articles.index') }}" class="block px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">Help</a>
                 @auth
                     <div class="px-4 py-2.5 text-xs text-dark-500 uppercase tracking-wider">{{ auth()->user()->name }}</div>
                     <a href="{{ route('cart.index') }}" class="flex items-center justify-between px-4 py-2.5 text-sm text-dark-300 hover:text-white rounded-lg hover:bg-white/5">

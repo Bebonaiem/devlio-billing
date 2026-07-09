@@ -13,6 +13,9 @@
                 <p class="text-dark-400 mt-1">Created {{ $invoice->created_at->format('M j, Y') }}</p>
             </div>
             <div class="flex items-center gap-3">
+                <a href="{{ route('dashboard.invoices.pdf', $invoice) }}" class="px-4 py-2 bg-dark-700 text-dark-300 border border-white/10 text-sm font-medium rounded-xl hover:bg-dark-600 transition">
+                    Download PDF
+                </a>
                 <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium
                     {{ $invoice->status === 'paid' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : ($invoice->status === 'pending' ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : ($invoice->status === 'overdue' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-dark-700 text-dark-400 border border-dark-600')) }}">
                     {{ ucfirst($invoice->status) }}

@@ -53,6 +53,7 @@
     <div class="glass rounded-2xl p-6 mt-6">
         <h3 class="text-sm font-semibold text-dark-300 uppercase tracking-wider mb-4">Actions</h3>
         <div class="flex flex-wrap gap-2">
+            <a href="{{ route('admin.invoices.pdf', $invoice) }}" class="px-4 py-2 bg-dark-700 text-dark-300 border border-white/10 rounded-xl text-sm font-medium hover:bg-dark-600">Download PDF</a>
             @if ($invoice->status !== 'paid')
                 <form method="POST" action="{{ route('admin.invoices.paid', $invoice) }}" class="inline">
                     @csrf

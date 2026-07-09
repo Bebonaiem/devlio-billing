@@ -54,9 +54,24 @@ return [
     ],
 
     'discord' => [
+        'client_id' => env('DISCORD_CLIENT_ID'),
+        'client_secret' => env('DISCORD_CLIENT_SECRET'),
+        'redirect' => env('DISCORD_REDIRECT_URL', env('APP_URL') . '/auth/discord/callback'),
         'bot_token' => env('DISCORD_BOT_TOKEN'),
         'guild_id' => env('DISCORD_GUILD_ID'),
         'notification_channel' => env('DISCORD_NOTIFICATION_CHANNEL'),
+    ],
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URL', env('APP_URL') . '/auth/google/callback'),
+    ],
+
+    'github' => [
+        'client_id' => env('GITHUB_CLIENT_ID'),
+        'client_secret' => env('GITHUB_CLIENT_SECRET'),
+        'redirect' => env('GITHUB_REDIRECT_URL', env('APP_URL') . '/auth/github/callback'),
     ],
 
 ];

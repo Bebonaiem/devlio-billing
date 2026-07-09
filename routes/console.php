@@ -54,3 +54,7 @@ Artisan::command('app:user:create', function () {
 
     $this->info("Admin user '{$email}' created successfully.");
 })->purpose('Create an admin user');
+
+Artisan::command('app:fetch-emails', function () {
+    $this->call(\App\Console\Commands\FetchTicketEmails::class);
+})->purpose('Fetch ticket emails via IMAP');

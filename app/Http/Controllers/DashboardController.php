@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Credit;
+use App\Models\Currency;
 use App\Models\Invoice;
 use App\Models\InvoiceTransaction;
 use App\Models\Service;
@@ -10,6 +11,7 @@ use App\Models\Ticket;
 use App\Models\TicketMessage;
 use App\Models\User;
 use App\Services\CreditService;
+use App\Services\InvoiceService;
 use App\Services\ServiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -136,6 +138,20 @@ class DashboardController extends Controller
         return view('dashboard.invoice-detail', compact('invoice', 'totals'));
     }
 
+    public function downloadPdf(Invoice $invoice)
+    {
+        if ($invoice->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
+            abort(403);
+        }
+
+        $invoice->load(['items', 'user', 'currency', 'snapshot']);
+        $totals = app(\App\Services\InvoiceService::class)->calculateTotal($invoice);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('invoices.pdf', compact('invoice', 'totals'));
+
+        return $pdf->download('invoice-' . $invoice->number . '.pdf');
+    }
+
     public function tickets()
     {
         $tickets = Ticket::where('user_id', Auth::id())
@@ -177,6 +193,39 @@ class DashboardController extends Controller
 
         return redirect()->route('dashboard.tickets')
             ->with('success', 'Ticket created successfully.');
+    }
+
+    public function depositCredits()
+    {
+        $user = Auth::user();
+        $currencyCode = session('currency', config('billing.default_currency', 'USD'));
+        $currencies = Currency::where('enabled', true)->get();
+        $creditBalance = (new CreditService)->getBalance($user, $currencyCode);
+
+        return view('dashboard.credits', compact('user', 'currencies', 'creditBalance', 'currencyCode'));
+    }
+
+    public function processDeposit(Request $request)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:1|max:10000',
+            'currency' => 'required|string|exists:currencies,code',
+        ]);
+
+        $user = Auth::user();
+        $amount = round((float) $validated['amount'], 2);
+        $currencyCode = $validated['currency'];
+
+        $invoiceService = app(InvoiceService::class);
+        $invoice = $invoiceService->createInvoice($user, [
+            [
+                'quantity' => 1,
+                'price' => $amount,
+                'description' => "Credit Deposit ({$currencyCode} " . number_format($amount, 2) . ')',
+            ],
+        ], $currencyCode);
+
+        return redirect()->route('checkout.pay', ['invoice' => $invoice->id]);
     }
 
     public function profile()

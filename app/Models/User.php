@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'provider',
+        'provider_id',
         'pterodactyl_user_id',
         'pterodactyl_api_key',
         'tfa_secret',
@@ -35,6 +37,7 @@ class User extends Authenticatable
         'remember_token',
         'pterodactyl_api_key',
         'tfa_secret',
+        'provider_id',
     ];
 
     protected function casts(): array

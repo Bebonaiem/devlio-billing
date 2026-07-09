@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\InvoiceTransaction;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class InvoiceController extends Controller
 {
@@ -26,6 +27,16 @@ class InvoiceController extends Controller
         $totals = app(InvoiceService::class)->calculateTotal($invoice);
 
         return view('admin.invoices.show', compact('invoice', 'totals'));
+    }
+
+    public function downloadPdf(Invoice $invoice)
+    {
+        $invoice->load(['items', 'user', 'currency', 'snapshot']);
+        $totals = app(InvoiceService::class)->calculateTotal($invoice);
+
+        $pdf = Pdf::loadView('invoices.pdf', compact('invoice', 'totals'));
+
+        return $pdf->download('invoice-' . $invoice->number . '.pdf');
     }
 
     public function markPaid(Invoice $invoice)

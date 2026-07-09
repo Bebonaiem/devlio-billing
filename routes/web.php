@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\CurrencyController as AdminCurrencyController;
@@ -14,16 +15,28 @@ use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\TicketController as AdminTicketController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\UpgradeController as AdminUpgradeController;
+use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
 use App\Http\Controllers\Admin\DeployController as AdminDeployController;
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
+use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\StatusController;
 use App\Http\Controllers\StorefrontController;
+use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\Webhook\PayPalController;
 use App\Http\Controllers\Webhook\StripeController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [StorefrontController::class, 'index'])->name('storefront');
+Route::get('/announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+Route::get('/announcements/{slug}', [AnnouncementController::class, 'show'])->name('announcements.show');
+
+Route::get('/help', [ArticleController::class, 'index'])->name('articles.index');
+Route::get('/help/{slug}', [ArticleController::class, 'show'])->name('articles.show');
+
 Route::get('/products/{slug}', [StorefrontController::class, 'category'])->name('storefront.category');
 Route::get('/product/{slug}', [StorefrontController::class, 'product'])->name('storefront.product');
 
@@ -36,6 +49,9 @@ Route::middleware('guest')->group(function () {
     Route::post('/password/email', [AuthController::class, 'sendResetLink'])->name('password.email');
     Route::get('/password/reset/{token}', [AuthController::class, 'showResetForm'])->name('password.reset');
     Route::post('/password/reset', [AuthController::class, 'resetPassword'])->name('password.update');
+
+    Route::get('/auth/{provider}', [SocialAuthController::class, 'redirect'])->name('social.redirect');
+    Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->name('social.callback');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -65,10 +81,17 @@ Route::middleware('auth')->group(function () {
         Route::get('/services/{service}', [DashboardController::class, 'serviceDetail'])->name('service-detail');
         Route::get('/invoices', [DashboardController::class, 'invoices'])->name('invoices');
         Route::get('/invoices/{invoice}', [DashboardController::class, 'invoiceDetail'])->name('invoice-detail');
+        Route::get('/invoices/{invoice}/pdf', [DashboardController::class, 'downloadPdf'])->name('invoices.pdf');
         Route::get('/tickets', [DashboardController::class, 'tickets'])->name('tickets');
+        Route::get('/credits', [DashboardController::class, 'depositCredits'])->name('credits');
+        Route::post('/credits', [DashboardController::class, 'processDeposit'])->name('credits.process');
         Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
         Route::patch('/profile', [DashboardController::class, 'updateProfile'])->name('profile.update');
         Route::patch('/profile/password', [DashboardController::class, 'updatePassword'])->name('profile.password');
+        Route::get('/two-factor', [TwoFactorController::class, 'show'])->name('2fa.show');
+        Route::post('/two-factor/enable', [TwoFactorController::class, 'enable'])->name('2fa.enable');
+        Route::post('/two-factor/disable', [TwoFactorController::class, 'disable'])->name('2fa.disable');
+        Route::get('/servers', [StatusController::class, 'index'])->name('servers');
         Route::get('/affiliate', [DashboardController::class, 'affiliate'])->name('affiliate');
         Route::get('/tickets/create', [DashboardController::class, 'createTicket'])->name('tickets.create');
         Route::post('/tickets', [DashboardController::class, 'storeTicket'])->name('tickets.store');
@@ -119,6 +142,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/invoices', [AdminInvoiceController::class, 'index'])->name('invoices.index');
         Route::get('/invoices/{invoice}', [AdminInvoiceController::class, 'show'])->name('invoices.show');
+        Route::get('/invoices/{invoice}/pdf', [AdminInvoiceController::class, 'downloadPdf'])->name('invoices.pdf');
         Route::post('/invoices/{invoice}/paid', [AdminInvoiceController::class, 'markPaid'])->name('invoices.paid');
         Route::post('/invoices/{invoice}/overdue', [AdminInvoiceController::class, 'markOverdue'])->name('invoices.overdue');
         Route::post('/invoices/{invoice}/cancel', [AdminInvoiceController::class, 'markCancelled'])->name('invoices.cancel');
@@ -143,6 +167,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('categories', AdminCategoryController::class);
         Route::resource('currencies', AdminCurrencyController::class);
         Route::resource('coupons', AdminCouponController::class);
+        Route::resource('announcements', AdminAnnouncementController::class);
+        Route::post('announcements/{announcement}/toggle', [AdminAnnouncementController::class, 'toggle'])->name('announcements.toggle');
+        Route::resource('articles', AdminArticleController::class);
+        Route::post('articles/{article}/toggle', [AdminArticleController::class, 'toggle'])->name('articles.toggle');
         Route::post('currencies/{currency}/default', [AdminCurrencyController::class, 'setDefault'])->name('currencies.setDefault');
 
         Route::get('pterodactyl/nests/{nest}/eggs', function (int $nest, \App\Services\PterodactylService $pterodactyl) {

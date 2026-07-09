@@ -29,6 +29,7 @@ class SettingsController extends Controller
             'pterodactyl_url', 'pterodactyl_api_key',
             'paypal_client_id', 'paypal_secret', 'paypal_webhook_id', 'paypal_sandbox',
             'stripe_key', 'stripe_secret', 'stripe_webhook_secret',
+            'email_host', 'email_port', 'email_address', 'email_password',
         ];
 
         foreach ($keys as $key) {

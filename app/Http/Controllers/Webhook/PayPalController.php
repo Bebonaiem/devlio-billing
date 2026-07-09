@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Extension;
 use App\Models\Invoice;
 use App\Models\InvoiceTransaction;
+use App\Services\CreditService;
 use App\Services\InvoiceService;
 use Illuminate\Http\Request;
 
@@ -90,7 +91,22 @@ class PayPalController extends Controller
         ]);
 
         $this->invoiceService->markPaid($invoice, $transaction);
+        $this->applyCreditDeposit($invoice);
 
         return response()->json(['status' => 'success']);
+    }
+
+    private function applyCreditDeposit(Invoice $invoice): void
+    {
+        $item = $invoice->items()->where('reference_id', null)->first();
+        if (! $item || ! str_starts_with($item->description, 'Credit Deposit')) {
+            return;
+        }
+
+        if (preg_match('/\(([A-Z]{3})\s+([\d.]+)\)/', $item->description, $matches)) {
+            $currencyCode = $matches[1];
+            $amount = (float) $matches[2];
+            app(CreditService::class)->add($invoice->user, $amount, $currencyCode);
+        }
     }
 }

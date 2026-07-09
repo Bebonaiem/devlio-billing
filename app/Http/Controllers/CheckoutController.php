@@ -267,10 +267,26 @@ class CheckoutController extends Controller
 
             app(InvoiceService::class)->markPaid($invoice, $transaction);
 
+            $this->applyCreditDeposit($invoice);
+
             return redirect()->route('checkout.success', ['invoice' => $invoice->id]);
         }
 
         return back()->with('error', 'Insufficient credit balance.');
+    }
+
+    private function applyCreditDeposit(Invoice $invoice): void
+    {
+        $item = $invoice->items()->where('reference_id', null)->first();
+        if (! $item || ! str_starts_with($item->description, 'Credit Deposit')) {
+            return;
+        }
+
+        if (preg_match('/\(([A-Z]{3})\s+([\d.]+)\)/', $item->description, $matches)) {
+            $currencyCode = $matches[1];
+            $amount = (float) $matches[2];
+            $this->credit->add($invoice->user, $amount, $currencyCode);
+        }
     }
 
     private function activateInvoiceServices(Invoice $invoice): void

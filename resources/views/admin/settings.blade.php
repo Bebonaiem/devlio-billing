@@ -195,6 +195,33 @@
         </div>
     </div>
 
+    <div class="glass rounded-2xl p-6 sm:p-8">
+        <h3 class="text-lg font-display font-bold text-white mb-1">Email Piping</h3>
+        <p class="text-dark-400 text-sm mb-5">IMAP settings for receiving ticket replies via email. Run <code class="text-primary-400">php artisan app:fetch-emails</code> to poll for new messages.</p>
+        <div class="grid md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-dark-300 mb-2">IMAP Host</label>
+                <input type="text" name="email_host" value="{{ $settings['email_host'] ?? '' }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm" placeholder="imap.gmail.com">
+                <p class="text-xs text-dark-500 mt-1">Your IMAP server hostname.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-dark-300 mb-2">IMAP Port</label>
+                <input type="text" name="email_port" value="{{ $settings['email_port'] ?? '993' }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm" placeholder="993">
+                <p class="text-xs text-dark-500 mt-1">Common ports: 993 (SSL), 143 (TLS).</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-dark-300 mb-2">Email Address</label>
+                <input type="email" name="email_address" value="{{ $settings['email_address'] ?? '' }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm" placeholder="support@yourdomain.com">
+                <p class="text-xs text-dark-500 mt-1">The mailbox to monitor for incoming ticket replies.</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-dark-300 mb-2">Email Password</label>
+                <input type="password" name="email_password" value="{{ $settings['email_password'] ?? '' }}" class="w-full px-4 py-3 rounded-xl input-field text-white text-sm">
+                <p class="text-xs text-dark-500 mt-1">Use an app password for providers like Gmail.</p>
+            </div>
+        </div>
+    </div>
+
     <button type="submit" class="w-full py-3.5 px-4 btn-primary text-white font-semibold rounded-xl text-sm hover:shadow-lg hover:shadow-primary-500/25 transition-all">Save All Settings</button>
 </form>
 @endsection
