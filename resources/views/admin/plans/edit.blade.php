@@ -2,7 +2,21 @@
 @section('title', 'Edit Plan')
 @section('content')
 <div class="max-w-2xl">
-    <form method="POST" action="{{ route('admin.plans.update', $plan) }}" class="glass rounded-2xl p-6 sm:p-8 space-y-5">
+    <form method="POST" action="{{ route('admin.plans.update', $plan) }}" class="glass rounded-2xl p-6 sm:p-8 space-y-5" x-data="{
+        selectedNest: '{{ old('nest_id', $plan->nest_id) }}',
+        eggs: [],
+        init() {
+            this.$watch('selectedNest', async (nestId) => {
+                if (!nestId) { this.eggs = []; return; }
+                const res = await fetch('/admin/pterodactyl/nests/' + nestId + '/eggs');
+                const data = await res.json();
+                this.eggs = data;
+            });
+            if (this.selectedNest) {
+                fetch('/admin/pterodactyl/nests/' + this.selectedNest + '/eggs').then(r => r.json()).then(d => { this.eggs = d; });
+            }
+        }
+    }">
         @csrf @method('PUT')
         <div class="grid md:grid-cols-2 gap-4">
             <div>
@@ -80,12 +94,22 @@
                     <input type="number" name="allocations" min="1" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('allocations', $plan->allocations ?? 1) }}">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-dark-400 mb-1">Nest ID</label>
-                    <input type="number" name="nest_id" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('nest_id', $plan->nest_id) }}">
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Nest</label>
+                    <select name="nest_id" x-model="selectedNest" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm">
+                        <option value="">Select Nest</option>
+                        @foreach ($nests as $nest)
+                            <option value="{{ $nest['attributes']['id'] }}" {{ old('nest_id', $plan->nest_id) == $nest['attributes']['id'] ? 'selected' : '' }}>{{ $nest['attributes']['name'] }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-dark-400 mb-1">Egg ID</label>
-                    <input type="number" name="egg_id" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm" value="{{ old('egg_id', $plan->egg_id) }}">
+                    <label class="block text-xs font-medium text-dark-400 mb-1">Egg</label>
+                    <select name="egg_id" class="w-full px-3 py-2.5 rounded-xl input-field text-white text-sm">
+                        <option value="">Select Nest First</option>
+                        <template x-for="egg in eggs" :key="egg.attributes.id">
+                            <option :value="egg.attributes.id" x-text="egg.attributes.name" :selected="egg.attributes.id == {{ old('egg_id', $plan->egg_id) ?? 'null' }}"></option>
+                        </template>
+                    </select>
                 </div>
             </div>
         </div>

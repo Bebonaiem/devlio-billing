@@ -112,7 +112,11 @@ class ProductController extends Controller
         $currencies = Currency::where('enabled', true)->get();
         $configOptions = ConfigOption::where('parent_id', null)->with('children')->orderBy('sort')->get();
 
-        $nests = $pterodactyl->getNests();
+        try {
+            $nests = $pterodactyl->getNests();
+        } catch (\Exception $e) {
+            $nests = [];
+        }
 
         return view('admin.products.plans', compact('product', 'currencies', 'configOptions', 'nests'));
     }

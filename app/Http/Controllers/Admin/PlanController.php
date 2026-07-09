@@ -27,7 +27,11 @@ class PlanController extends Controller
     {
         $products = Product::where('enabled', true)->get();
         $currencies = Currency::where('enabled', true)->get();
-        $nests = $pterodactyl->getNests();
+        try {
+            $nests = $pterodactyl->getNests();
+        } catch (\Exception $e) {
+            $nests = [];
+        }
         return view('admin.plans.create', compact('products', 'currencies', 'nests'));
     }
 
@@ -92,12 +96,16 @@ class PlanController extends Controller
             ->with('success', 'Plan created successfully.');
     }
 
-    public function edit(Plan $plan)
+    public function edit(Plan $plan, PterodactylService $pterodactyl)
     {
         $products = Product::where('enabled', true)->get();
         $currencies = Currency::where('enabled', true)->get();
-        $plan->load('prices');
-        return view('admin.plans.edit', compact('plan', 'products', 'currencies'));
+        try {
+            $nests = $pterodactyl->getNests();
+        } catch (\Exception $e) {
+            $nests = [];
+        }
+        return view('admin.plans.edit', compact('plan', 'products', 'currencies', 'nests'));
     }
 
     public function update(Request $request, Plan $plan)
