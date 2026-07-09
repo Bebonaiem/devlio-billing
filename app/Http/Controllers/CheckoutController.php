@@ -142,6 +142,43 @@ class CheckoutController extends Controller
         return view('checkout.pay', compact('invoice', 'currencies', 'paymentGateways'));
     }
 
+    public function processPay(Request $request)
+    {
+        $validated = $request->validate([
+            'invoice_id' => 'required|exists:invoices,id',
+            'gateway' => 'required|exists:extensions,id',
+        ]);
+
+        $user = Auth::user();
+        $invoice = Invoice::with('items')->findOrFail($validated['invoice_id']);
+
+        if ($invoice->user_id !== $user->id) {
+            abort(403);
+        }
+
+        if ($invoice->isPaid()) {
+            return redirect()->route('dashboard.index')
+                ->with('success', 'Invoice is already paid.');
+        }
+
+        // TODO: Process payment with the selected gateway
+        // For now, mark as paid for testing
+        $transaction = \App\Models\InvoiceTransaction::create([
+            'invoice_id' => $invoice->id,
+            'gateway_id' => $validated['gateway'],
+            'amount' => $invoice->items->sum(fn($i) => $i->price * $i->quantity),
+            'fee' => 0,
+            'transaction_id' => 'TXN-' . strtoupper(uniqid()),
+            'status' => 'succeeded',
+            'is_credit_transaction' => false,
+        ]);
+
+        app(\App\Services\InvoiceService::class)->markPaid($invoice, $transaction);
+
+        return redirect()->route('checkout.success', ['invoice' => $invoice->id])
+            ->with('success', 'Payment successful!');
+    }
+
     public function success(Request $request)
     {
         $invoiceId = $request->query('invoice');

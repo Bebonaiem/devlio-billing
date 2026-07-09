@@ -32,7 +32,7 @@
         </div>
 
         @if ($paymentGateways->isNotEmpty())
-            <form method="POST" action="{{ route('checkout.process') }}" class="space-y-4">
+            <form method="POST" action="{{ route('checkout.pay.process') }}" class="space-y-4">
                 @csrf
                 <input type="hidden" name="invoice_id" value="{{ $invoice->id }}">
                 <label class="block text-sm font-medium text-dark-300 mb-2">Payment Method</label>

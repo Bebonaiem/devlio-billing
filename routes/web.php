@@ -52,6 +52,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/pay/{invoice}', [CheckoutController::class, 'pay'])->name('checkout.pay');
+    Route::post('/checkout/pay', [CheckoutController::class, 'processPay'])->name('checkout.pay.process');
     Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel');
     Route::post('/currency', [CheckoutController::class, 'setCurrency'])->name('currency.set');

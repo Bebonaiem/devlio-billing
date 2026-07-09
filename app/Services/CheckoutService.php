@@ -261,11 +261,13 @@ class CheckoutService
                 if ($invoice) {
                     $this->invoice->markPaid($invoice, $this->createCreditTransaction($invoice));
                 }
-
-            if ($service->server) {
-                continue;
             }
 
+            if (!$service->expires_at) {
+                $service->update(['expires_at' => $this->service->getExpiryDate($plan)]);
+            }
+
+            if (!$service->server) {
                 $this->service->activateService($service);
             }
         }

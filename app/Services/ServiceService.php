@@ -16,7 +16,9 @@ class ServiceService
     {
         $service->update(['status' => 'active']);
 
-        if ($service->server) {
+        if (!$service->server) {
+            $this->provisioning->provision($service);
+        } else {
             $this->provisioning->unsuspend($service->server);
         }
     }
