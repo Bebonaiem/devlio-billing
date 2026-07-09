@@ -1,5 +1,4 @@
-<?php
-
+﻿<?php
 namespace App\Livewire;
 
 use App\Models\Invoice;

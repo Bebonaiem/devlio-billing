@@ -1,5 +1,4 @@
-<?php
-
+﻿<?php
 namespace App\Jobs;
 
 use App\Models\Server;

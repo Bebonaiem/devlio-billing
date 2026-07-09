@@ -1,5 +1,4 @@
-<?php
-
+﻿<?php
 namespace App\Services;
 
 use App\Jobs\ProvisionServer;

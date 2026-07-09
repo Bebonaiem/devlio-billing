@@ -1,5 +1,4 @@
-<?php
-
+﻿<?php
 namespace App\Filament\Resources\ServerResource\Pages;
 
 use App\Filament\Resources\ServerResource;

@@ -1,5 +1,4 @@
-<?php
-
+﻿<?php
 namespace App\Filament\Resources\CurrencyResource\Pages;
 
 use App\Filament\Resources\CurrencyResource;

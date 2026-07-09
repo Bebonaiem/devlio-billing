@@ -1,5 +1,4 @@
-<?php
-
+﻿<?php
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
